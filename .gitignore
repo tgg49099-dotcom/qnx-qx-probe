@@ -1,0 +1,13 @@
+# Artefacts de compilation
+build/
+*.o
+*.so
+*.elf
+
+# Python
+__pycache__/
+*.pyc
+
+# Fichiers temporaires
+*.tmp
+*.log
