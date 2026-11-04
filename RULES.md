@@ -1,192 +1,170 @@
-# Regles de QX-PROBE et leurs sources officielles QNX 8.0
+# The rules of QX-PROBE and their official QNX 8.0 sources
 
-Chaque regle de la sonde est adossee a une page de la documentation officielle
-**BlackBerry QNX SDP 8.0** (QNX OS 8.0 C Library Reference). Les pages citees
-ci-dessous sont toutes a jour au **11 juin 2026**.
+> The French original of this file is kept unmodified in
+> [`docs/RULES.fr.md`](docs/RULES.fr.md).
 
-Convention de lecture : une regle sans source officielle est une regle qui
-n'existe pas. Quand la documentation contredit une regle, c'est la regle qui
-cede — jamais le code canonique de QNX.
+Every rule of the linter is backed by a page of the official **BlackBerry
+QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The pages
+cited below are all updated as of **11 June 2026**.
+
+Reading convention: **a rule without an official source is a rule that does
+not exist.** When the documentation contradicts a rule, it is the rule that
+gives way — never the canonical QNX code.
 
 ---
 
-## QX001 — aucune table de dispatch cablee
+## QX001 — no dispatch table wired
+* **Level:** ERROR
+* **Source:** `resmgr_attach()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
+* **What the documentation says:** `resmgr_attach()` takes `connect_funcs` and
+  `io_funcs`, "a pointer to the `resmgr_connect_funcs_t` structure that defines
+  the POSIX-level connect functions"; without those tables, the resource
+  manager has nothing to run for the client.
+* **Known limit:** detection is lexical (`.slot = handler`). A C99 structure
+  initialiser (`resmgr_io_funcs_t f = { .read = my_read };`) or a free variable
+  name is not seen. A finer rule is planned but not implemented: a missing
+  finding is better than a false positive.
 
-* **Niveau :** ERROR
-* **Source :** `resmgr_attach()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
-* **Ce que dit la doc :** `resmgr_attach()` prend `connect_funcs` et `io_funcs`,
-  « a pointer to the `resmgr_connect_funcs_t` structure that defines the
-  POSIX-level connect functions » ; sans ces tables, le gestionnaire n'a rien a
-  executer pour le client.
-* **Limite connue :** la detection est lexicale (`.slot = handler`). Un
-  initialiseur de structure C99 (`resmgr_io_funcs_t f = { .read = my_read };`)
-  ou un nom de variable libre n'est pas vu. Une regle plus fine est prevue mais
-  n'est pas implementee : mieux vaut un constat manquant qu'un faux positif.
+## QX002 — more slots wired than `iofunc_func_init()` fills
+* **Level:** ERROR
+* **Source:** `iofunc_func_init()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+* **What the documentation says:** "The `nconnect` and `nio` arguments indicate
+  how many entries this function should fill. This is in place to support
+  forward compatibility." — `nio` designates a **number of entries to fill**,
+  not an array bound.
+* **Known limit:** the rule counts the slots that are *wired*, not the slots
+  that are *positioned* in the structure. To be re-read (see "Rules to
+  re-read").
 
-## QX002 — plus de slots cables que `iofunc_func_init()` n'en remplit
+## QX003 — a slot points at an undefined function
+* **Level:** ERROR
+* **Source:** `resmgr_io_funcs_t()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
+* **What the documentation says:** each member of the table is a function
+  pointer (`int (*read)(resmgr_context_t *ctp, io_read_t *msg, RESMGR_OCB_T *ocb);`).
+  A null pointer, or one to a function that does not exist, is not a resource
+  manager.
+* **Known limit:** a handler defined in another compilation unit is reported
+  by mistake. A more exact form (multi-file resolution) is planned but not
+  implemented.
 
-* **Niveau :** ERROR
-* **Source :** `iofunc_func_init()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
-* **Ce que dit la doc :** « The `nconnect` and `nio` arguments indicate how many
-  entries this function should fill. This is in place to support forward
-  compatibility. » — `nio` designe un **nombre d'entrees a remplir**, pas une
-  borne de tableau.
-* **Limite connue :** la regle compte les slots cables, pas les slots
-  *positionnes* dans la structure. Elle est a relire (voir la section « Regles a
-  relire » du dossier de travail du projet).
+## QX004 — the `iofunc_*_verify()` access gate is missing
+* **Level:** ERROR
+* **Sources:** `iofunc_read_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html> · `iofunc_write_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
+* **What the documentation says:** "All read handlers should start with a call
+  to `iofunc_read_verify()` and proceed only if it returns EOK."
+* **Known limit:** the search is textual; a check delegated to a helper
+  function, or the name of the function quoted inside a string, is not
+  distinguished.
 
-## QX003 — un slot pointe vers une fonction non definie
-
-* **Niveau :** ERROR
-* **Source :** `resmgr_io_funcs_t()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
-* **Ce que dit la doc :** chaque membre de la table est un pointeur de fonction
-  (`int (*read)(resmgr_context_t *ctp, io_read_t *msg, RESMGR_OCB_T *ocb);`).
-  Un pointeur nul ou vers une fonction inexistante n'est pas un gestionnaire.
-* **Limite connue :** un handler defini dans un autre fichier de compilation
-  est signale a tort. Une forme plus exacte (resolution multi-fichiers) est
-  prevue mais n'est pas implementee.
-
-## QX004 — la porte d'acces `iofunc_*_verify()` est absente
-
-* **Niveau :** ERROR
-* **Sources :**
-  * `iofunc_read_verify()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html>
-  * `iofunc_write_verify()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
-* **Ce que dit la doc :** « All read handlers should start with a call to
-  `iofunc_read_verify()` and proceed only if it returns EOK. »
-* **Limite connue :** la recherche est textuelle ; un controle delegue a une
-  fonction auxiliaire, ou le nom de la fonction cite dans une chaine de
-  caracteres, ne sont pas distingues.
-
-## QX005 — le chemin monte par `resmgr_attach()` est relatif
-
-* **Niveau :** WARN
-* **Source :** `resmgr_attach()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
-* **Ce que dit la doc :**
+## QX005 — the path mounted by `resmgr_attach()` is relative
+* **Level:** WARN
+* **Source:** `resmgr_attach()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
+* **What the documentation says:**
   > The `resmgr_attach()` function puts the path into the **general pathname
   > space** and binds requests on this path to the dispatch handle `dpp`. You
   > usually provide an absolute path; if you provide a path that doesn't start
   > with a slash, it's considered to be relative to the current working
   > directory.
-* **Pourquoi cette regle existe (et pourquoi elle est etroite) :** une version
-  anterieure de l'outil exigeait un point de montage sous `/dev/`. C'etait
-  **faux** : le pathname space de QNX est general, et `/var/run/...`, `/tmp/...`,
-  `/etc/...` sont des points de montage valides. Signaler ces cas etait un faux
-  positif sur du code canonique — le pire genre d'erreur pour cet outil.
-  La regle actuelle ne signale que le cas documente comme dependant du
-  repertoire courant : un chemin **relatif**.
-* **Ce que la regle ne fait pas :** elle n'exige rien sur le prefixe
-  (`/dev/` ou autre) et elle ne se déclenche pas si le chemin n'est pas un
-  litteral (variable, macro) — dans ce cas, on ne peut rien dire.
+* **Why this rule exists (and why it is narrow):** an earlier version of the
+  tool required a mount point under `/dev/`. That was **wrong**: QNX's pathname
+  space is general, and `/var/run/…`, `/tmp/…`, `/etc/…` are valid mount
+  points. Reporting those cases was a false positive on canonical code — the
+  worst kind of error for this tool. The current rule only reports the
+  documented case that depends on the current working directory: a **relative**
+  path.
+* **What the rule does not do:** it requires nothing about the prefix
+  (`/dev/` or otherwise) and it does not trigger when the path is not a
+  literal (variable, macro) — in that case, nothing can be said.
 
-## QX006 — aucune boucle de messages
+## QX006 — no message loop
+* **Level:** ERROR
+* **Sources:** `resmgr_block()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html> · `dispatch_block()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_block.html>
+* **What the documentation says:** `resmgr_block()` "waits for a message" and
+  "is a special case of `dispatch_block()`". A resource manager that calls
+  neither never waits for a message: it does nothing.
+* **Why both APIs are accepted:** the reference example in the QNX 8.0
+  documentation uses `resmgr_block()`, not `dispatch_block()`. Requiring one of
+  the two would produce a false positive on the reference code.
 
-* **Niveau :** ERROR
-* **Sources :**
-  * `resmgr_block()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html>
-  * `dispatch_block()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_block.html>
-* **Ce que dit la doc :** `resmgr_block()` « waits for a message » et « is a
-  special case of `dispatch_block()` ». Un gestionnaire qui n'appelle ni l'un ni
-  l'autre n'attend jamais de message : il ne fait rien.
-* **Pourquoi les deux API sont acceptees :** l'exemple de reference de la
-  documentation QNX 8.0 utilise `resmgr_block()`, pas `dispatch_block()`. Exiger
-  l'un des deux produirait un faux positif sur le code de reference.
+## QX007 — the loop blocks but no handler is called
+* **Level:** ERROR
+* **Sources:** `resmgr_handler()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html> · `dispatch_handler()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_handler.html>
+* **What the documentation says:** `resmgr_handler()` "handles the message
+  received in `ctp`" and "is a special case of `dispatch_handler()`". Without
+  a call to one of the two, the message stays pending and the client never
+  gets an answer.
 
-## QX007 — la boucle bloque mais aucun handler n'est appele
-
-* **Niveau :** ERROR
-* **Sources :**
-  * `resmgr_handler()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html>
-  * `dispatch_handler()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_handler.html>
-* **Ce que dit la doc :** `resmgr_handler()` « handles the message received in
-  `ctp` » et « is a special case of `dispatch_handler()` ». Sans appel a l'un des
-  deux, le message reste en attente et le client ne recoit jamais de reponse.
-
-## QX008 — un slot de `io_funcs` n'est pas cable
-
-* **Niveau :** INFO
-* **Source :** `resmgr_io_funcs_t()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
-* **Ce que dit la doc :** « You can initialize this table by calling
+## QX008 — an `io_funcs` slot is not wired
+* **Level:** INFO
+* **Source:** `resmgr_io_funcs_t()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
+* **What the documentation says:** "You can initialize this table by calling
   `iofunc_func_init()` and then overriding the defaults with your own
-  functions. » Chaque membre a une valeur par defaut documentee dans la
-  colonne « Default » de la table : `iofunc_read_default()` pour `read`,
-  `iofunc_write_default()` pour `write`, `iofunc_devctl_default()` pour
-  `devctl`, `iofunc_unblock_default()` pour `unblock` ; `notify`, lui, n'a
-  **aucun** defaut (« None »).
-* **Pourquoi INFO et pas ERROR :** un gestionnaire en **lecture seule** (pas de
-  `write`) ou en **ecriture seule** (pas de `read`) est parfaitement valide.
-  Exiger `read` et `write` en ERROR bloquait des gestionnaires valides — c'etait
-  un faux positif fatal. Les slots 64 bits (`read64`, `write64`, `notify64`,
-  `utime64`) sont pris en compte comme equivalents de leurs homologues 32 bits.
+  functions." Each member has a documented default value in the "Default"
+  column of the table: `iofunc_read_default()` for `read`,
+  `iofunc_write_default()` for `write`, `iofunc_devctl_default()` for `devctl`,
+  `iofunc_unblock_default()` for `unblock`; `notify`, on the other hand, has
+  **no** default ("None").
+* **Why INFO and not ERROR:** a **read-only** resource manager (no `write`) or
+  a write-only one (no `read`) is perfectly valid. Requiring `read` and
+  `write` at ERROR level blocked valid resource managers — that was a fatal
+  false positive. The 64-bit slots (`read64`, `write64`, `notify64`,
+  `utime64`) are taken into account as equivalents of their 32-bit
+  counterparts.
 
-## QX009 — le reply renvoie plus de parties que l'IOV n'en contient
-
-* **Niveau :** ERROR
-* **Sources :**
-  * `resmgr_attach()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
-  * `resmgr_context_t()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_context_t.html>
-  * `_RESMGR_NPARTS()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/_resmgr_nparts.html>
-* **Ce que dit la doc :**
-  > `resmgr_attach()` — `nparts_max` : « The number of components to allocate
-  > for the IOV array. »
+## QX009 — the reply returns more parts than the IOV holds
+* **Level:** ERROR
+* **Sources:** `resmgr_attach()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html> · `resmgr_context_t()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_context_t.html> · `_RESMGR_NPARTS()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/_resmgr_nparts.html>
+* **What the documentation says:**
+  > `resmgr_attach()` — `nparts_max`: "The number of components to allocate
+  > for the IOV array."
   >
-  > `resmgr_context_t()` — `iov` : « An I/O vector where you can place the data
+  > `resmgr_context_t()` — `iov`: "An I/O vector where you can place the data
   > that you're returning to the client. This defaults to one entry, but can be
-  > configured by the `attr.nparts_max` parameter. »
+  > configured by the `attr.nparts_max` parameter."
   >
-  > `_RESMGR_NPARTS()` — Caveats : « The `resmgr_attach()` function should set
-  > `attr->nparts_max` to be the maximum value for `num`. »
-* **Ce que la regle verifie :** si le fichier declare
-  `resmgr_attr.nparts_max = N` et qu'un handler renvoie `_RESMGR_NPARTS(k)`
-  avec `k > N`, la reponse au client porterait plus de parties que l'IOV n'en
-  contient.
-* **Preuve de non-faux-positif :** le `k` n'est retenu que s'il est connu sans
-  ambiguite (litteral, ou une seule affectation dans le handler). Dans le doute,
-  la regle ne dit rien.
+  > `_RESMGR_NPARTS()` — Caveats: "The `resmgr_attach()` function should set
+  > `attr->nparts_max` to be the maximum value for `num`."
+* **What the rule checks:** if the file declares `resmgr_attr.nparts_max = N`
+  and a handler returns `_RESMGR_NPARTS(k)` with `k > N`, the answer to the
+  client would carry more parts than the IOV holds.
+* **Proof of no false positive:** `k` is only taken into account when it is
+  known unambiguously (a literal, or a single assignment in the handler). In
+  case of doubt, the rule says nothing.
 
-## QX010 — le nombre de slots de `iofunc_func_init()` est une macro
+## QX010 — the number of slots of `iofunc_func_init()` is a macro
+* **Level:** INFO
+* **Source:** `iofunc_func_init()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+* **What the documentation says:** "Typically, you pass
+  `_RESMGR_CONNECT_NFUNCS` for this argument" and "Typically, you pass
+  `_RESMGR_IO_NFUNCS`". That is the normal case; the linter reports it as
+  information and draws no conclusion from it (no false "overflow").
 
-* **Niveau :** INFO
-* **Source :** `iofunc_func_init()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
-* **Ce que dit la doc :** « Typically, you pass `_RESMGR_CONNECT_NFUNCS` for this
-  argument » et « Typically, you pass `_RESMGR_IO_NFUNCS` ». C'est le cas normal ;
-  la sonde le signale comme information, et n'en tire aucune conclusion
-  (pas de faux « overflow »).
-
-## QX011 — aucune table n'est initialisee par `iofunc_func_init()`
-
-* **Niveau :** WARN
-* **Source :** `iofunc_func_init()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
-* **Ce que dit la doc :** c'est cette fonction qui remplit les tables avec les
-  valeurs par defaut POSIX. Sans elle, les pointeurs restent a leur valeur
-  initiale.
-* **Limite connue :** une initialisation statique a zero, ou un `memset` de la
-  table, est un choix architectural legitime (gestionnaire qui renvoie ENOSYS) ;
-  la regle produit alors un avertissement injustifie. Une forme plus fine est
-  prevue mais n'est pas implementee.
+## QX011 — no table is initialised by `iofunc_func_init()`
+* **Level:** WARN
+* **Source:** `iofunc_func_init()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+* **What the documentation says:** it is this function that fills the tables
+  with the POSIX default values. Without it, the pointers keep their initial
+  value.
+* **Known limit:** a static zero initialisation, or a `memset` of the table,
+  is a legitimate architectural choice (a resource manager that returns
+  ENOSYS); the rule then produces an unjustified warning. A finer form is
+  planned but not implemented.
 
 ---
 
-## Regles a relire (connues, non corrigees dans cette version)
+## Rules to re-read (known, not corrected in this version)
 
-Elles sont signalees ici par honnetete : elles sont dans le code, et le jury
-doit le savoir.
+They are flagged here out of honesty: they are in the code, and the jury must
+know.
 
-| Regle | Probleme connu | Source qui la contredit |
+| Rule | Known problem | The documentation that contradicts it |
 |---|---|---|
-| QX002 | le nombre de slots cables n'est pas le nombre de slots *remplis* ; le mot « overflow » est trompeur | `iofunc_func_init()` (« how many entries this function should fill ») |
-| QX001 | les initialiseurs de structure C99 et les noms de variables libres ne sont pas detectes | `resmgr_io_funcs_t()` |
-| QX003 | un handler defini dans un autre fichier est signale a tort | `resmgr_io_funcs_t()` |
-| QX004 | la recherche est textuelle (chaine de caracteres, verification deleguee) | `iofunc_read_verify()` |
-| QX011 | une table mise a zero statiquement produit un avertissement injustifie | `iofunc_func_init()` |
+| QX002 | the number of slots wired is not the number of slots *filled*; the word "overflow" is misleading | `iofunc_func_init()` ("how many entries this function should fill") |
+| QX001 | C99 structure initialisers and free variable names are not detected | `resmgr_io_funcs_t()` |
+| QX003 | a handler defined in another file is reported by mistake | `resmgr_io_funcs_t()` |
+| QX004 | the search is textual (string match, delegated check) | `iofunc_read_verify()` |
+| QX011 | a table statically zeroed produces an unjustified warning | `iofunc_func_init()` |
 
-Le principe qui les governera tous : **une regle qui ne peut pas etre corrigee
-avec une source officielle doit etre supprimee** — une regle sans source est
-pire qu'une regle absente.
+The principle that governs all of them: **a rule that cannot be corrected with
+an official source must be deleted** — a rule without a source is worse than an
+absent rule.
