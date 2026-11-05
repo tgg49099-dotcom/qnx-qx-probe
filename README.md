@@ -100,7 +100,7 @@ tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the test
 scripts/run_tests.sh                 runs the test suite
 scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
 video/SCENARIO.md                    the video demonstration scenario
-media/qx-demo-v0.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 44.48 s)
+media/qx-demo-v1.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 44.48 s)
 docs/README.md                       what the files under docs/ are
 docs/README.fr.md                    the French original of this file
 docs/RULES.fr.md                     the French original of RULES.md
@@ -137,8 +137,8 @@ compiled for QNX 8.0, and nothing in this repository pretends otherwise.
 
 ## The demonstration video
 
-`media/qx-demo-v0.mp4` — 910 120 bytes, MP4 / H.264, 1920x1080, 25 fps,
-44.48 s, no audio track (md5 `5a6f0bd000661c786e5471ebc57666e5`).
+`media/qx-demo-v1.mp4` — 907 244 bytes, MP4 / H.264, 1920x1080, 25 fps,
+44.48 s, no audio track (md5 `3558d267dfebc54c275c2c879787b76b`).
 
 Every command shown in the video is a command of this repository, so the
 jury can replay them as they are: the checker passes on BlackBerry's own

@@ -23,3 +23,8 @@ its first set of rules and the first recording of the demonstration video.
 
 Nothing in this directory is needed to run the tool, to run the tests or to
 read the video.
+
+> The frozen snapshot mentions a video `qx-demo-v0.mp4` (the first, French
+> recording). It is **not** the one published here: the demonstration video of
+> this repository is [`../media/qx-demo-v1.mp4`](../media/qx-demo-v1.mp4) — the
+> English re-recording, made after the five rules were corrected.

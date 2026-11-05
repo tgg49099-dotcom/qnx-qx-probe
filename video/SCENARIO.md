@@ -3,14 +3,17 @@
 > The French original of this file is kept unmodified in
 > [`docs/SCENARIO.fr.md`](../docs/SCENARIO.fr.md).
 
-**Status:** video **RECORDED** (`media/qx-demo-v0.mp4`, 910 120 bytes, md5
-`5a6f0bd000661c786e5471ebc57666e5`, 44.48 s, 1920x1080, H.264, 25 fps,
+**Status:** video **RECORDED** (`media/qx-demo-v1.mp4`, 907 244 bytes, md5
+`3558d267dfebc54c275c2c879787b76b`, 44.48 s, 1920x1080, H.264, 25 fps,
 1112 frames, **no audio track**).
 
 The recording was re-made after the rules were corrected: the tool now prints
 `RESULT:` in English, the on-screen text is entirely English, and every
 command shown is a command of **this public repository**, so the jury can
-replay them as they are.
+replay them as they are. It was recorded a second time when the test suite
+grew from 22 to 27 tests, so that the number on the screen is the number of
+the suite that is in this repository today. The first (French) recording, kept
+in the frozen snapshot under `docs/`, is not published here.
 
 Shot 5 ("the QNX 8.0 target") is **absent**: it depends on the QNX 8.0 SDK
 (non-commercial QNX Everywhere licence, myQNX account), which does not exist
@@ -100,9 +103,9 @@ text has to be enough).
    -> **6 findings, 1 ERROR (QX004), 0 WARN, exit code 1**.
 7. "The checker is usable as a CI gate: the exit code is not 0":
    `... > /dev/null; echo "exit code = $?"` -> `exit code = 1`.
-8. "22 tests: both sides of the contract (no false positive, real defect
+8. "27 tests: both sides of the contract (no false positive, real defect
    caught)": `python3 -I tests/test_qx_probe.py 2>&1 | tail -3`
-   -> `Ran 22 tests ... OK`.
+   -> `Ran 27 tests ... OK`.
 9. "Zero dependency: the standard library only, no QNX SDK":
    `grep -n "^import\|^from" qx_probe.py`
    -> `re`, `sys`, `dataclasses` — the standard library, nothing else.
