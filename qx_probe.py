@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""QX-PROBE — analyseur statique du protocole resource-manager QNX 8.0.
+"""QX-PROBE — static checker for the QNX 8.0 resource-manager protocol.
 
-Outil hôte : lit du code C et rapporte des faits structurels sur le protocole
-resource-manager (resmgr) de QNX 8.0. Aucune dépendance, aucun SDK QNX.
+Host tool: reads C code and reports structural facts about the QNX 8.0
+resource-manager (resmgr) protocol. No dependency, no QNX SDK required.
 
-CHAQUE REGLE EST ADOSSÉE À UNE PAGE OFFICIELLE de la documentation BlackBerry
-QNX SDP 8.0 (C Library Reference, pages mises à jour le 11 juin 2026). Les
-URL officielles sont citées dans le commentaire de chaque règle et reprises
-dans RULES.md.  Regle d'or : ZÉRO faux positif — une règle qui signale à tort
-du code QNX 8.0 canonique est pire qu'une règle absente.
+EVERY RULE IS BACKED BY AN OFFICIAL PAGE of the BlackBerry QNX SDP 8.0
+documentation (C Library Reference, pages updated on June 11, 2026). The
+official URLs are quoted in the comment of each rule and collected in
+RULES.md.  Golden rule: ZERO false positives — a rule that misreports
+canonical QNX 8.0 code is worse than a missing rule.
 
 Usage:  python3 -I qx_probe.py <file.c> [file.c ...]
 Exit:   0 = no actionable finding, 1 = at least one ERROR or WARN finding,
@@ -25,7 +25,7 @@ from dataclasses import dataclass
 QNX_HEADERS = ("<sys/resmgr.h>", "<sys/dispatch.h>", "<sys/iofunc.h>",
                "<sys/dispatchnode.h>", "<sys/netmgr.h>")
 
-# Table resmgr_io_funcs_t de QNX 8.0 : ordre de declaration officiel.
+# QNX 8.0 resmgr_io_funcs_t table: official declaration order.
 # Source : https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html
 IO_FUNC_SLOTS = (
     "read", "write", "close_ocb", "stat", "notify", "devctl", "unblock",
@@ -36,13 +36,25 @@ IO_FUNC_SLOTS = (
     "check_msg",
 )
 
-# Slot 64 bits et son equivalent 32 bits (resmgr_io_funcs_t, QNX 8.0).
+# QNX 8.0 resmgr_connect_funcs_t table: official declaration order.
+# Source : https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_connect_funcs_t.html
+CONNECT_FUNC_SLOTS = (
+    "open", "unlink", "rename", "mknod", "readlink", "link", "unblock", "mount",
+)
+
+# 64-bit slot and its 32-bit equivalent (resmgr_io_funcs_t, QNX 8.0).
 IO_FUNC_ALIASES = {"read64": "read", "write64": "write",
                    "notify64": "notify", "utime64": "utime"}
 
-# Valeurs par defaut POSIX documentees pour les slots de io_funcs (colonne
-# "Default" de resmgr_io_funcs_t).  None = aucun defaut (le slot n'est pas
-# traite si le developpeur ne le cable pas).
+# The official iofunc_func_init() example writes the member "io_read" while the
+# resmgr_io_funcs_t() structure declares "read": BOTH spellings are accepted, so
+# the checker cannot misfire and invent a finding on the documentation's own code.
+SLOT_NAMES = (frozenset(IO_FUNC_SLOTS) | frozenset(CONNECT_FUNC_SLOTS) |
+              frozenset("io_" + s for s in IO_FUNC_SLOTS))
+
+# Documented POSIX defaults for the io_funcs slots ("Default" column of
+# resmgr_io_funcs_t).  None = no default (the slot is not handled unless the
+# developer wires it).
 IO_FUNC_DEFAULTS = {
     "read": "iofunc_read_default()",
     "write": "iofunc_write_default()",
@@ -55,20 +67,39 @@ IO_FUNC_DEFAULTS = {
 NFUNCS_RE = re.compile(
     r"iofunc_func_init\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)",
     re.DOTALL)
-ASSIGN_RE = re.compile(r"\b(io_funcs|dev_funcs|connect_funcs)\s*\.\s*(\w+)\s*=\s*([A-Za-z_]\w*)")
+# Assignment of a table slot: <variable> . <slot> = <handler>.
+# The variable name is free: the official iofunc_func_init() example uses
+# "my_io_functions", most code uses "io_funcs".
+MEMBER_ASSIGN_RE = re.compile(
+    r"\b([A-Za-z_]\w*)\s*\.\s*([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)")
+# Declaration of a dispatch table (with or without a C99 initialiser).
+TABLE_DECL_RE = re.compile(
+    r"\b(resmgr_io_funcs_t|resmgr_connect_funcs_t)\s+([A-Za-z_]\w*)\s*(=\s*\{[^}]*\})?")
+# Explicit zero initialiser: = {0} or = {NULL}.
+ZERO_INIT_RE = re.compile(r"=\s*\{\s*(?:0|NULL)\s*\}")
+# memset(&table, 0, ...): the table is explicitly zeroed.
+MEMSET_ZERO_RE = re.compile(r"memset\s*\(\s*&\s*([A-Za-z_]\w*)\s*,\s*0\s*,")
+# QX009: number of parts returned to the client / size of the IOV.
+# Sources: resmgr_attach() (attr.nparts_max = "The number of components to
+# allocate for the IOV array"), resmgr_context_t() (iov), _RESMGR_NPARTS()
+# (Caveats: "The resmgr_attach() function should set attr->nparts_max to be
+# the maximum value for num").
+NPARTS_MAX_RE = re.compile(r"\bnparts_max\s*=\s*(\d+)\s*;")
+NPARTS_RE = re.compile(r"\b_RESMGR_NPARTS\s*\(\s*([A-Za-z_]\w*|\d+)\s*\)")
+ASSIGN_INT_RE = re.compile(r"\b([A-Za-z_]\w*)\s*=\s*(\d+)\s*;")
+
+# Function call (name + "("): used to find the helpers of a handler.
+CALL_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
 HANDLER_RE = re.compile(
     r"^\s*(?:static\s+)?int\s+([A-Za-z_]\w*)\s*\(", re.MULTILINE)
 FUNC_DEF_RE = re.compile(
     r"^[ \t]*(?:static\s+|extern\s+|inline\s+)*int\s+([A-Za-z_]\w*)\s*\(", re.MULTILINE)
 
-# QX009 : nombre de parties renvoyees au client / taille de l'IOV.
-# Sources : resmgr_attach() (attr.nparts_max = "The number of components to
-# allocate for the IOV array"), resmgr_context_t() (iov), _RESMGR_NPARTS()
-# (Caveats : "The resmgr_attach() function should set attr->nparts_max to be
-# the maximum value for num").
-NPARTS_MAX_RE = re.compile(r"\bnparts_max\s*=\s*(\d+)\s*;")
-NPARTS_RE = re.compile(r"\b_RESMGR_NPARTS\s*\(\s*([A-Za-z_]\w*|\d+)\s*\)")
-ASSIGN_INT_RE = re.compile(r"\b([A-Za-z_]\w*)\s*=\s*(\d+)\s*;")
+# C keywords that are not function calls.
+C_KEYWORDS = frozenset((
+    "if", "else", "for", "while", "switch", "case", "return", "sizeof",
+    "do", "break", "continue", "goto", "defined", "static_cast",
+))
 
 
 @dataclass
@@ -98,6 +129,13 @@ def strip_comments(src: str) -> str:
                 j += 2 if src[j] == "\\" else 1
             out.append(src[i:j + 1])
             i = j + 1
+        elif src[i] == "'":
+            # character literal: it can contain a brace ('{').
+            j = i + 1
+            while j < n and src[j] != "'":
+                j += 2 if src[j] == "\\" else 1
+            out.append(src[i:j + 1])
+            i = j + 1
         else:
             out.append(src[i])
             i += 1
@@ -105,11 +143,12 @@ def strip_comments(src: str) -> str:
 
 
 def blank_strings(src: str) -> str:
-    """Remplace le CONTENU des litteraux de chaine par des espaces.
+    """Replaces the CONTENT of string literals with spaces.
 
-    La longueur de la chaine est preservee : les indices restent valides, et
-    le texte des chaines ne peut plus perturber l'analyse (parentheses,
-    accolades, mots-cles).
+    The length of the literal is preserved: offsets stay valid and string
+    text can no longer disturb the analysis (parentheses, braces, keywords).
+    Character literals are treated the same way: '{' must not corrupt the
+    brace counting.
     """
     out = list(src)
     i, n = 0, len(src)
@@ -121,16 +160,23 @@ def blank_strings(src: str) -> str:
             for k in range(i + 1, min(j, n)):
                 out[k] = " "
             i = min(j + 1, n)
+        elif src[i] == "'":
+            j = i + 1
+            while j < n and src[j] != "'":
+                j += 2 if src[j] == "\\" else 1
+            for k in range(i + 1, min(j, n)):
+                out[k] = " "
+            i = min(j + 1, n)
         else:
             i += 1
     return "".join(out)
 
 
 def split_args(src: str, open_paren: int) -> list[tuple[int, int]]:
-    """Decoupe les arguments d'un appel C. Renvoie [(debut, fin), ...].
+    """Splits the arguments of a C call. Returns [(start, end), ...].
 
-    open_paren est l'index de la '(' d'ouverture.  Le decoupage ignore les
-    virgules imbriquees et les virgules situees dans une chaine.
+    open_paren is the index of the opening '('. The split ignores nested
+    commas and commas inside a string literal.
     """
     blanked = blank_strings(src)
     depth = 0
@@ -154,13 +200,13 @@ def split_args(src: str, open_paren: int) -> list[tuple[int, int]]:
 
 
 def string_literal(text: str) -> str | None:
-    """Renvoie le contenu d'un litteral de chaine, ou None si ce n'en est pas un."""
+    """Returns the content of a string literal, or None if it is not one."""
     m = re.fullmatch(r'"((?:[^"\\]|\\.)*)"', text.strip())
     return m.group(1) if m else None
 
 
 def function_body(src: str, name: str, open_paren: int) -> str | None:
-    """Renvoie le corps (accolades excluses) de la fonction `name`, ou None."""
+    """Returns the body (braces excluded) of the function `name`, or None."""
     blanked = blank_strings(src)
     depth = 0
     i = open_paren
@@ -195,7 +241,7 @@ def function_body(src: str, name: str, open_paren: int) -> str | None:
 
 
 def all_functions(src: str) -> dict[str, str]:
-    """Renvoie {nom: corps} pour toutes les fonctions `int` definies dans le fichier."""
+    """Returns {name: body} for every `int` function defined in the file."""
     out: dict[str, str] = {}
     for m in FUNC_DEF_RE.finditer(src):
         name = m.group(1)
@@ -207,12 +253,23 @@ def all_functions(src: str) -> dict[str, str]:
     return out
 
 
-def resolve_count(body: str, ident: str) -> int | None:
-    """Resout un entier utilise comme nombre de parties.
+def body_of(src: str, name: str) -> str | None:
+    """Returns the body of the function `name` (strings blanked), or None."""
+    for m in FUNC_DEF_RE.finditer(src):
+        if m.group(1) != name:
+            continue
+        body = function_body(src, name, m.end() - 1)
+        if body is not None:
+            return body
+    return None
 
-    Renvoie l'entier si — et seulement si — il est connu sans ambiguite :
-    litteral direct, ou une seule affectation `ident = <entier>;` dans le corps.
-    Dans le cas contraire, None (on ne dit rien plutot que de se tromper).
+
+def resolve_count(body: str, ident: str) -> int | None:
+    """Resolves an integer used as a part count.
+
+    Returns the integer if — and only if — it is known without ambiguity: a
+    direct literal, or exactly one `ident = <integer>;` assignment in the body.
+    Otherwise None (we say nothing rather than being wrong).
     """
     if ident.isdigit():
         return int(ident)
@@ -226,7 +283,161 @@ def line_of(src: str, pos: int) -> int:
     return src.count("\n", 0, pos) + 1
 
 
-def analyse(path: str, raw: str) -> list[Finding]:
+def ident_of(expr: str) -> str | None:
+    """Returns the identifier of a simple expression (&x, *x, x), or None."""
+    e = expr.strip()
+    while e.startswith("&") or e.startswith("*"):
+        e = e[1:].strip()
+    if not re.fullmatch(r"[A-Za-z_]\w*", e):
+        return None
+    return e
+
+
+def slot_assignments(src: str) -> list[tuple[str, str, str]]:
+    """Returns [(table, slot, handler)] for every wired table slot.
+
+    The slot name must belong to an official QNX 8.0 table
+    (resmgr_io_funcs_t / resmgr_connect_funcs_t); the variable name is free,
+    as in the official iofunc_func_init() example.
+    """
+    out = []
+    for m in MEMBER_ASSIGN_RE.finditer(src):
+        table, slot, handler = m.group(1), m.group(2), m.group(3)
+        if slot in SLOT_NAMES:
+            out.append((table, slot, handler))
+    return out
+
+
+def designated_assignments(src: str) -> list[tuple[str, str, str]]:
+    """Returns [(table, slot, handler)] for the C99 initialisers.
+
+    resmgr_io_funcs_t f = { .read = my_read, .write = my_write };
+    wires the table just as legitimately as f.read = my_read.
+    """
+    out = []
+    for m in TABLE_DECL_RE.finditer(src):
+        name, init = m.group(2), m.group(3)
+        if not init:
+            continue
+        for d in re.finditer(r"\.\s*([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)", init):
+            slot, handler = d.group(1), d.group(2)
+            if slot in SLOT_NAMES:
+                out.append((name, slot, handler))
+    return out
+
+
+def all_assignments(src: str) -> list[tuple[str, str, str]]:
+    """Every slot assignment, whatever its form."""
+    return slot_assignments(src) + designated_assignments(src)
+
+
+def base_slot(slot: str) -> str:
+    """Maps a slot back to its official name (io_read -> read)."""
+    return slot[3:] if slot.startswith("io_") and slot[3:] in IO_FUNC_SLOTS else slot
+
+
+def dispatch_tables(src: str) -> dict[str, dict]:
+    """Returns {name: infos} for the dispatch tables seen in this file.
+
+    A table is "wired" if it is
+      * declared in the file (resmgr_io_funcs_t / resmgr_connect_funcs_t),
+      * or one of its slots is assigned,
+      * or it is C99-initialised (resmgr_io_funcs_t f = { .read = ... }),
+      * or it is filled by iofunc_func_init(),
+      * or it is passed to resmgr_attach() / message_attach().
+
+    Sources: resmgr_attach() (io_funcs argument), resmgr_io_funcs_t()
+    ("You can initialize this table by calling iofunc_func_init() and then
+    overriding the defaults with your own functions").
+    """
+    tables: dict[str, dict] = {}
+
+    def touch(name: str) -> dict:
+        return tables.setdefault(name, {"declared": False, "zero": False,
+                                        "auto": False, "used": False, "type": None,
+                                        "slots": set()})
+
+    # 1. declarations (with a possible C99 initialiser)
+    for m in TABLE_DECL_RE.finditer(src):
+        name = m.group(2)
+        info = touch(name)
+        info["declared"] = True
+        info["type"] = m.group(1)
+        init = m.group(3)
+        if init and ZERO_INIT_RE.search(init):
+            info["zero"] = True
+        elif not init:
+            # a static-storage declaration is zeroed by C; an automatic
+            # declaration (inside a function) is not.
+            info["auto"] = depth_at(src, m.start()) > 0
+
+    # 2. slot assignments
+    for table, slot, _handler in all_assignments(src):
+        info = touch(table)
+        info["used"] = True
+        info["slots"].add(slot)
+
+    # 3. tables filled by iofunc_func_init()
+    m = NFUNCS_RE.search(src)
+    if m:
+        for expr in (m.group(2), m.group(4)):
+            name = ident_of(expr)
+            if name:
+                touch(name)["used"] = True
+
+    # 4. tables passed to resmgr_attach() / message_attach()
+    for call in ("resmgr_attach", "message_attach"):
+        for m2 in re.finditer(r"\b" + call + r"\s*\(", src):
+            for a, b in split_args(src, m2.end() - 1):
+                name = ident_of(src[a:b])
+                if name:
+                    touch(name)["used"] = True
+
+    # 5. tables explicitly zeroed (memset)
+    for name in MEMSET_ZERO_RE.findall(src):
+        if name in tables:
+            tables[name]["zero"] = True
+
+    return tables
+
+
+def depth_at(src: str, pos: int) -> int:
+    """Brace depth at position `pos` (0 = file level)."""
+    blanked = blank_strings(src)
+    depth = 0
+    for i in range(min(pos, len(blanked))):
+        if blanked[i] == "{":
+            depth += 1
+        elif blanked[i] == "}":
+            depth -= 1
+    return depth
+
+
+def gate_present(body: str, want: str, src: str) -> bool:
+    """True if the access gate `want` is called, directly or through a helper.
+
+    The body has its strings blanked: a gate quoted in an error message does
+    not count.  A check delegated to a helper of the file counts too (the body
+    of the helper is read as well).
+    """
+    if want in body:
+        return True
+    for callee in set(CALL_RE.findall(body)):
+        if callee in C_KEYWORDS or callee == want:
+            continue
+        helper = body_of(src, callee)
+        if helper is not None and want in helper:
+            return True
+    return False
+
+
+def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[Finding]:
+    """Analyses one C file.
+
+    `known_symbols`: symbols defined or declared in the OTHER analysed files
+    (the CLI accepts several files); without them the checker cannot know that
+    a handler is defined in another translation unit.
+    """
     f: list[Finding] = []
     src = strip_comments(raw)
 
@@ -235,70 +446,114 @@ def analyse(path: str, raw: str) -> list[Finding]:
     if not is_resmgr:
         return f
 
+    assigns = all_assignments(src)
+    tables = dispatch_tables(src)
+
     # C1 — a file that uses the resmgr API must wire a dispatch table.
-    assigns = ASSIGN_RE.findall(src)
-    if not assigns:
+    # Sources : resmgr_attach() (io_funcs : "A pointer to the resmgr_io_funcs_t
+    # structure that defines the POSIX-level I/O functions"), resmgr_io_funcs_t()
+    # ("You can initialize this table by calling iofunc_func_init() and then
+    # overriding the defaults with your own functions").
+    if not tables:
         f.append(Finding("ERROR", "QX001", path,
-                         "file uses the QNX resmgr API but no dispatch table is assigned "
-                         "(io_funcs.*/dev_funcs.*/connect_funcs.*)"))
+                         "file uses the QNX resmgr API but no dispatch table is wired "
+                         "(no resmgr_io_funcs_t / resmgr_connect_funcs_t table is "
+                         "declared, initialised, filled by iofunc_func_init() or passed "
+                         "to resmgr_attach())"))
         return f
 
-    # C2 — iofunc_func_init() arity must match the number of slots actually used.
+    # C1 bis — resmgr_attach() with a NULL table.
+    # Source: resmgr_attach() — for the "attr" argument the documentation
+    # explicitly says "or NULL to use the default attributes"; for
+    # "connect_funcs" and "io_funcs" it does NOT: a NULL table means a
+    # resource manager with no handler at all.
+    for m2 in re.finditer(r"\bresmgr_attach\s*\(", src):
+        args = split_args(src, m2.end() - 1)
+        if len(args) < 7:
+            continue
+        for idx, label in ((5, "connect_funcs"), (6, "io_funcs")):
+            if src[args[idx][0]:args[idx][1]].strip() == "NULL":
+                f.append(Finding("ERROR", "QX001", f"{path}:{line_of(src, m2.start())}",
+                                 f"resmgr_attach() attaches the resource manager with a NULL "
+                                 f"{label} table: the resource manager has no handler at all"))
+
+    # C2 — iofunc_func_init() must not be asked to fill more entries than the
+    # table holds.
+    # Sources : iofunc_func_init() (nio : "The number of entries in the io table
+    # that you want to fill"), resmgr_io_funcs_t() (the table and its members),
+    # resmgr_connect_funcs_t() (same for the connect table).
     m = NFUNCS_RE.search(src)
+    init_tables: set[str] = set()
     if m:
-        conn_n, _conn_f, io_n, _io_f = (x.strip() for x in m.groups())
-        used_io = {a[1] for a in assigns if a[0] == "io_funcs"}
-        used_conn = {a[1] for a in assigns if a[0] == "connect_funcs"}
-        for label, n_expr, used in (("io", io_n, used_io), ("connect", conn_n, used_conn)):
+        conn_n, conn_f, io_n, io_f = (x.strip() for x in m.groups())
+        for name in (ident_of(conn_f), ident_of(io_f)):
+            if name:
+                init_tables.add(name)
+        for label, n_expr, count in (("io", io_n, len(IO_FUNC_SLOTS)),
+                                     ("connect", conn_n, len(CONNECT_FUNC_SLOTS))):
             if not n_expr.isdigit():
                 f.append(Finding("INFO", "QX010", path,
                                  f"{label} function count '{n_expr}' is not a literal (macro)"))
                 continue
             n = int(n_expr)
-            if used and len(used) > n:
+            if n > count:
                 f.append(Finding("ERROR", "QX002", path,
-                                 f"{len(used)} {label}_funcs slots assigned but "
-                                 f"iofunc_func_init() declares only {n} -> overflow"))
-    else:
+                                 f"iofunc_func_init() is asked to fill {n} entries of the "
+                                 f"{label} table, which has {count} function members in QNX 8.0: "
+                                 f"the library writes past the end of the structure"))
+
+    # C3 — the dispatch tables must be initialised: an automatic table that is
+    # never initialised holds indeterminate function pointers.
+    # Sources : iofunc_func_init() ("initializes the passed connect and io
+    # structures with the POSIX-layer default functions"), resmgr_io_funcs_t().
+    for name, info in tables.items():
+        if not info["declared"]:
+            continue                      # the table lives in another unit
+        if name in init_tables:
+            continue                      # filled by iofunc_func_init()
+        if info["zero"] or not info["auto"]:
+            continue                      # static storage: zeroed by C
         f.append(Finding("WARN", "QX011", path,
-                         "no iofunc_func_init() call found although dispatch tables are assigned"))
+                         f"the dispatch table '{name}' is an automatic variable that is never "
+                         f"initialised: its function pointers hold indeterminate values "
+                         f"(iofunc_func_init() or an explicit zero initialiser is expected)"))
 
-    # C3 — every assigned handler must be a function defined in the file.
-    defined = set(HANDLER_RE.findall(src))
+    # C4 — every assigned handler must be a function of the analysed sources.
+    # Sources: resmgr_io_funcs_t() (each member is a function pointer).
+    # A single file cannot prove that a handler is undefined: the checker
+    # therefore no longer CONDENNS it, it reports it (level INFO).
+    defined = set(HANDLER_RE.findall(src)) | set(known_symbols or ())
     for table, slot, handler in assigns:
-        if handler not in defined and not handler.startswith("NULL"):
-            f.append(Finding("ERROR", "QX003", f"{path}:{slot}",
-                             f"{table}.{slot} = {handler} but no such function is defined here"))
+        if handler not in defined:
+            f.append(Finding("INFO", "QX003", f"{path}:{slot}",
+                             f"{table}.{slot} = {handler}: this handler is neither defined nor "
+                             f"declared in the analysed files; if it is not defined in another "
+                             f"translation unit, the link will fail"))
 
-    # C4 — io_read / io_write must call the iofunc_*_verify() gate.
+    # C5 — io_read / io_write must call the iofunc_*_verify() gate.
+    # Sources : iofunc_read_verify() ("All read handlers should start with a
+    # call to iofunc_read_verify() and proceed only if it returns EOK"),
+    # iofunc_write_verify() (same for writes).
     for table, slot, handler in assigns:
-        if not (table in ("io_funcs", "dev_funcs") and slot in ("read", "write")):
+        slot = base_slot(slot)
+        if slot not in ("read", "write"):
             continue
-        mh = re.search(r"\bint\s+" + re.escape(handler) + r"\s*\([^)]*\)\s*\{", src)
-        if not mh:
+        body = body_of(src, handler)
+        if body is None:
             continue
-        start = mh.end()
-        depth, i = 1, start
-        while i < len(src) and depth:
-            if src[i] == "{":
-                depth += 1
-            elif src[i] == "}":
-                depth -= 1
-            i += 1
-        body = src[start:i]
         want = "iofunc_read_verify" if slot == "read" else "iofunc_write_verify"
-        if want not in body:
+        if not gate_present(body, want, src):
             f.append(Finding("ERROR", "QX004", f"{path}:{slot}",
                              f"{handler}() never calls {want}(): the access gate is missing"))
 
-    # C5 — le chemin monte par resmgr_attach() doit etre ABSOLU.
-    # Source : resmgr_attach() — "You usually provide an absolute path; if you
+    # C6 — the path attached by resmgr_attach() should be ABSOLUTE.
+    # Source: resmgr_attach() — "You usually provide an absolute path; if you
     # provide a path that doesn't start with a slash, it's considered to be
     # relative to the current working directory."
-    # Le pathname space de QNX est GENERAL : un point de montage hors /dev/
-    # (/var/run, /tmp, /etc, ...) est parfaitement valide — aucune alerte.
-    # Seule alerte : un chemin relatif, dont la resolution depend du
-    # repertoire courant (donc du contexte de demarrage du resmgr).
+    # The QNX pathname space is GENERAL: a mount point outside /dev/
+    # (/var/run, /tmp, /etc, ...) is perfectly valid — no finding.
+    # Only finding: a relative path, whose resolution depends on the current
+    # working directory (hence on the start-up context of the resmgr).
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html
     for m2 in re.finditer(r"\bresmgr_attach\s*\(", src):
         args = split_args(src, m2.end() - 1)
@@ -306,20 +561,20 @@ def analyse(path: str, raw: str) -> list[Finding]:
             continue
         lit = string_literal(src[args[2][0]:args[2][1]])
         if lit is None:
-            continue          # chemin non litteral (variable, macro) : on ne peut rien dire
+            continue          # non-literal path (variable, macro): nothing to say
         if not lit.startswith("/"):
             f.append(Finding("WARN", "QX005", f"{path}:{line_of(src, m2.start())}",
                              f"resmgr_attach() attaches the relative path '{lit}': "
                              f"QNX resolves it against the current working directory "
                              f"(an absolute path is recommended)"))
 
-    # C6 — la boucle de messages : bloquer puis distribuer.
-    # Sources : resmgr_block() — "This function is a special case of
+    # C7 — the message loop: block, then dispatch.
+    # Sources: resmgr_block() — "This function is a special case of
     # dispatch_block() that you should use only with a simple resource
-    # manager." ; resmgr_handler() — "This function is a special case of
+    # manager."; resmgr_handler() — "This function is a special case of
     # dispatch_handler()."
-    # Les deux API sont canoniques : exiger l'une ou l'autre produirait un
-    # faux positif sur le code de reference de QNX 8.0.
+    # Both APIs are canonical: demanding one or the other would produce a
+    # false positive on the QNX 8.0 reference code.
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html
     has_block = bool(re.search(r"\b(?:dispatch_block|resmgr_block)\s*\(", src))
@@ -333,33 +588,36 @@ def analyse(path: str, raw: str) -> list[Finding]:
                          "the message loop blocks (dispatch_block()/resmgr_block()) but no "
                          "handler is called (neither dispatch_handler() nor resmgr_handler())"))
 
-    # C7 — report the io_funcs slots left unassigned (informational).
-    # Source : resmgr_io_funcs_t — "You can initialize this table by calling
+    # C8 — report the io_funcs slots left unassigned (informational).
+    # Source: resmgr_io_funcs_t — "You can initialize this table by calling
     # iofunc_func_init() and then overriding the defaults with your own
-    # functions."  Chaque slot non cable conserve le defaut POSIX documente
-    # (iofunc_read_default(), iofunc_write_default(), ...) ou reste NULL
-    # quand aucun defaut n'existe.  Un resmgr en lecture seule (sans write)
-    # est donc VALIDE : l'absence d'un slot n'est plus jamais une ERROR.
+    # functions."  Every unwired slot keeps the documented POSIX default
+    # (iofunc_read_default(), iofunc_write_default(), ...) or stays NULL when
+    # no default exists.  A read-only resmgr (no write) is therefore VALID:
+    # a missing slot is never an ERROR any more.
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html
-    assigned_io = {slot for table, slot, _h in assigns if table == "io_funcs"}
-    covered = {IO_FUNC_ALIASES.get(s, s) for s in assigned_io}
-    for slot in ("read", "write", "devctl", "unblock", "notify"):
-        if slot in covered:
-            continue
-        default = IO_FUNC_DEFAULTS.get(slot)
-        if default:
-            detail = f"the POSIX default {default} applies unless you override it"
-        else:
-            detail = "QNX 8.0 defines no default for this slot: the message is not handled"
-        f.append(Finding("INFO", "QX008", path,
-                         f"io_funcs.{slot} is not assigned ({detail})"))
+    io_tables = [name for name, info in tables.items()
+                 if info["declared"] and info["type"] == "resmgr_io_funcs_t"]
+    for name in io_tables:
+        assigned_io = {base_slot(slot) for slot in tables[name]["slots"]}
+        covered = {IO_FUNC_ALIASES.get(s, s) for s in assigned_io}
+        for slot in ("read", "write", "devctl", "unblock", "notify"):
+            if slot in covered:
+                continue
+            default = IO_FUNC_DEFAULTS.get(slot)
+            if default:
+                detail = f"the POSIX default {default} applies unless you override it"
+            else:
+                detail = "QNX 8.0 defines no default for this slot: the message is not handled"
+            f.append(Finding("INFO", "QX008", f"{path}:{name}",
+                             f"{name}.{slot} is not assigned ({detail})"))
 
-    # C8 — le nombre de parties renvoyees ne peut pas depasser l'IOV declare.
-    # Sources : resmgr_attach() — attr.nparts_max = "The number of components
-    # to allocate for the IOV array." ; resmgr_context_t() — "iov (output) An
+    # C9 — the number of returned parts cannot exceed the declared IOV.
+    # Sources: resmgr_attach() — attr.nparts_max = "The number of components
+    # to allocate for the IOV array."; resmgr_context_t() — iov (output) An
     # I/O vector where you can place the data that you're returning to the
     # client. This defaults to one entry, but can be configured by the
-    # attr.nparts_max parameter" ; _RESMGR_NPARTS() — "The resmgr_attach()
+    # attr.nparts_max parameter; _RESMGR_NPARTS() — "The resmgr_attach()
     # function should set attr->nparts_max to be the maximum value for num."
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_context_t.html
@@ -384,10 +642,18 @@ def main(argv: list[str]) -> int:
     if not paths:
         print(__doc__)
         return 2
-    findings: list[Finding] = []
+    sources = []
     for p in paths:
         with open(p, encoding="utf-8", errors="replace") as fh:
-            findings += analyse(p, fh.read())
+            sources.append((p, fh.read()))
+    # The symbols defined in ALL the analysed files: a handler may
+    # legitimately be defined in another translation unit.
+    known: set[str] = set()
+    for _p, raw in sources:
+        known |= set(HANDLER_RE.findall(strip_comments(raw)))
+    findings: list[Finding] = []
+    for p, raw in sources:
+        findings += analyse(p, raw, known)
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
     findings.sort(key=lambda x: (order[x.level], x.code, x.where))
@@ -395,9 +661,9 @@ def main(argv: list[str]) -> int:
         print(f"{f.level:5} {f.code}  {f.where}: {f.message}")
     n_err = sum(1 for f in findings if f.level == "ERROR")
     n_warn = sum(1 for f in findings if f.level == "WARN")
-    print(f"\nRESULTAT: {len(findings)} constat(s), {n_err} ERROR, {n_warn} WARN")
-    # Un constat actionnable (ERROR ou WARN) fait echouer le code de sortie :
-    # c'est ce qui rend le probe utilisable comme porte de CI.
+    print(f"\nRESULT: {len(findings)} finding(s), {n_err} ERROR, {n_warn} WARN")
+    # An actionable finding (ERROR or WARN) makes the exit code fail: this is
+    # what makes the probe usable as a CI gate.
     return 1 if (n_err or n_warn) else 0
 
 

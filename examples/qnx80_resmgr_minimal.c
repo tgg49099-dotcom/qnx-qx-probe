@@ -17,14 +17,14 @@
 /*
  * qnx80_resmgr_minimal.c
  *
- * Exemple MINIMAL et CANONIQUE d'un resource manager QNX 8.0, ecrit pour
- * QX-PROBE.  Il est volontairement complet et lisible : c'est la reference
- * contre laquelle la sonde est mise a l'epreuve.
+ * MINIMAL and CANONICAL example of a QNX 8.0 resource manager, written for
+ * QX-PROBE.  It is deliberately complete and readable: it is the reference
+ * the checker is tested against.
  *
- * Ce que fait la sonde sur ce fichier : RIEN.  Aucun constat actionnable
- * (0 ERROR, 0 WARN) — c'est du code QNX 8.0 valide.
+ * What the checker reports on this file: NOTHING.  No actionable finding
+ * (0 ERROR, 0 WARN) — this is valid QNX 8.0 code.
  *
- * API utilisees (documentation officielle QNX SDP 8.0) :
+ * APIs used (official QNX SDP 8.0 documentation):
  *   resmgr_attach()      https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html
  *   iofunc_func_init()   https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html
  *   iofunc_read_verify() https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html
@@ -50,14 +50,14 @@ static int qx_read(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb)
     int status;
     char value = 'x';
 
-    /* La porte d'acces : obligatoire pour tout handler de lecture. */
+    /* The access gate: mandatory for every read handler. */
     if ((status = iofunc_read_verify(ctp, msg, ocb, NULL)) != EOK)
         return status;
 
     _IO_SET_READ_NBYTES(ctp, 1);
     SETIOV(ctp->iov, &value, 1);
 
-    /* Le nombre de parties renvoyees au client (1 composante dans l'IOV). */
+    /* The number of parts returned to the client (1 component in the IOV). */
     return _RESMGR_NPARTS(1);
 }
 
@@ -86,10 +86,10 @@ int main(void)
     }
 
     memset(&resmgr_attr, 0, sizeof resmgr_attr);
-    resmgr_attr.nparts_max  = 1;      /* une composante dans ctp->iov */
+    resmgr_attr.nparts_max  = 1;      /* one component in ctp->iov */
     resmgr_attr.msg_max_size = 2048;
 
-    /* Les valeurs par defaut POSIX, puis nos surcharges. */
+    /* The POSIX defaults first, then our own overrides. */
     iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs,
                      _RESMGR_IO_NFUNCS, &io_funcs);
     io_funcs.read  = qx_read;

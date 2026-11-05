@@ -17,14 +17,14 @@
 /*
  * qnx80_resmgr_relative_path.c
  *
- * Exemple qui declenche exactement UN avertissement de QX-PROBE : QX005.
+ * Example that triggers exactly ONE QX-PROBE warning: QX005.
  *
- * Le chemin monte est RELATIF ("qxprobe-rel").  Ce n'est pas une erreur :
- * resmgr_attach() accepte un tel chemin et le resout par rapport au
- * repertoire courant.  C'est un AVERTISSEMENT, parce que le point de montage
- * depend alors du contexte de lancement du processus.
+ * The attached path is RELATIVE ("qxprobe-rel").  This is not an error:
+ * resmgr_attach() accepts such a path and resolves it against the current
+ * working directory.  It is a WARNING because the mount point then depends on
+ * the start-up context of the process.
  *
- * Documentation officielle QNX SDP 8.0, resmgr_attach() :
+ * Official QNX SDP 8.0 documentation, resmgr_attach():
  *   "You usually provide an absolute path; if you provide a path that
  *    doesn't start with a slash, it's considered to be relative to the
  *    current working directory."
@@ -78,7 +78,7 @@ int main(void)
 
     iofunc_attr_init(&attr, S_IFNAM | 0444, 0, 0);
 
-    /* Chemin RELATIF : QNX le resout par rapport au repertoire courant. */
+    /* RELATIVE path: QNX resolves it against the current working directory. */
     id = resmgr_attach(dpp, &resmgr_attr, "qxprobe-rel",
                        _FTYPE_ANY, 0, &connect_funcs, &io_funcs, &attr);
     if (id == -1) {

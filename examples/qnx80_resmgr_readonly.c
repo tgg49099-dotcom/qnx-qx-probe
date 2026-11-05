@@ -17,21 +17,21 @@
 /*
  * qnx80_resmgr_readonly.c
  *
- * Exemple de resource manager QNX 8.0 en LECTURE SEULE, monte HORS de /dev/.
+ * READ-ONLY QNX 8.0 resource manager, attached OUTSIDE /dev/.
  *
- * Les deux anciens faux positifs de QX-PROBE vivaient exactement ici :
- *   1. le point de montage est "/var/run/qxprobe-status" et non "/dev/..." ;
- *   2. io_funcs.write n'est pas cable : le gestionnaire est en lecture seule.
+ * The two historical QX-PROBE false positives lived exactly here:
+ *   1. the mount point is "/var/run/qxprobe-status" and not "/dev/...";
+ *   2. io_funcs.write is not wired: the manager is read-only.
  *
- * Les deux sont VALIDES en QNX 8.0 :
- *   - resmgr_attach() "puts the path into the general pathname space" ;
- *   - resmgr_io_funcs_t fournit un defaut POSIX pour chaque slot
- *     (iofunc_write_default()), et un gestionnaire peut n'exposer que la lecture.
+ * Both are VALID in QNX 8.0:
+ *   - resmgr_attach() "puts the path into the general pathname space";
+ *   - resmgr_io_funcs_t provides a POSIX default for every slot
+ *     (iofunc_write_default()), and a manager may expose reads only.
  *
- * Ce que fait la sonde sur ce fichier : RIEN.  Aucun constat actionnable
+ * What the checker reports on this file: NOTHING.  No actionable finding
  * (0 ERROR, 0 WARN).
  *
- * Sources officielles QNX SDP 8.0 :
+ * Official QNX SDP 8.0 sources:
  *   resmgr_attach()     https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html
  *   resmgr_io_funcs_t   https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html
  */
@@ -80,12 +80,12 @@ int main(void)
     iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs,
                      _RESMGR_IO_NFUNCS, &io_funcs);
 
-    /* Lecture seule : io_funcs.write n'est volontairement pas cable. */
+    /* Read-only: io_funcs.write is deliberately not wired. */
     io_funcs.read = qx_status_read;
 
     iofunc_attr_init(&attr, S_IFNAM | 0444, 0, 0);
 
-    /* Point de montage hors /dev/ : valide dans l'espace de noms general. */
+    /* Mount point outside /dev/: valid in the general pathname space. */
     id = resmgr_attach(dpp, &resmgr_attr, "/var/run/qxprobe-status",
                        _FTYPE_ANY, 0, &connect_funcs, &io_funcs, &attr);
     if (id == -1) {

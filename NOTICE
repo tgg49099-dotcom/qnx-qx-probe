@@ -1,11 +1,12 @@
 QX-PROBE
 Copyright 2026 QX-PROBE contributors
 
-Ce produit est distribue sous licence Apache License, Version 2.0 (Apache-2.0).
-Le texte integral de la licence est dans le fichier LICENSE de ce depot.
+This product is distributed under the Apache License, Version 2.0
+(Apache-2.0).  The full text of the licence is in the LICENSE file of this
+repository.
 
 ----------------------------------------------------------------------
-Tiers inclus
+Third-party components
 ----------------------------------------------------------------------
 
 examples/blackberry_eventfd_mgr.c
@@ -14,30 +15,30 @@ examples/sys/eventfd.h
   Copyright (c) 2025, BlackBerry Limited. All rights reserved.
   Licensed under the Apache License, Version 2.0 (the "License").
 
-  Ces deux fichiers proviennent du depot public de BlackBerry :
-  https://gitlab.com/qnx/projects/shim-demo  (branche `main`)
+  These two files come from BlackBerry's public repository:
+  https://gitlab.com/qnx/projects/shim-demo  (branch `main`)
 
-  Ils sont redistribues ici sous Apache-2.0, **avec l'en-tete de licence
-  complet conserve en tete de chaque fichier**. Ils servent de corpus de
-  reference : c'est du code de resource manager QNX 8.0 publie par l'editeur
-  lui-meme, et la sonde doit le.Signaler sans faux positif.
+  They are redistributed here under Apache-2.0, **with the complete licence
+  header kept at the top of each file**.  They serve as a reference corpus:
+  this is QNX 8.0 resource-manager code published by the editor of QNX
+  itself, and the checker must report it without a single false positive.
 
-  Ils n'ont ete modifie d'aucune facon : le contenu est identique a celui du
-  depot d'origine.
+  They have not been modified in any way: their content is identical to the
+  content of the original repository.
 
 ----------------------------------------------------------------------
-Code de QX-PROBE
+QX-PROBE code
 ----------------------------------------------------------------------
 
   qx_probe.py, examples/qnx80_resmgr_*.c, tests/, scripts/, RULES.md,
-  README.md, NOTICE : ecrits pour ce projet, sous Apache-2.0.
+  README.md, NOTICE: written for this project, under Apache-2.0.
 
 ----------------------------------------------------------------------
-Assistance IA
+AI assistance
 ----------------------------------------------------------------------
 
-  Ce projet a ete ecrit avec l'assistance d'un modele de langue. Les seules
-  sources factuelles citees sont la documentation officielle BlackBerry
-  QNX SDP 8.0 (QNX OS 8.0 C Library Reference) et le code de reference public
-  de BlackBerry. Chaque regle de l'outil renvoie a une page precise de cette
-  documentation : le lecteur peut verifier chaque affirmation.
+  This project was written with the assistance of a language model.  The
+  only factual sources quoted are the official BlackBerry QNX SDP 8.0
+  documentation (QNX OS 8.0 C Library Reference) and BlackBerry's public
+  reference code.  Every rule of the tool points to a precise page of that
+  documentation: the reader can check every claim.

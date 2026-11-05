@@ -14,7 +14,7 @@ has no hardware.
 $ python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c
 INFO  QX008  examples/qnx80_resmgr_minimal.c: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
 ...
-RESULTAT: 5 constat(s), 0 ERROR, 0 WARN
+RESULT: 5 finding(s), 0 ERROR, 0 WARN
 ```
 
 ## The golden rule: zero false positives
@@ -33,7 +33,13 @@ Concretely, the linter **never** reports:
 * the `resmgr_block()` / `resmgr_handler()` idiom — it is the canonical
   example in the QNX 8.0 documentation;
 * an `iofunc_func_init()` called with the `_RESMGR_IO_NFUNCS` /
-  `_RESMGR_CONNECT_NFUNCS` macros — that is the normal case.
+  `_RESMGR_CONNECT_NFUNCS` macros — that is the normal case;
+* **the official example of the documentation** — `examples/qnx80_resmgr_official_example.c`
+  reproduces the `iofunc_func_init()` example of QNX SDP 8.0 (including its
+  `my_io_functions.io_read = my_io_read;` spelling) and produces no
+  actionable finding;
+* a handler defined in another translation unit — a single file cannot prove
+  that a symbol is missing.
 
 Every rule is backed by an official **BlackBerry QNX SDP 8.0** documentation
 page (the cited pages were updated on 11 June 2026). The detail, rule by
@@ -43,9 +49,9 @@ rule, with the quotation and the URL, is in **[RULES.md](RULES.md)**.
 
 | Code | What the linter reports | Level | Official QNX 8.0 source |
 |---|---|---|---|
-| QX001 | the file uses the resmgr API but wires no dispatch table | ERROR | `resmgr_attach()` |
-| QX002 | more slots are wired than `iofunc_func_init()` fills | ERROR | `iofunc_func_init()` |
-| QX003 | a slot points at a function not defined in the file | ERROR | `resmgr_io_funcs_t()` |
+| QX001 | the file uses the resmgr API but wires no dispatch table (or attaches a NULL one) | ERROR | `resmgr_attach()` |
+| QX002 | `iofunc_func_init()` is asked to fill more entries than the table holds | ERROR | `iofunc_func_init()` |
+| QX003 | a slot points at a function not found in the analysed files | INFO | `resmgr_io_funcs_t()` |
 | QX004 | a `read`/`write` handler does not call `iofunc_*_verify()` | ERROR | `iofunc_read_verify()` |
 | QX005 | the path mounted by `resmgr_attach()` is **relative** | WARN | `resmgr_attach()` |
 | QX006 | no message loop (`dispatch_block()`/`resmgr_block()`) | ERROR | `resmgr_block()` |
@@ -53,7 +59,7 @@ rule, with the quotation and the URL, is in **[RULES.md](RULES.md)**.
 | QX008 | an `io_funcs` slot is not wired (the POSIX default applies) | INFO | `resmgr_io_funcs_t()` |
 | QX009 | the reply returns more parts than `attr.nparts_max` allows | ERROR | `_RESMGR_NPARTS()` |
 | QX010 | the number of slots of `iofunc_func_init()` is a macro | INFO | `iofunc_func_init()` |
-| QX011 | no table is initialised by `iofunc_func_init()` | WARN | `iofunc_func_init()` |
+| QX011 | an **automatic** dispatch table is never initialised | WARN | `iofunc_func_init()` |
 
 Exit code: `0` if there is no actionable finding, `1` if there is at least
 one `ERROR` or `WARN`, `2` if the call is malformed. `INFO` findings never
@@ -63,21 +69,21 @@ do not condemn it.
 ### Reading the output
 
 Each finding is one line: `LEVEL  CODE  file:line: message`. The messages
-themselves are in English. The summary line is the one place where the tool
-still uses a French word, because the tool was written in French:
+themselves are in English, and so is the summary line:
 
 ```console
-RESULTAT: 5 constat(s), 0 ERROR, 0 WARN
+RESULT: 5 finding(s), 0 ERROR, 0 WARN
 ```
 
-`constat(s)` means **finding(s)** — that is, `RESULTAT: 5 constat(s), 0 ERROR,
-0 WARN` reads *"5 findings, 0 errors, 0 warnings"*.
+### What was corrected in this version
 
-**What the linter does not do yet:** five rules (QX001, QX002, QX003, QX004,
-QX011) have known limits and were not corrected in this version — they are
-listed one by one in **[RULES.md](RULES.md)**, section "Rules to re-read".
-This is stated here out of honesty: a missing finding is better than a false
-positive, and the jury must know.
+Five rules (QX001, QX002, QX003, QX004, QX011) had a known defect that
+contradicted the official documentation. They are now corrected, and each
+correction is covered by a test that **fails on the previous code** and
+**passes on the current one** — a rule that was simply deleted would prove
+nothing. The rule-by-rule description is in
+**[RULES.md](RULES.md)**, section "What was corrected in this version, and
+how it is proved".
 
 ## What is in the repository
 
@@ -87,12 +93,15 @@ RULES.md                             each rule + its official QNX 8.0 source
 examples/qnx80_resmgr_minimal.c      canonical resource manager (written for this repository)
 examples/qnx80_resmgr_readonly.c     read-only, mounted outside /dev/
 examples/qnx80_resmgr_relative_path.c  triggers exactly one QX005 warning
+examples/qnx80_resmgr_official_example.c  the official example of the QNX 8.0 documentation
 examples/blackberry_eventfd_mgr.c    BlackBerry's public resource manager (Apache-2.0)
-tests/test_qx_probe.py               11 tests: 4 anti-false-positive, 7 detection
+tests/test_qx_probe.py               27 tests: 10 anti-false-positive, 15 detection, 2 output format
+tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 scripts/run_tests.sh                 runs the test suite
 scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
 video/SCENARIO.md                    the video demonstration scenario
-media/qx-demo-v0.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 35.92 s)
+media/qx-demo-v0.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 44.48 s)
+docs/README.md                       what the files under docs/ are
 docs/README.fr.md                    the French original of this file
 docs/RULES.fr.md                     the French original of RULES.md
 docs/SCENARIO.fr.md                  the French original of video/SCENARIO.md
@@ -122,18 +131,24 @@ This script uses `qcc` from the SDP 8.0, so it is **not runnable without the
 SDK**. It stops with an explicit message if `qcc` is absent, and it never
 invents a compiler output.
 
+**The compilation is NOT MEASURED.** The SDP 8.0 and its non-commercial
+licence do not exist in this environment: the examples have never been
+compiled for QNX 8.0, and nothing in this repository pretends otherwise.
+
 ## The demonstration video
 
-`media/qx-demo-v0.mp4` — 543 516 bytes, MP4 / H.264, 1920x1080, 25 fps,
-35.92 s, no audio track (md5 `381f7aa6af21ae209e3bbccb1d4bfac0`).
+`media/qx-demo-v0.mp4` — 910 120 bytes, MP4 / H.264, 1920x1080, 25 fps,
+44.48 s, no audio track (md5 `5a6f0bd000661c786e5471ebc57666e5`).
 
-It is the **v0** recording: it shows the linter passing on BlackBerry's own
-public resource manager, the same code with a single access gate removed,
-and the exit code that makes it usable as a CI gate. The shot that compiles
-the examples with `qcc` and runs them on a QNX 8.0 guest under QEMU is
-**absent**: it needs the QNX SDP 8.0 licence, which we do not have. It was
-**removed** from the video rather than replaced with a screen capture, and
-**no compiler output was simulated**. The shot list and the two honest
+Every command shown in the video is a command of this repository, so the
+jury can replay them as they are: the checker passes on BlackBerry's own
+public resource manager and on the official example of the QNX 8.0
+documentation, it catches the missing access gate in a deliberately broken
+fixture, and it returns a non-zero exit code — the CI gate. The shot that
+compiles the examples with `qcc` and runs them on a QNX 8.0 guest under QEMU
+is **absent**: it needs the QNX SDP 8.0 licence, which we do not have. It
+was **removed** from the video rather than replaced with a screen capture,
+and **no compiler output was simulated**. The shot list and the honest
 reservations about it are in **[video/SCENARIO.md](video/SCENARIO.md)**.
 
 ## Licence

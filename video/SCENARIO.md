@@ -3,19 +3,21 @@
 > The French original of this file is kept unmodified in
 > [`docs/SCENARIO.fr.md`](../docs/SCENARIO.fr.md).
 
-**Status:** video **v0 RECORDED** (`media/qx-demo-v0.mp4`, 543 516 bytes, md5
-`381f7aa6af21ae209e3bbccb1d4bfac0`, 35.92 s, 1920x1080, H.264, 25 fps,
-898 frames, **no audio track**).
+**Status:** video **RECORDED** (`media/qx-demo-v0.mp4`, 910 120 bytes, md5
+`5a6f0bd000661c786e5471ebc57666e5`, 44.48 s, 1920x1080, H.264, 25 fps,
+1112 frames, **no audio track**).
+
+The recording was re-made after the rules were corrected: the tool now prints
+`RESULT:` in English, the on-screen text is entirely English, and every
+command shown is a command of **this public repository**, so the jury can
+replay them as they are.
 
 Shot 5 ("the QNX 8.0 target") is **absent**: it depends on the QNX 8.0 SDK
 (non-commercial QNX Everywhere licence, myQNX account), which does not exist
 yet. According to the filming rule, this shot was **removed** from the video,
 not replaced by a screen capture, and **no compiler output was simulated**.
 
-The v0 video therefore covers shots **1 (partly), 2, 4 and 6**. Shots **3**
-(the acknowledged false positive) and **5** (the QNX 8.0 target) are not in it.
-
-Format: MP4 H.264, 1920x1080, 25 fps, 35.92 s, no voice-over (the on-screen
+Format: MP4 H.264, 1920x1080, 25 fps, 44.48 s, no voice-over (the on-screen
 text has to be enough).
 
 ---
@@ -76,47 +78,54 @@ text has to be enough).
 
 ---
 
-## What the v0 video shows exactly (measured, shot by shot)
+## What the video shows exactly (measured, shot by shot)
 
-1. On-screen title: `QX — QNX 8.0 resource-manager protocol checker`.
-2. `QX-PROBE analyses the source code of a QNX resource manager and reports
-   (the error)` — the tool is presented in one sentence.
-3. `$ head -12 research/shim-demo/eventfd-mgr.c` — an extract of BlackBerry's
+1. On-screen title: `QX-PROBE — QNX 8.0 resource-manager protocol checker`.
+2. `QX-PROBE reads the source of a QNX 8.0 resource manager and reports the
+   protocol mistakes the compiler cannot see.  Every rule is backed by an
+   official QNX SDP 8.0 documentation page.` — the tool is presented in one
+   sentence.
+3. `$ head -14 examples/blackberry_eventfd_mgr.c` — an extract of BlackBerry's
    public resource manager (Apache-2.0).
-4. "The probe passes green on correct code":
-   `python3 -I probe/qx_probe.py research/shim-demo/eventfd-mgr.c`
+4. "The checker stays green on correct code":
+   `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c`
    -> **5 findings, 0 ERROR, 0 WARN, exit code 0**.
-5. "The same code, with a single access gate removed":
-   `python3 -I probe/qx_probe.py proofs/contre-epreuve/eventfd-mgr-qx004.c`
+5. "The example of the QNX 8.0 documentation is green too":
+   `python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c`
+   -> **6 findings, 0 ERROR, 0 WARN, exit code 0**.  This file is the official
+   example of `iofunc_func_init()`, reproduced in the repository: it used to
+   be reported by mistake.
+6. "The same code, with a single access gate removed":
+   `python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c`
    -> **6 findings, 1 ERROR (QX004), 0 WARN, exit code 1**.
-6. "The probe is usable as a CI gate: a non-zero exit code":
+7. "The checker is usable as a CI gate: the exit code is not 0":
    `... > /dev/null; echo "exit code = $?"` -> `exit code = 1`.
-7. "Zero dependency, zero QNX SDK, runs everywhere":
-   `python3 -c "import importlib.util as u; print(...)"` ->
-   `external dependencies: ['pycparser']`.
-8. "End of the demonstration".
+8. "22 tests: both sides of the contract (no false positive, real defect
+   caught)": `python3 -I tests/test_qx_probe.py 2>&1 | tail -3`
+   -> `Ran 22 tests ... OK`.
+9. "Zero dependency: the standard library only, no QNX SDK":
+   `grep -n "^import\|^from" qx_probe.py`
+   -> `re`, `sys`, `dataclasses` — the standard library, nothing else.
+10. "End of the demonstration".
 
-The figures 4 and 5 were **re-run** with the current version of the linter:
-they are identical.
+Every figure above was **re-run** with the current version of the linter; the
+numbers are the measured ones, not a transcription.
 
-### Two honest reservations about the v0 video
+### The honest reservations about this video
 
-* **Shot 7 (dependencies) is misleading as it stands.** The command shown lists
-  the modules **present on the machine where the video was recorded**, not the
-  ones QX-PROBE uses. `qx_probe.py` imports only the Python standard library
-  (`re`, `sys`, `dataclasses`); `pycparser` was installed on that machine and
-  is **not** used by the tool. The v1 video must show the real imports.
-* **The filmed commands show internal paths** (`research/…`, `proofs/…`) that
-  do not exist in this public repository. The public equivalents are:
-  `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` (healthy file:
-  5 findings, 0 ERROR, 0 WARN, exit code 0) and
-  `bash scripts/run_tests.sh` (the complete suite, 11 tests, including the
-  detection case `examples/qnx80_resmgr_relative_path.c`: exactly one
-  WARN QX005, exit code 1).
-* The video itself **is in French**; the contest rules require every
-  material to be in English, or to have an English translation provided. The
-  shot-by-shot English translation of the v0 video is provided with the
-  submission text.
+* **Shot 5 (the QNX 8.0 target) is missing, and the compilation is NOT
+  MEASURED.** The QNX SDP 8.0 and its non-commercial licence do not exist in
+  this environment. `scripts/build_qcc.sh` is written and stops with an
+  explicit message when `qcc` is absent; it never simulates a compiler
+  output. The examples have therefore **never been compiled for QNX 8.0**,
+  and this video does not pretend otherwise.
+* **Shot 3 (the acknowledged false positive) is not in this recording** either:
+  the two historical false positives (mount point outside `/dev/`, read-only
+  resource manager) are fixed and covered by the test suite, but the video
+  keeps its runtime short. The proof is in `tests/test_qx_probe.py`, which is
+  replayable in one command.
+* Everything else was filmed for real: no screen capture, no simulated
+  compiler output, no fabricated terminal.
 
 ---
 
@@ -131,17 +140,13 @@ they are identical.
   that the jury can check them.
 * No internal path, no account identifier, no personal data in the shots.
 
-## What remains to be done (video v1, with the SDK)
-
-The **v0** video is recorded (see above). What remains:
+## What remains to be done (video v2, with the SDK)
 
 1. Get the SDP 8.0 (Linux x86_64 host tools) and a non-commercial QNX
    Everywhere licence.
-2. Check the target: `qcc -Vgcc_ntoaosdebug` must compile the two examples.
+2. Check the target: `qcc -Vgcc_ntoaosdebug` must compile the examples.
 3. Re-run `bash scripts/run_tests.sh` and `bash scripts/build_qcc.sh` up to date.
-4. Record the **v1**: shots 3 and 5 (the acknowledged false positive, the
-   QNX 8.0 target), an English version or subtitles, and a "zero dependency"
-   shot that shows the real imports of `qx_probe.py` instead of the modules
-   present on the recording machine.
+4. Record the **v2**: shots 3 and 5 (the acknowledged false positive, the
+   QNX 8.0 target).
 5. Upload to YouTube with **public access** (a requirement of the rules) and
    provide the URL.
