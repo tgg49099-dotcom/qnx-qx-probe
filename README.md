@@ -90,7 +90,6 @@ how it is proved".
 ```
 qx_probe.py                          the linter (one file, no dependency)
 RULES.md                             each rule + its official QNX 8.0 source
-CODELAB.md                           the hands-on tutorial (30 minutes, no SDK needed)
 examples/qnx80_resmgr_minimal.c      canonical resource manager (written for this repository)
 examples/qnx80_resmgr_readonly.c     read-only, mounted outside /dev/
 examples/qnx80_resmgr_relative_path.c  triggers exactly one QX005 warning
@@ -99,25 +98,29 @@ examples/blackberry_eventfd_mgr.c    BlackBerry's public resource manager (Apach
 tests/test_qx_probe.py               27 tests: 10 anti-false-positive, 15 detection, 2 output format
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 scripts/run_tests.sh                 runs the test suite
-scripts/verifier-codelab.py          replays every command of CODELAB.md and checks its output
+scripts/verifier-codelab.py          replays every command of docs/CODELAB.md and checks its output
 scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
 video/SCENARIO.md                    the video demonstration scenario
 media/qx-demo-v1.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 44.48 s)
 docs/README.md                       what the files under docs/ are
+docs/SUBMISSION-EN.md                the DevPost submission text, field by field
+docs/CODELAB.md                      the hands-on tutorial (30 minutes, no SDK needed)
 docs/README.fr.md                    the French original of this file
 docs/RULES.fr.md                     the French original of RULES.md
 docs/SCENARIO.fr.md                  the French original of video/SCENARIO.md
 ```
 
-The three files under `docs/` are the **original French versions**, kept
+The three French files under `docs/` are the **original French versions**, kept
 unmodified so the translation can be checked side by side. The English files
 are the ones the contest rules require; the French ones are the reference.
-`CODELAB.md` is not a translation but a document written directly in English,
-because the contest rules require the submitted material to be in English.
+`docs/CODELAB.md` is not a translation but a document written directly in
+English, because the contest rules require the submitted material to be in
+English. `docs/SUBMISSION-EN.md` is the text of the submission form, field by
+field: everything to paste into DevPost is between its markers.
 
 ## The hands-on codelab
 
-**[CODELAB.md](CODELAB.md)** — a 30-minute tutorial that teaches a task on
+**[docs/CODELAB.md](docs/CODELAB.md)** — a 30-minute tutorial that teaches a task on
 QNX 8.0 (auditing the dispatch table of a resource manager) without needing
 an SDK, a board or a licence: it works on a plain Python 3.
 

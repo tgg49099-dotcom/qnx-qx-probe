@@ -473,7 +473,7 @@ A static checker sees one file at a time. Two limits are worth knowing in
 this tutorial — they are stated here with the exact command that reproduces
 them, because a tool that hides its limits is not worth trusting. The
 **complete list of the known limits of each of the eleven rules** is in
-**[RULES.md](RULES.md)**: every rule that was corrected declares the one
+**[RULES.md](../RULES.md)**: every rule that was corrected declares the one
 limit it still has.
 
 ### Limit 1 — QX001 and programs split across several files
@@ -566,14 +566,14 @@ Reference, updated on **11 June 2026**.
 | `iofunc_write_verify()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html> |
 
 The full description of the eleven rules, with the quotation and the URL
-for each one, is in **[RULES.md](RULES.md)**.
+for each one, is in **[RULES.md](../RULES.md)**.
 
 ## Licence
 
 This tutorial and the tool it uses are under the Apache-2.0 licence (see
-[LICENSE](LICENSE)). The example `examples/blackberry_eventfd_mgr.c` comes
+[LICENSE](../LICENSE)). The example `examples/blackberry_eventfd_mgr.c` comes
 from BlackBerry's public `shim-demo` repository and is kept under
-Apache-2.0 as well (see [NOTICE](NOTICE)).
+Apache-2.0 as well (see [NOTICE](../NOTICE)).
 
 AI assistance: this tutorial was written with the assistance of a language
 model. The official QNX 8.0 documentation and BlackBerry's public reference

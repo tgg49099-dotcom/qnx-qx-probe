@@ -32,7 +32,7 @@ import sys
 import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-CODELAB = REPO / "CODELAB.md"
+CODELAB = REPO / "docs" / "CODELAB.md"
 BLOCK_RE = re.compile(r"```console\n(.*?)```", re.S)
 HEREDOC_RE = re.compile(r"<<'?([A-Za-z_][A-Za-z_0-9]*)'?")
 
