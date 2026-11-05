@@ -39,6 +39,15 @@ gives way — never the canonical QNX code.
   these were reported by mistake. The rule now recognises the four documented
   ways of wiring a table, accepts both member spellings, and has gained the
   NULL-table case.
+* **Known limit:** the rule is applied to **every analysed file**, so a file
+  that only *defines handlers* is reported although the two dispatch tables
+  live in another file — until that is fixed, analyse the file that calls
+  `resmgr_attach()`, whose `connect_funcs` and `io_funcs` arguments are the
+  two tables the rule is about. A **NULL** table is reported as well: the
+  documentation explicitly allows `NULL` only for the `attr` argument ("or
+  NULL to use the default attributes") and says nothing about the two
+  dispatch tables, so the rule takes the strict reading — a NULL table means
+  a resource manager with no handler at all.
 
 ## QX002 — `iofunc_func_init()` is asked to fill more entries than the table holds
 * **Level:** ERROR
@@ -66,6 +75,12 @@ gives way — never the canonical QNX code.
   written"), so wiring more slots than `nio` is legitimate. Worse, the real
   overflow was never detected. The rule now reports the overflow and nothing
   else.
+* **Known limit:** only a **literal** count is checked: a count held in a
+  variable is not checked at all (the macro case is reported as `QX010`,
+  INFO). The count is compared with the size of the **standard** tables of
+  QNX 8.0 — 34 function members for `resmgr_io_funcs_t` and 8 for
+  `resmgr_connect_funcs_t` — so a program that passes a structure of its own
+  to `iofunc_func_init()` is measured against those sizes.
 
 ## QX003 — a slot points at a function not found in the analysed files
 * **Level:** INFO (it was ERROR before this version)
@@ -83,6 +98,10 @@ gives way — never the canonical QNX code.
   ERROR to INFO, and the CLI now resolves the symbols of **all** the files it
   analyses, so the finding disappears as soon as the handler is defined
   somewhere in the analysed set.
+* **Known limit:** the resolution covers **only the files given on the
+  command line**: a handler defined in a file that is not analysed is still
+  reported — as INFO, which does not condemn the code and does not change the
+  exit code. Pass every file of the program to make the finding disappear.
 
 ## QX004 — the `iofunc_*_verify()` access gate is missing
 * **Level:** ERROR
@@ -98,6 +117,12 @@ gives way — never the canonical QNX code.
   the *name* of the gate quoted inside an error message was taken for a
   verification (false negative). Both are fixed: strings and comments are
   blanked before the search, and a delegated call counts.
+* **Known limit:** the gate is looked for in the body of the handler, **in
+  the file being analysed**: a check delegated to a helper of **another**
+  file is still reported as a missing gate, even when that helper is part of
+  the analysed set. A helper of the **same** file is accepted, and a gate
+  merely quoted inside a string does not count — the strings and the
+  comments are blanked before the search.
 
 ## QX005 — the path mounted by `resmgr_attach()` is relative
 * **Level:** WARN
@@ -200,6 +225,11 @@ gives way — never the canonical QNX code.
   handlers are NULL and the base layer answers `ENOSYS`), not a bug. The
   false positive is gone; the warning still fires on the case it was written
   for.
+* **Known limit:** the rule recognises the three initialisations it knows —
+  `iofunc_func_init()`, a C99 initialiser and a `memset` to zero. A table
+  initialised by **copying another table** (`io_funcs = model;`) is not
+  recognised and is warned about, although its pointers are perfectly
+  defined.
 
 ---
 

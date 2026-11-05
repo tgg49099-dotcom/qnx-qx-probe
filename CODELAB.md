@@ -469,9 +469,12 @@ check runs on a laptop, in a container, in a CI job.
 
 ## Known limits of this tool
 
-A static checker sees one file at a time. Two limits are worth knowing — they
-are stated here with the exact command that reproduces them, because a tool
-that hides its limits is not worth trusting.
+A static checker sees one file at a time. Two limits are worth knowing in
+this tutorial — they are stated here with the exact command that reproduces
+them, because a tool that hides its limits is not worth trusting. The
+**complete list of the known limits of each of the eleven rules** is in
+**[RULES.md](RULES.md)**: every rule that was corrected declares the one
+limit it still has.
 
 ### Limit 1 — QX001 and programs split across several files
 
