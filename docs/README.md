@@ -6,6 +6,7 @@ This directory holds three kinds of documents:
 |---|---|
 | [`CODELAB.md`](CODELAB.md) | **the hands-on tutorial** — a 30-minute codelab that teaches a task on QNX 8.0 (auditing the dispatch table of a resource manager) with nothing but Python 3. Every console output it shows is replayed and checked by [`../scripts/verifier-codelab.py`](../scripts/verifier-codelab.py). |
 | [`SUBMISSION-EN.md`](SUBMISSION-EN.md) | **the text of the submission form, field by field** — the exact words to paste into each DevPost field (title, tagline, what it does, why we built it, how we built it, what's next, testing instructions, links), with the character count of each block and the source of every figure. |
+| [`YOUTUBE-VIDEO.md`](YOUTUBE-VIDEO.md) | **the YouTube upload package** — the exact title and description to paste, the file to upload with its MD5, size and measured duration, the thumbnail, the five steps, and the two places where the link of the uploaded video has to be pasted. |
 | `README.fr.md`, `RULES.fr.md`, `SCENARIO.fr.md` | the **original French versions** of the three documents of the repository, kept **unmodified** so that the English versions can be checked side by side. |
 
 | French file (frozen) | English version (the submission) |
