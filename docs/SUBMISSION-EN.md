@@ -290,20 +290,23 @@ The eleven rules and their official QNX 8.0 sources:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md
 Codelab / tutorial (30 minutes, no SDK, no board, no licence):
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md
-Demonstration video (hosted on YouTube, publicly visible - required by the
-rules; the file itself is also in the repository and downloadable directly):
-  https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v1.mp4
-  direct download:
-  https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v1.mp4
+Demonstration video (44.48 s, under the three-minute limit of the rules):
+  - YouTube: the rules require the video to be uploaded there and made
+    publicly visible. PASTE THE URL OF THE UPLOAD HERE:
+    <YOUTUBE_URL_A_COLLER_apres_le_televersement>
+  - the same file, already in this repository:
+    https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v1.mp4
+  - direct download:
+    https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v1.mp4
 The text of this submission, field by field:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/SUBMISSION-EN.md
 Official QNX 8.0 documentation:
-  https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/
+  https://www.qnx.com/developers/docs/8.0/
 Origin of the reference example:
   https://gitlab.com/qnx/projects/shim-demo
 <!-- FIN:LIENS -->
 
-_Measured: 1293 characters._
+_Measured: 1416 characters._
 
 **The video field.** The rules require the demonstration video to be *"uploaded
 to and made publicly visible on YouTube"* with *"a link to the video ... provided
