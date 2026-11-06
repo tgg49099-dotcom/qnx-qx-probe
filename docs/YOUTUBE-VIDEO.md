@@ -111,11 +111,14 @@ Both links are checked by the verification script: every URL of
 ## 8. AI — no clause to declare
 
 **No AI clause found** in the rules. The page
-(https://qnx.devpost.com/rules, read on 6 November 2026) contains no
-requirement to declare, disclose or mention the use of AI. The three
-occurrences of "AI" in the whole page are:
+(https://qnx.devpost.com/rules, read on 6 November 2026, HTTP 200, 39 539
+characters of text) contains no requirement to declare, disclose or mention
+the use of AI. The word "AI", taken as a word of its own, occurs **4 times**
+in the whole page, and the 4 occurrences are only **3 different texts**
+(the navigation menu is printed twice):
 
-* the DevPost navigation menu — *"AI hackathons"* (a link, not a rule);
+* the DevPost navigation menu — *"By use case / AI hackathons"* (a link, not
+  a rule; printed twice in the page);
 * the judging methods, which concern the organisers, not the entrants —
   *"This process may utilize expert panels, peer review, automated AI-driven
   analysis, or any combination thereof to ensure efficient, fair, and objective
