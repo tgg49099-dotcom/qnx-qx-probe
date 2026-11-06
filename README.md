@@ -101,7 +101,7 @@ scripts/run_tests.sh                 runs the test suite
 scripts/verifier-codelab.py          replays every command of docs/CODELAB.md and checks its output
 scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
 video/SCENARIO.md                    the video demonstration scenario
-media/qx-demo-v1.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 44.48 s)
+media/qx-demo-v2.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
 media/qx-demo-thumbnail.png          the thumbnail of the video (PNG, 1280x720)
 docs/README.md                       what the files under docs/ are
 docs/SUBMISSION-EN.md                the DevPost submission text, field by field
@@ -169,22 +169,29 @@ compiled for QNX 8.0, and nothing in this repository pretends otherwise.
 
 ## The demonstration video
 
-`media/qx-demo-v1.mp4` — 907 244 bytes, MP4 / H.264, 1920x1080, 25 fps,
-44.48 s, no audio track (md5 `3558d267dfebc54c275c2c879787b76b`).
+`media/qx-demo-v2.mp4` — 1 367 966 bytes, MP4 / H.264, 1920x1080, 25 fps,
+71.44 s, no audio track (md5 `178e1b58638628a5bc56f11c6fada8e2`).
 Its thumbnail is `media/qx-demo-thumbnail.png` (PNG, 1280x720), and the exact
 title, description and steps for the mandatory YouTube upload are in
 **[docs/YOUTUBE-VIDEO.md](docs/YOUTUBE-VIDEO.md)**.
+
+Every sentence of the video is **burned into the picture** (English
+subtitles, one per scene, no subtitle file): the video has no audio track at
+all, so there is no music and no voice-over.
 
 Every command shown in the video is a command of this repository, so the
 jury can replay them as they are: the checker passes on BlackBerry's own
 public resource manager and on the official example of the QNX 8.0
 documentation, it catches the missing access gate in a deliberately broken
-fixture, and it returns a non-zero exit code — the CI gate. The shot that
-compiles the examples with `qcc` and runs them on a QNX 8.0 guest under QEMU
-is **absent**: it needs the QNX SDP 8.0 licence, which we do not have. It
-was **removed** from the video rather than replaced with a screen capture,
-and **no compiler output was simulated**. The shot list and the honest
-reservations about it are in **[video/SCENARIO.md](video/SCENARIO.md)**.
+fixture, and it returns a non-zero exit code — the CI gate. The video also
+shows the **false positive of an earlier version of the tool**, acknowledged
+and corrected: a read-only manager mounted outside `/dev/` gives 0 ERROR and
+0 WARN, and the rule behind it is quoted from the QNX 8.0 documentation. The
+shot that compiles the examples with `qcc` and runs them on a QNX 8.0 guest
+under QEMU is **absent**: it needs the QNX SDP 8.0 licence, which we do not
+have. It was **removed** from the video rather than replaced with a screen
+capture, and **no compiler output was simulated**. The shot list and the
+honest reservations about it are in **[video/SCENARIO.md](video/SCENARIO.md)**.
 
 ## Licence
 

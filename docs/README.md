@@ -31,5 +31,6 @@ read the video.
 
 > The frozen snapshot mentions a video `qx-demo-v0.mp4` (the first, French
 > recording). It is **not** the one published here: the demonstration video of
-> this repository is [`../media/qx-demo-v1.mp4`](../media/qx-demo-v1.mp4) — the
-> English re-recording, made after the five rules were corrected.
+> this repository is [`../media/qx-demo-v2.mp4`](../media/qx-demo-v2.mp4) — the
+> English re-recording, made after the five rules were corrected, with the
+> English subtitles burned into the picture.

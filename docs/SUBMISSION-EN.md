@@ -223,27 +223,39 @@ The rules require: *"Include build and run instructions specifying the QNX
 version, the target (hardware or QEMU), and the toolchain used."*
 
 <!-- DEBUT:BUILD -->
-  bash scripts/build_qcc.sh [x86_64|aarch64|armv7]
+  THE SUBMITTED TOOL (qx_probe.py) - a host tool: nothing to build, and
+  nothing to execute on a target.
 
-  QNX version : 8.0 (QNX SDP 8.0 host tools)
-  Target      : x86_64 by default - a QNX 8.0 guest running under QEMU.
-                 aarch64 and armv7 are also accepted as arguments.
-  Toolchain   : qcc -Vgcc_ntoaosdebug -Werror (the SDP 8.0 compiler)
+    QNX version : 8.0 - it analyses QNX 8.0 resource-manager source code
+    Target      : none to execute - it reads .c files, it never runs on the
+                   target
+    Toolchain   : Python 3, standard library only (re, sys, dataclasses)
+    Install     : git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
+                   then python3 -I qx_probe.py your_resmgr.c
 
-  This script REQUIRES the QNX SDP 8.0 and a non-commercial QNX Everywhere
-  licence (myQNX account). Without qcc it stops with an explicit error message
-  and exit code 2, and it never simulates compiler output or produces a fake
-  binary.
+  THE C EXAMPLES - a real QNX 8.0 build path:
 
-  NOT MEASURED: we do not hold an SDP 8.0 licence yet, so this build has not
-  been executed against a real qcc. The script is prepared and its "no SDK"
-  path is verified; the successful compilation is not.
+    bash scripts/build_qcc.sh [x86_64|aarch64|armv7]
 
-  RUN IT ON THE TARGET: the example mounts /dev/qxprobe-demo; on a QNX 8.0
-  guest, read it with cat /dev/qxprobe-demo.
+    QNX version : 8.0 (QNX SDP 8.0 host tools)
+    Target      : x86_64 by default - a QNX 8.0 guest running under QEMU.
+                   aarch64 and armv7 are also accepted as arguments.
+    Toolchain   : qcc -Vgcc_ntoaosdebug -Werror (the SDP 8.0 compiler)
+
+    This script REQUIRES the QNX SDP 8.0 and a non-commercial QNX Everywhere
+    licence (myQNX account). Without qcc it stops with an explicit error message
+    and exit code 2, and it never simulates compiler output or produces a fake
+    binary.
+
+    NOT MEASURED: we do not hold an SDP 8.0 licence yet, so this build has not
+    been executed against a real qcc. The script is prepared and its "no SDK"
+    path is verified; the successful compilation is not.
+
+    RUN IT ON THE TARGET: the example mounts /dev/qxprobe-demo; on a QNX 8.0
+    guest, read it with cat /dev/qxprobe-demo.
 <!-- FIN:BUILD -->
 
-_Measured: 876 characters._
+_Measured: 1448 characters._
 
 ## 11. Evidence of QNX use
 
@@ -290,14 +302,15 @@ The eleven rules and their official QNX 8.0 sources:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md
 Codelab / tutorial (30 minutes, no SDK, no board, no licence):
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md
-Demonstration video (44.48 s, under the three-minute limit of the rules):
+Demonstration video (71.44 s, English subtitles burned in, under the
+three-minute limit of the rules):
   - YouTube: the rules require the video to be uploaded there and made
     publicly visible. PASTE THE URL OF THE UPLOAD HERE:
     <YOUTUBE_URL_A_COLLER_apres_le_televersement>
   - the same file, already in this repository:
-    https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v1.mp4
+    https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v2.mp4
   - direct download:
-    https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v1.mp4
+    https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4
 The text of this submission, field by field:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/SUBMISSION-EN.md
 Official QNX 8.0 documentation:
@@ -306,17 +319,18 @@ Origin of the reference example:
   https://gitlab.com/qnx/projects/shim-demo
 <!-- FIN:LIENS -->
 
-_Measured: 1416 characters._
+_Measured: 1445 characters._
 
 **The video field.** The rules require the demonstration video to be *"uploaded
 to and made publicly visible on YouTube"* with *"a link to the video ... provided
-on the submission form"*. The file is ready and verified — 907 244 bytes, MP4 /
-H.264, 1920x1080, 25 fps, **44.48 s** (the limit is three minutes), no audio
-track — and it is already in the public repository, downloadable from the URL
-above. What remains is to upload it to YouTube as a public video and paste that
-YouTube URL in the video field of the form. The video is **in English**, as the
-rules require, and every command it shows is a command of the repository, so
-the judge can replay them as they are.
+on the submission form"*. The file is ready and verified — 1 367 966 bytes,
+MP4 / H.264, 1920x1080, 25 fps, **71.44 s** (the limit is three minutes), **no
+audio track at all** and every sentence **burned into the picture** as an
+English subtitle — it is already in the public repository, downloadable from
+the URL above. What remains is to upload it to YouTube as a public video and
+paste that YouTube URL in the video field of the form. The video is **in
+English**, as the rules require, and every command it shows is a command of
+the repository, so the judge can replay them as they are.
 
 **The codelab field.** The rules ask, for the "Best Codelab/Tutorial" bonus,
 for *"the URL of a codelab or tutorial authored during the Submission Period
@@ -362,7 +376,7 @@ _Measured: 714 characters._
 | Category | **Developer Tooling & Host Tools** (one category only). |
 | New or existing project? | **New.** The project was created during the submission period (2 November – 15 December 2026). |
 | Try it out (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe` |
-| Demonstration video (URL) | The **YouTube** URL, once uploaded as a public video. The file is already in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v1.mp4` (44.48 s, MP4 / H.264, 1920x1080, 25 fps, no audio). |
+| Demonstration video (URL) | The **YouTube** URL, once uploaded as a public video. The file is already in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4` (71.44 s, MP4 / H.264, 1920x1080, 25 fps, no audio, English subtitles burned in). |
 | Codelab / tutorial (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md` |
 | Licence | Apache-2.0, the full text in `LICENSE` at the root of the repository, visible in the "About" section of the repository page. |
 | Attribution | `examples/blackberry_eventfd_mgr.c` and `examples/sys/eventfd.h` come from BlackBerry Limited's public `shim-demo` repository, under Apache-2.0, *Copyright (c) 2025, BlackBerry Limited*. They are redistributed **without any modification**, with the full licence header kept at the top of each file. The notice is in `NOTICE`. The example is used as the reference corpus: it is resource-manager code published by the vendor itself, and the linter must report it without a false positive. |
@@ -395,7 +409,7 @@ Measured on the public repository on **6 November 2026**.
 | Codelab | 12 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
 | Official QNX 8.0 pages cited | 12 distinct pages, all HTTP 200 on 06/11/2026, all marked "Page updated: June 11, 2026" | `curl` on each URL of `RULES.md` |
 | The linter | 671 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
-| Video | 907 244 bytes, md5 `3558d267dfebc54c275c2c879787b76b`, 44.48 s, 1920x1080, H.264, 25 fps, 1112 images, no audio | `md5sum`, `ffprobe` on the file of the repository |
+| Video | 1 367 966 bytes, md5 `178e1b58638628a5bc56f11c6fada8e2`, 71.44 s, 1920x1080, H.264, 25 fps, 1786 images, no audio, 19 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
 | Timing of the three commands | clone 1.4 s (2.1 MB), test suite 0.47 s, run on one file 0.06 s | `time` on each command |
 | QNX 8.0 compilation | **NOT MEASURED** | no SDP 8.0 licence in the environment where the project was written; `scripts/build_qcc.sh` stops with an explicit message and exit code 2 |
 

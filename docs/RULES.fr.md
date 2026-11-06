@@ -190,3 +190,89 @@ doit le savoir.
 Le principe qui les governera tous : **une regle qui ne peut pas etre corrigee
 avec une source officielle doit etre supprimee** — une regle sans source est
 pire qu'une regle absente.
+
+---
+
+## Le reglement du concours, cite — video v2 (06/11/2026)
+
+Les six exigences qui suivent sont citees **mot pour mot** depuis la page des
+regles du QNX Global Hackathon, consultee le **06/11/2026** (HTTP 200,
+160 476 octets) : <https://qnx.devpost.com/rules>. Pour chacune, la video v2
+et la maniere dont elle y repond.
+
+**1. Duree** — « should be less than three (3) minutes ».
+
+*Comment la video le satisfait :* elle dure **71,44 s** (mesuree avec
+`ffprobe` sur le fichier du depot), donc bien en dessous des trois minutes,
+et au-dela de la minute demandee en interne. Une seule scene occupe 3,12 s
+au minimum, chaque sous-titre reste affiche au moins 2,5 s.
+
+**2. L'appareil** — « should include footage that shows the Project functioning
+on the device for which it was built ».
+
+*Comment la video le satisfait :* QX-PROBE est un **outil hote** : il lit du
+code source C, il ne s'execute pas sur une carte QNX et n'a pas besoin d'en
+avoir une. « the device for which it was built » est donc **la machine hote**
+qui fait tourner l'outil — ce que le reglement confirme dans la definition
+de la categorie retenue : « a host-based tool (Windows, macOS, or Linux) that
+builds, tests, analyzes, or otherwise supports software targeting QNX 8.0 ».
+La video montre **le vrai outil** qui s'execute sur **les vrais fichiers
+publics du depot** — le gestionnaire de ressources publie par BlackBerry, un
+exemple en lecture seule, une fixture volontairement abimee — avec la sortie
+reelle et le code de retour reel a l'ecran. Ce n'est ni une maquette, ni une
+sortie simulee, ni une capture de documentation.
+
+*Si le jury lit cette exigence comme « la carte QNX » :* cette lecture est
+defendable, et les deux options qu'elle impose ont un cout. (a) Executer les
+exemples C sur la cible demande le kit **QNX SDP 8.0** sous licence
+non commerciale **QNX Everywhere** (compte myQNX) — gratuit en argent, mais
+il faut s'inscrire et attendre ; (b) les faire tourner dans un guest **QEMU**
+demande le meme kit (image QNX 8.0 et `mkqnximage` viennent du SDP). Les
+deux options passent donc par la meme licence, que nous n'avons pas. C'est
+pourquoi la video montre l'outil de l'hote, et pourquoi le paquet ecrit
+`NOT MEASURED` la ou la compilation n'a pas ete mesuree, plutot que de
+montrer une sortie simulee.
+
+**3. YouTube** — « must be uploaded to and made publicly visible on YouTube and
+a link to the video must be provided on the submission form on the Hackathon
+Website ».
+
+*Comment la video le satisfait :* la video est en **anglais** (le reglement
+exige l'anglais pour tous les materiaux) et **sans aucune piste audio** —
+donc aucune musique, aucune voix off. Le fichier binaire est deja dans le
+depot public. Ce qui reste est **une seule action du proprietaire** : le
+televerser sur YouTube en video publique, puis coller l'URL dans le champ
+video du formulaire. Aucun compte n'a ete cree et aucune video n'a ete
+publiee par l'automatisation.
+
+**4. Marques et droits** — « must not include third party trademarks, or
+copyrighted music or other material unless the Entrant has permission to use
+such material ».
+
+*Comment la video le satisfait :* la video ne contient **aucune piste
+audio**, donc aucune musique sous copyright. Le seul code tiers montre est
+`examples/blackberry_eventfd_mgr.c`, de BlackBerry Limited, redistribue
+**sans modification** sous **Apache-2.0** avec son en-tete de licence intact :
+cette licence **est** l'autorisation d'utiliser le materiel, et le fichier
+`NOTICE` porte l'attribution. Les phrases de la documentation QNX 8.0 citees
+a l'ecran le sont avec la page officielle qui les porte.
+
+**5. Fonctionnement reel** — « must function as depicted in the video ».
+
+*Comment la video le satisfait :* chaque commande de la video est une
+commande du depot public, tapee telle quelle, et chaque sortie affichee a
+ete produite a l'enregistrement. Le juge peut les rejouer et obtenir les
+memes resultats : 27 tests au vert, exit code 0 sur le code correct, exit
+code 1 sur la fixture abimee.
+
+**6. Instructions de construction et d'execution** — « Include build and run
+instructions specifying the QNX version, the target (hardware or QEMU), and the
+toolchain used ».
+
+*Comment la video le satisfait :* l'outil soumis est un outil hote : il n'y a
+**rien a construire ni a executer sur une cible**, il ne demande ni le SDK QNX
+ni une carte. La version QNX analysee est **8.0** et l'outillage est la
+**bibliotheque standard de Python 3**. Les memes trois elements sont ecrits
+dans les blocs `BUILD` et `TESTING` de `docs/SUBMISSION-EN.md`, avec le
+chemin de construction `qcc` des exemples C, explicitement marque
+`NOT MEASURED`.

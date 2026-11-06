@@ -265,3 +265,84 @@ their own until this version; they have one now.
 The governing principle stays the same: **a rule that cannot be corrected with
 an official source must be deleted** — a rule without a source is worse than an
 absent rule.
+
+---
+
+## The contest rules, quoted — video v2 (06/11/2026)
+
+The six requirements below are quoted **verbatim** from the QNX Global
+Hackathon rules page, consulted on **06/11/2026** (HTTP 200, 160 476 bytes):
+<https://qnx.devpost.com/rules>. For each one: how video v2 answers it.
+
+**1. Duration** — "should be less than three (3) minutes".
+
+*How the video answers it:* it runs **71.44 s** (measured with `ffprobe` on
+the file of the repository), well under the three minutes, and over the one
+minute asked for internally. No scene is shorter than 3.12 s, so every
+burned-in subtitle stays on screen for at least 2.5 s.
+
+**2. The device** — "should include footage that shows the Project functioning
+on the device for which it was built".
+
+*How the video answers it:* QX-PROBE is a **host tool**: it reads C source
+code, it does not run on a QNX board and does not need one. "The device for
+which it was built" is therefore **the host machine** that runs the tool —
+which the rules confirm in the definition of the category we ticked: "a
+host-based tool (Windows, macOS, or Linux) that builds, tests, analyzes, or
+otherwise supports software targeting QNX 8.0". The video shows **the real
+tool** running on **the real public files of the repository** — the resource
+manager published by BlackBerry, a read-only example, a deliberately broken
+fixture — with the real output and the real exit code on screen. Nothing is
+mocked, no compiler output is simulated, no documentation page is captured.
+
+*If a judge reads this requirement as "the QNX board":* that reading is
+defensible, and the two options it implies both have a cost. (a) Running the
+C examples on the target requires the **QNX SDP 8.0** under the non-commercial
+**QNX Everywhere** licence (a myQNX account) — free in money, but it has to
+be signed up for and waited for; (b) running them in a **QEMU** guest
+requires the same kit (the QNX 8.0 image and `mkqnximage` come with the SDP).
+Both options go through that same licence, which we do not hold. That is why
+the video shows the host tool, and why the pack writes `NOT MEASURED` where
+the compilation has not been measured, instead of showing simulated output.
+
+**3. YouTube** — "must be uploaded to and made publicly visible on YouTube and
+a link to the video must be provided on the submission form on the Hackathon
+Website".
+
+*How the video answers it:* the video is in **English** (the rules require
+English for every submitted material) and has **no audio track at all** — no
+music, no voice-over. The binary file is already in the public repository.
+What remains is **one single action by the owner**: upload it to YouTube as
+a public video, then paste that URL into the video field of the form. No
+account has been created and no video has been published by the automation.
+
+**4. Trademarks and copyright** — "must not include third party trademarks, or
+copyrighted music or other material unless the Entrant has permission to use
+such material".
+
+*How the video answers it:* the video has **no audio track**, hence no
+copyrighted music. The only third-party code shown is
+`examples/blackberry_eventfd_mgr.c`, by BlackBerry Limited, redistributed
+**without modification** under **Apache-2.0** with its licence header intact:
+that licence **is** the permission to use the material, and `NOTICE` carries
+the attribution. The sentences of the QNX 8.0 documentation shown on screen
+are quoted with the official page that carries them.
+
+**5. Real behaviour** — "must function as depicted in the video".
+
+*How the video answers it:* every command in the video is a command of the
+public repository, typed as it is written, and every output on screen was
+produced at recording time. A judge can replay them and get the same
+results: 27 tests green, exit code 0 on correct code, exit code 1 on the
+broken fixture.
+
+**6. Build and run instructions** — "Include build and run instructions
+specifying the QNX version, the target (hardware or QEMU), and the toolchain
+used".
+
+*How the video answers it:* the submitted tool is a host tool: there is
+**nothing to build and nothing to execute on a target**, it needs neither the
+QNX SDK nor a board. The QNX version it analyses is **8.0** and the toolchain
+is the **Python 3 standard library**. The same three elements are written in
+the `BUILD` and `TESTING` blocks of `docs/SUBMISSION-EN.md`, with the `qcc`
+build path of the C examples, explicitly marked `NOT MEASURED`.
