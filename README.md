@@ -99,6 +99,7 @@ tests/test_qx_probe.py               27 tests: 10 anti-false-positive, 15 detect
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 scripts/run_tests.sh                 runs the test suite
 scripts/verifier-codelab.py          replays every command of docs/CODELAB.md and checks its output
+scripts/audit-sous-titres-pixels.py  proves that the published subtitles ARE the pixels of the video
 scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
 video/SCENARIO.md                    the video demonstration scenario
 media/qx-demo-v2.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
@@ -112,9 +113,13 @@ docs/RULES.fr.md                     the French original of RULES.md
 docs/SCENARIO.fr.md                  the French original of video/SCENARIO.md
 ```
 
-The three French files under `docs/` are the **original French versions**, kept
-unmodified so the translation can be checked side by side. The English files
-are the ones the contest rules require; the French ones are the reference.
+Two of the French files under `docs/` — `docs/README.fr.md` and
+`docs/SCENARIO.fr.md` — are the **original French versions**, kept unmodified
+so the translation can be checked side by side. The third one,
+`docs/RULES.fr.md`, is the **French counterpart of `RULES.md`, kept in step
+with it**: it carries the same eleven rules, the same official QNX 8.0 sources
+and the same six quotations of the contest rules. The English files are the
+ones the contest rules require; the French ones are the reference.
 `docs/CODELAB.md` is not a translation but a document written directly in
 English, because the contest rules require the submitted material to be in
 English. `docs/SUBMISSION-EN.md` is the text of the submission form, field by
@@ -178,6 +183,26 @@ title, description and steps for the mandatory YouTube upload are in
 Every sentence of the video is **burned into the picture** (English
 subtitles, one per scene, no subtitle file): the video has no audio track at
 all, so there is no music and no voice-over.
+
+That claim is **machine-checkable, and checked here**: the script
+**[scripts/audit-sous-titres-pixels.py](scripts/audit-sous-titres-pixels.py)**
+re-renders each of the 19 published subtitles (the table of
+`docs/YOUTUBE-VIDEO.md` §8) with the same font, size and position, and
+compares the result with the pixels of the published file. It needs only
+`ffmpeg` and `pillow`:
+
+```
+$ python3 scripts/audit-sous-titres-pixels.py
+...
+   IoU moyen (texte attendu)  : 0.998  (min 0.997)
+   IoU moyen (mauvais texte)  : 0.464  (max 0.547)
+VERDICT : PREUVE ETABLIE
+```
+
+The last line is the **contre-épreuve**: the same comparison made against the
+*wrong* subtitle (the next scene's) scores at most 0.547, so the check really
+separates the right text from a wrong one — it is not a test that passes
+anyway.
 
 Every command shown in the video is a command of this repository, so the
 jury can replay them as they are: the checker passes on BlackBerry's own

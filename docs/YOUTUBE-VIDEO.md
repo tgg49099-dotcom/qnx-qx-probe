@@ -170,6 +170,19 @@ sentence — the next scene's — scores at most 0.547. The check therefore
 separates the right text from a wrong one: it does prove that the picture
 carries the sentences published here.
 
+**The jury can replay that proof.** It is a script of this repository:
+
+```
+$ python3 scripts/audit-sous-titres-pixels.py
+```
+
+It needs `ffmpeg` and `pillow` (`pip install pillow`), nothing else — no QNX
+SDK, no board, no licence. It reads the table above, reads the second public
+copy of the same 19 sentences (`video/SCENARIO.md`), checks that they agree,
+extracts the 19 frames from `media/qx-demo-v2.mp4`, re-renders the expected
+text and compares the pixels; then it runs the contre-épreuve against the
+wrong text and refuses to pass if the two are not clearly separated.
+
 ## 9. AI — no clause to declare
 
 **No AI clause found** in the rules. The page
