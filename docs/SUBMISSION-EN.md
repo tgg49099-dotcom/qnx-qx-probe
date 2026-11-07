@@ -130,16 +130,18 @@ _Measured: 1161 characters._
 ## 7. "How we built it"
 
 <!-- DEBUT:HOW -->
-QX-PROBE is one Python 3 file — 671 lines, standard library only (re, sys, dataclasses) — that reads the C source of a resource manager and reports what it can prove. The QNX 8.0 resource-manager protocol is not expressed in a type system, so the analysis is done on the text of the code, with the comments and the string literals blanked before the search: a gate merely quoted inside an error message is not mistaken for a gate.
+QX-PROBE is one Python 3 file — 671 lines, standard library only — that reads the C source of a resource manager and reports what it can prove. The protocol is not expressed in a type system, so the analysis is done on the text of the code, with the comments and the string literals blanked before the search: a gate merely quoted in an error message is not mistaken for a gate.
 
-The hard part was not the detection, it was the silence. A linter for a real-time operating system that reports canonical code by mistake is worse than no linter at all: five of the first rules did exactly that, and they were rewritten. Every rule now cites the official documentation page it comes from, with the sentence it relies on and what it does not do. Every rule has a test that fails on the previous code and passes on the current one — a rule that was simply deleted would prove nothing. And the rule set is checked against BlackBerry's own public resource manager (Apache-2.0), which must stay green: 0 errors, 0 warnings.
+The hard part was not the detection, it was the silence. A linter for a real-time operating system that reports canonical code by mistake is worse than no linter at all: five of the first rules did exactly that, and they were rewritten. Every rule now cites the official documentation page it comes from, with the sentence it relies on and what it does not do, and docs/AI-ASSISTED-RULES.md shows, rule by rule, the first draft, the documentation it contradicted and the test that fails on the previous code and passes on the current one. The rule set is checked against BlackBerry's own public resource manager (Apache-2.0), which must stay green: 0 errors, 0 warnings.
 
-The suite is 27 tests — 10 anti-false-positive, 15 detection, 2 output format — and it is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
+The tool was written with an AI agent; the facts were kept out of its reach: every rule is backed by a quoted official page, and scripts/verifier-citations.py re-reads the 12 cited pages and checks that the quoted sentence is still there — 29 quotations; a page it cannot read is reported NOT CHECKED, never verified.
 
-The tutorial that teaches the protocol is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the output printed in the tutorial — 12 blocks replayed, 0 differing.
+The suite is 27 tests — 10 anti-false-positive, 15 detection, 2 output format — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
+
+The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 12 blocks, 0 differing.
 <!-- FIN:HOW -->
 
-_Measured: 1542 characters._
+_Measured: 1778 characters._
 
 ## 8. "What's next"
 
@@ -391,7 +393,7 @@ This is the mapping, so that nothing is left to chance.
 | **Technological Implementation** | § 7: a real analyser, 671 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 27 tests, and a QNX 8.0 build path (`qcc -Vgcc_ntoaosdebug -Werror`) that is labelled NOT MEASURED rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, three commands to evaluate, one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
-| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and the only factual sources are the official documentation and BlackBerry's public code. |
+| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27, measured) and passes on the current one; `scripts/verifier-citations.py` re-reads the 12 cited pages and checks that the 29 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED. The only factual sources are the official documentation and BlackBerry's public code. |
 
 ## 17. Where every figure comes from
 
