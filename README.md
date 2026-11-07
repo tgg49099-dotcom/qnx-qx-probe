@@ -96,9 +96,9 @@ RULES.md                                     each rule + its official QNX 8.0 so
 qx_probe.py                                  the linter (one file, no dependency)
 docs/AI-ASSISTED-RULES.md                    how the eleven rules were written, and how each one was proved
 docs/CODELAB.md                              the hands-on tutorial (30 minutes, no SDK needed)
-docs/README.fr.md                            the French original of this file
+docs/README.fr.md                            the French counterpart of this file, kept in step with it
 docs/README.md                               what the files under docs/ are
-docs/RULES.fr.md                             the French original of RULES.md
+docs/RULES.fr.md                             the French counterpart of RULES.md, kept in step with it
 docs/SCENARIO.fr.md                          the French original of video/SCENARIO.md
 docs/SUBMISSION-EN.md                        the DevPost submission text, field by field
 docs/YOUTUBE-VIDEO.md                        the YouTube upload package (title, description, file, thumbnail, steps)
@@ -122,13 +122,14 @@ tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 1
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
-Two of the French files under `docs/` — `docs/README.fr.md` and
-`docs/SCENARIO.fr.md` — are the **original French versions**, kept unmodified
-so the translation can be checked side by side. The third one,
-`docs/RULES.fr.md`, is the **French counterpart of `RULES.md`, kept in step
-with it**: it carries the same eleven rules, the same official QNX 8.0 sources
-and the same six quotations of the contest rules. The English files are the
-ones the contest rules require; the French ones are the reference.
+The French files under `docs/` are the **French counterparts of their English
+version, kept in step with it**: `docs/README.fr.md` is the French counterpart
+of this file, and `docs/RULES.fr.md` is the **French counterpart of `RULES.md`,
+kept in step with it**: it carries the same eleven rules, the same official
+QNX 8.0 sources and the same six quotations of the contest rules. The third
+one, `docs/SCENARIO.fr.md`, is the **original French version**, kept unmodified
+so the translation can be checked side by side. The English files are the ones
+the contest rules require; the French ones are the reference.
 `docs/CODELAB.md` is not a translation but a document written directly in
 English, because the contest rules require the submitted material to be in
 English. `docs/SUBMISSION-EN.md` is the text of the submission form, field by
