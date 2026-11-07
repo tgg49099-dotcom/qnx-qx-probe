@@ -88,29 +88,38 @@ how it is proved".
 ## What is in the repository
 
 ```
-qx_probe.py                          the linter (one file, no dependency)
-RULES.md                             each rule + its official QNX 8.0 source
-examples/qnx80_resmgr_minimal.c      canonical resource manager (written for this repository)
-examples/qnx80_resmgr_readonly.c     read-only, mounted outside /dev/
-examples/qnx80_resmgr_relative_path.c  triggers exactly one QX005 warning
-examples/qnx80_resmgr_official_example.c  the official example of the QNX 8.0 documentation
-examples/blackberry_eventfd_mgr.c    BlackBerry's public resource manager (Apache-2.0)
-tests/test_qx_probe.py               27 tests: 10 anti-false-positive, 15 detection, 2 output format
+.gitignore                                   what git ignores (build artefacts, Python caches)
+LICENSE                                      Apache-2.0, the full text
+NOTICE                                       attribution of the third-party code and the AI notice
+README.md                                    this file
+RULES.md                                     each rule + its official QNX 8.0 source
+qx_probe.py                                  the linter (one file, no dependency)
+docs/AI-ASSISTED-RULES.md                    how the eleven rules were written, and how each one was proved
+docs/CODELAB.md                              the hands-on tutorial (30 minutes, no SDK needed)
+docs/README.fr.md                            the French original of this file
+docs/README.md                               what the files under docs/ are
+docs/RULES.fr.md                             the French original of RULES.md
+docs/SCENARIO.fr.md                          the French original of video/SCENARIO.md
+docs/SUBMISSION-EN.md                        the DevPost submission text, field by field
+docs/YOUTUBE-VIDEO.md                        the YouTube upload package (title, description, file, thumbnail, steps)
+examples/blackberry_eventfd_mgr.c            BlackBerry's public resource manager (Apache-2.0)
+examples/qnx80_resmgr_minimal.c              canonical resource manager (written for this repository)
+examples/qnx80_resmgr_official_example.c     the official example of the QNX 8.0 documentation
+examples/qnx80_resmgr_readonly.c             read-only, mounted outside /dev/
+examples/qnx80_resmgr_relative_path.c        triggers exactly one QX005 warning
+examples/sys/eventfd.h                       the header of the example above (Apache-2.0)
+media/qx-demo-thumbnail.png                  the thumbnail of the video (PNG, 1280x720)
+media/qx-demo-v2.mp4                         the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
+scripts/audit-sous-titres-pixels.py          proves that the published subtitles ARE the pixels of the video
+scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
+scripts/run_tests.sh                         runs the test suite
+scripts/verifier-citations.py                re-reads the 12 cited QNX 8.0 pages and checks the 29 quotations
+scripts/verifier-codelab.py                  replays every command of docs/CODELAB.md and checks its output
+scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links
+scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
-scripts/run_tests.sh                 runs the test suite
-scripts/verifier-codelab.py          replays every command of docs/CODELAB.md and checks its output
-scripts/audit-sous-titres-pixels.py  proves that the published subtitles ARE the pixels of the video
-scripts/build_qcc.sh                 QNX 8.0 build (requires the SDP 8.0)
-video/SCENARIO.md                    the video demonstration scenario
-media/qx-demo-v2.mp4                 the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
-media/qx-demo-thumbnail.png          the thumbnail of the video (PNG, 1280x720)
-docs/README.md                       what the files under docs/ are
-docs/SUBMISSION-EN.md                the DevPost submission text, field by field
-docs/YOUTUBE-VIDEO.md                the YouTube upload package (title, description, file, thumbnail, steps)
-docs/CODELAB.md                      the hands-on tutorial (30 minutes, no SDK needed)
-docs/README.fr.md                    the French original of this file
-docs/RULES.fr.md                     the French original of RULES.md
-docs/SCENARIO.fr.md                  the French original of video/SCENARIO.md
+tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
+video/SCENARIO.md                            the video demonstration scenario
 ```
 
 Two of the French files under `docs/` — `docs/README.fr.md` and
@@ -157,6 +166,21 @@ $ bash scripts/run_tests.sh
 The suite checks both sides of the contract: valid cases must produce **no**
 actionable finding, and broken cases must produce the expected finding. A
 rule that was simply deleted proves nothing.
+
+## Replay every claim in one command
+
+Every proof of this repository is replayed by one command, from the root of
+the repository:
+
+```console
+$ bash scripts/verify-all.sh
+```
+
+It runs the test suite, the codelab replay, the pixel audit of the video, the
+re-reading of the 12 cited QNX 8.0 pages and the check of the submission
+text, then prints one table: one line per verification, its result and its
+exit code. It exits 0 only when every row is OK; a check that could not run
+is reported as NOT CHECKED, never as OK.
 
 ## Build for QNX 8.0
 

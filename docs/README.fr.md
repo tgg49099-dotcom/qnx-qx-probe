@@ -90,6 +90,22 @@ La suite verifie les deux sens du contrat : les cas valides ne doivent
 declencher **aucun** constat actionnable, et les cas failles doivent declencher
 le constat attendu. Une regle qu'on a simplement supprimee ne prouve rien.
 
+## Rejouer toutes les preuves en une commande
+
+Toutes les preuves de ce depot sont rejouees par une seule commande, depuis
+la racine du depot :
+
+```console
+$ bash scripts/verify-all.sh
+```
+
+Elle enchaine la suite de tests, la relecture du codelab, l'audit des pixels
+de la video, la relecture des 12 pages QNX 8.0 citees et le controle du
+texte de soumission, puis affiche un tableau : une ligne par verification,
+son resultat et son code de sortie. Elle ne sort en 0 que si chaque ligne
+est OK ; une verification qui n'a pas pu etre faite est NOT CHECKED, jamais
+OK.
+
 ## Compiler pour QNX 8.0
 
 ```console
