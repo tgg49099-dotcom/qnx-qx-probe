@@ -274,6 +274,12 @@ The six requirements below are quoted **verbatim** from the QNX Global
 Hackathon rules page, consulted on **06/11/2026** (HTTP 200, 160 476 bytes):
 <https://qnx.devpost.com/rules>. For each one: how video v2 answers it.
 
+*Re-read on 07/11/2026:* the page answers HTTP 200 again and its **text** is
+**identical** to the copy of 06/11/2026 — 39 540 characters of text both
+times, the only difference on the whole page being the participant counter
+(657 that day). The six quotations below were checked character by character
+against the copy fetched on 07/11/2026: all six are still exact.
+
 **1. Duration** — "should be less than three (3) minutes".
 
 *How the video answers it:* it runs **71.44 s** (measured with `ffprobe` on

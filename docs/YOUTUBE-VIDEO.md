@@ -67,7 +67,8 @@ Check the MD5 after the download, before the upload:
 
 It is frame 1074 of the video (t = 42.96 s): the checker reporting the missing
 access gate, with the real command line above it and the burned-in subtitle
-below it.
+below it. Checked on the published file: that frame, scaled down to 1280x720,
+matches the published thumbnail on **94.6 %** of its pixels (within 8/255).
 
 ## 5. The five gestures
 
@@ -108,8 +109,11 @@ Both links are checked by the verification script: every URL of
   and the 19 frames that carry the 19 burned-in subtitles were extracted and
   read at full resolution.
 * **Every line of text on screen** comes from the recording script, which
-  executes the real commands and prints their real output. The audit of the
-  whole script (5 911 characters) counts: "BlackBerry" 4, "blackberry" 7 (the
+  executes the real commands and prints their real output. The audit of that
+  text — the terminal lines plus the 19 burned-in subtitles, rebuilt from the
+  recording script with the commands re-executed in the repository, **6 063
+  characters** (4 887 for the terminal alone) — counts: "BlackBerry" 4,
+  "blackberry" 7 (the
   file name `blackberry_eventfd_mgr.c`), "Apache" 2 and "apache" 1 (the
   licence header and its URL), "Python" 2 and "python3" 5 (the toolchain,
   which the rules require us to name), "POSIX" 7 (in the tool's own output),
@@ -158,11 +162,22 @@ lines at most, at least 3.12 s on screen (the rules ask for 2.5 s).
 
 The whole video is 19 scenes, 1 786 frames, 71.44 s.
 
+The table above is not a transcript written after the fact: every sentence was
+**re-rendered independently** from that table and compared with the pixels of
+the published file. The text masks match at an IoU of **0.998** (minimum 0.997
+over the 19 scenes, mean absolute error 1.77 per channel), while a *wrong*
+sentence — the next scene's — scores at most 0.547. The check therefore
+separates the right text from a wrong one: it does prove that the picture
+carries the sentences published here.
+
 ## 9. AI — no clause to declare
 
 **No AI clause found** in the rules. The page
-(https://qnx.devpost.com/rules, read on 6 November 2026, HTTP 200, 39 539
-characters of text) contains no requirement to declare, disclose or mention
+(https://qnx.devpost.com/rules, read on 6 November 2026 and read again on
+7 November 2026, HTTP 200 both times, **39 540 characters of text** — HTML
+tags stripped, blank lines dropped, the remaining lines joined by newlines;
+the same count on the copy of 6 November and on the copy of 7 November)
+contains no requirement to declare, disclose or mention
 the use of AI. The word "AI", taken as a word of its own, occurs **4 times**
 in the whole page, and the 4 occurrences are only **3 different texts**
 (the navigation menu is printed twice):
