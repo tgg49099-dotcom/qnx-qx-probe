@@ -197,15 +197,19 @@ pire qu'une regle absente.
 
 Les six exigences qui suivent sont citees **mot pour mot** depuis la page des
 regles du QNX Global Hackathon, consultee le **06/11/2026** (HTTP 200,
-160 476 octets) : <https://qnx.devpost.com/rules>. Pour chacune, la video v2
+160 476 octets pour la copie enregistree — la page vivante varie d'un octet ou
+deux selon les jetons de session, le texte non) : <https://qnx.devpost.com/rules>. Pour chacune, la video v2
 et la maniere dont elle y repond.
 
 *Relu le 07/11/2026 :* la page repond HTTP 200 et son **texte** est
 **identique** a la copie du 06/11/2026 — 39 540 caracteres de texte dans les
-deux cas, la seule difference sur toute la page etant le compteur de
-participants (657 ce jour-la). Les six citations ci-dessous ont ete verifiees
-caractere par caractere sur la copie du 07/11/2026 : les six sont toujours
-exactes.
+deux copies, mesures par le meme script (balises HTML retirees, lignes vides
+supprimees, lignes restantes jointes par des retours a la ligne). La seule
+difference dans ce texte est le compteur de participants, qui est vivant : 601
+sur la copie du 06/11, 657 puis 658 pendant la relecture du 07/11 ; remplace
+par un joker, les deux textes sont strictement egaux. Les six citations
+ci-dessous ont ete verifiees caractere par caractere sur la copie du
+07/11/2026 : les six sont toujours exactes.
 
 **1. Duree** — « should be less than three (3) minutes ».
 

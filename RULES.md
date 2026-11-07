@@ -271,14 +271,19 @@ absent rule.
 ## The contest rules, quoted — video v2 (06/11/2026)
 
 The six requirements below are quoted **verbatim** from the QNX Global
-Hackathon rules page, consulted on **06/11/2026** (HTTP 200, 160 476 bytes):
+Hackathon rules page, consulted on **06/11/2026** (HTTP 200, 160 476 bytes
+for the saved copy — the live page varies by a byte or two with the session
+tokens, the text does not):
 <https://qnx.devpost.com/rules>. For each one: how video v2 answers it.
 
 *Re-read on 07/11/2026:* the page answers HTTP 200 again and its **text** is
-**identical** to the copy of 06/11/2026 — 39 540 characters of text both
-times, the only difference on the whole page being the participant counter
-(657 that day). The six quotations below were checked character by character
-against the copy fetched on 07/11/2026: all six are still exact.
+**identical** to the copy of 06/11/2026 — 39 540 characters of text in both
+copies, measured with the same script (HTML tags stripped, blank lines
+dropped, the remaining lines joined by newlines). The only difference in that
+text is the participant counter, which is live: 601 on the copy of 06/11,
+657 then 658 during the re-read of 07/11; replace it by a placeholder and the
+two texts are strictly equal. The six quotations below were checked character
+by character against the copy fetched on 07/11/2026: all six are still exact.
 
 **1. Duration** — "should be less than three (3) minutes".
 
