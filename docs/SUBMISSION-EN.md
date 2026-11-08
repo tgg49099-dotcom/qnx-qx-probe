@@ -123,9 +123,12 @@ Forget the access gate and a client reads what it must not. Block in the dispatc
 The teams who write these drivers are usually small teams whose expertise is the product, not the QNX resource-manager protocol. Nothing in the toolchain tells them that a read handler is missing its access gate, so the defect is found in the field — on a vehicle, in a hospital — instead of in the build.
 
 QX-PROBE moves that check into the build, on any machine, with no SDK, no board and no licence. It is deliberately narrow: eleven rules, each backed by a page of the official BlackBerry QNX SDP 8.0 documentation, and nothing it cannot justify.
+
+This is specific to QNX, and it is why QNX is the right place for such a check. On a microkernel a driver is not kernel code: it is an ordinary user-space process, reached through synchronous message passing. That isolation is what makes QNX a sound real-time foundation for these systems: a faulty driver does not take the kernel down with it. But it moves the burden onto the protocol. A client that sends a message stays blocked until the resource manager replies, so a server that never replies stalls its client, whatever the client's priority or deadline. A real-time guarantee is only as good as the protocol code underneath it.
+
 <!-- FIN:WHY -->
 
-_Measured: 1161 characters._
+_Measured: 1798 characters._
 
 ## 7. "How we built it"
 
@@ -253,11 +256,13 @@ version, the target (hardware or QEMU), and the toolchain used."*
     been executed against a real qcc. The script is prepared and its "no SDK"
     path is verified; the successful compilation is not.
 
+    This build path has not yet been run against a real qcc: it is stated as NOT MEASURED in the build instructions.
+
     RUN IT ON THE TARGET: the example mounts /dev/qxprobe-demo; on a QNX 8.0
     guest, read it with cat /dev/qxprobe-demo.
 <!-- FIN:BUILD -->
 
-_Measured: 1448 characters._
+_Measured: 1566 characters._
 
 ## 11. Evidence of QNX use
 
@@ -286,9 +291,20 @@ The QNX connection is the product itself, not a mention of QNX in a README.
   "output or functionality specifically intended to build, analyze, test,
   deploy, debug, or manage software for QNX 8.0". That is what this tool is:
   its output is the QNX 8.0 resource-manager protocol, rule by rule.
+
+  WHERE TO VERIFY IT (files of the public repository)
+    qx_probe.py - the eleven rules, in one file.
+    RULES.md - for each rule, the official QNX 8.0 page and the sentence used.
+    examples/blackberry_eventfd_mgr.c - BlackBerry's resource manager: 0 errors.
+    tests/fixtures/qnx80_resmgr_qx004_no_gate.c - missing access gate:
+      RESULT: 6 finding(s), 1 ERROR, 0 WARN (exit code 1).
+
+  Resource managers and native message passing are the QNX-specific
+  technologies this tool is about: it exists only because QNX works this way.
+
 <!-- FIN:QXUSE -->
 
-_Measured: 1518 characters._
+_Measured: 2059 characters._
 
 ## 12. Links
 
