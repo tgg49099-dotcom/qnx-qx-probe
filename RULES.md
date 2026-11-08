@@ -1,7 +1,8 @@
 # The rules of QX-PROBE and their official QNX 8.0 sources
 
-> The French original of this file is kept unmodified in
-> [`docs/RULES.fr.md`](docs/RULES.fr.md).
+> The French counterpart of this file is in
+> [`docs/RULES.fr.md`](docs/RULES.fr.md), updated with it: the same eleven
+> rules and the same official QNX 8.0 sources.
 
 Every rule of the linter is backed by a page of the official **BlackBerry
 QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The pages

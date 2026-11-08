@@ -34,8 +34,9 @@ cede — jamais le code canonique de QNX.
   compatibility. » — `nio` designe un **nombre d'entrees a remplir**, pas une
   borne de tableau.
 * **Limite connue :** la regle compte les slots cables, pas les slots
-  *positionnes* dans la structure. Elle est a relire (voir la section « Regles a
-  relire » du dossier de travail du projet).
+  *positionnes* dans la structure. Ce defaut a ete corrige dans cette version
+  (voir la section « Ce qui a ete corrige dans cette version, et comment c'est
+  prouve » de ce fichier).
 
 ## QX003 — un slot pointe vers une fonction non definie
 
@@ -174,20 +175,37 @@ cede — jamais le code canonique de QNX.
 
 ---
 
-## Regles a relire (connues, non corrigees dans cette version)
+## Ce qui a ete corrige dans cette version, et comment c'est prouve
 
-Elles sont signalees ici par honnetete : elles sont dans le code, et le jury
-doit le savoir.
+Cinq regles avaient un defaut connu qui contredisait la documentation
+officielle (QX001, QX002, QX003, QX004, QX011). Chacune est maintenant
+couverte par un test qui **echoue sur le code precedent** et **passe sur le
+code actuel** :
 
-| Regle | Probleme connu | Source qui la contredit |
+| Regle | Defaut corrige | Test qui le prouve |
 |---|---|---|
-| QX002 | le nombre de slots cables n'est pas le nombre de slots *remplis* ; le mot « overflow » est trompeur | `iofunc_func_init()` (« how many entries this function should fill ») |
-| QX001 | les initialiseurs de structure C99 et les noms de variables libres ne sont pas detectes | `resmgr_io_funcs_t()` |
-| QX003 | un handler defini dans un autre fichier est signale a tort | `resmgr_io_funcs_t()` |
-| QX004 | la recherche est textuelle (chaine de caracteres, verification deleguee) | `iofunc_read_verify()` |
-| QX011 | une table mise a zero statiquement produit un avertissement injustifie | `iofunc_func_init()` |
+| QX001 | l'exemple officiel de la documentation etait signale ; les initialiseurs de structure C99 etaient invisibles | `test_qx001_exemple_officiel_de_la_documentation`, `test_qx001_initialiseur_de_structure_c99`, `test_qx001_table_nulle_a_l_attach` |
+| QX002 | « slots cables » etait compare a « entrees remplies » ; le vrai debordement n'etait jamais detecte | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` |
+| QX003 | un handler defini dans une autre unite de compilation etait condamne | `test_qx003_handler_dans_une_autre_unite_de_compilation`, `test_qx003_handler_non_defini` |
+| QX004 | une verification deleguee etait ratee ; une porte citee dans une chaine comptait | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
+| QX011 | une table statique (mise a zero) etait avertee a tort | `test_qx011_table_mise_a_zero_statique`, `test_qx011_table_automatique_non_initialisee` |
 
-Le principe qui les governera tous : **une regle qui ne peut pas etre corrigee
+Rejouez la preuve (machine hote seule, aucun SDK QNX n'est necessaire) :
+
+```console
+$ bash scripts/run_tests.sh
+```
+
+La suite est le contrat a deux sens : les cas valides ne doivent produire
+**aucun** constat actionnable, et les cas sabotes doivent produire le constat
+attendu. Une regle qu'on a simplement supprimee ne prouve rien.
+
+Chacune des onze regles est citee par au moins un test — une regle qu'aucun
+test ne cite est une regle qui n'existe pas. Deux regles (QX008, le slot non
+cable signale en INFO, et QX010, la macro signalee en INFO) n'avaient aucun
+test propre jusqu'a cette version ; elles en ont un maintenant.
+
+Le principe directeur reste le meme : **une regle qui ne peut pas etre corrigee
 avec une source officielle doit etre supprimee** — une regle sans source est
 pire qu'une regle absente.
 

@@ -59,25 +59,49 @@ Sortie : `0` si aucun constat actionnable, `1` si au moins un `ERROR` ou `WARN`,
 `2` si l'appel est mal forme. Les constats `INFO` n'affectent jamais le code de
 sortie : ils decrivent l'etat du gestionnaire, ils ne le condamnent pas.
 
-**Ce que la sonde ne fait pas encore :** cinq regles (QX001, QX002, QX003,
-QX004, QX011) ont des limites connues et n'ont pas ete corrigees dans cette
-version — elles sont listees, une par une, dans **[RULES.md](RULES.md)**,
-section « Regles a relire ». Elles sont signalees ici par honnetete : mieux vaut
-un constat manquant qu'un faux positif, et le jury doit le savoir.
+**Ce qui a ete corrige dans cette version :** cinq regles (QX001, QX002,
+QX003, QX004, QX011) avaient un defaut connu qui contredisait la
+documentation officielle. Elles sont maintenant corrigees, et chaque correction
+est couverte par un test qui **echoue sur le code precedent** et **passe sur le
+code actuel** — une regle qu'on a simplement supprimee ne prouverait rien. Le
+detail, regle par regle, est dans **[RULES.md](RULES.md)**, section « Ce qui a
+ete corrige dans cette version, et comment c'est prouve ».
 
 ## Ce qui est dans le depot
 
 ```
-qx_probe.py                          la sonde (un seul fichier, sans dependance)
-RULES.md                             chaque regle + sa source officielle QNX 8.0
-examples/qnx80_resmgr_minimal.c      resource manager canonique (ecrit pour ce depot)
-examples/qnx80_resmgr_readonly.c     lecture seule, monte hors /dev/
-examples/qnx80_resmgr_relative_path.c  declenche exactement un avertissement QX005
-examples/blackberry_eventfd_mgr.c    resource manager public de BlackBerry (Apache-2.0)
-tests/test_qx_probe.py               11 tests : 4 anti-faux-positif, 7 de detection
-scripts/run_tests.sh                 lance la suite de tests
-scripts/build_qcc.sh                 compilation QNX 8.0 (necessite le SDP 8.0)
-video/SCENARIO.md                    scenario de la demonstration video
+.gitignore                                   ce que git ignore (artefacts de build, caches Python)
+LICENSE                                      Apache-2.0, le texte integral
+NOTICE                                       attribution du code de tiers et avis IA
+README.md                                    ce fichier
+RULES.md                                     chaque regle + sa source officielle QNX 8.0
+qx_probe.py                                  la sonde (un seul fichier, sans dependance)
+docs/AI-ASSISTED-RULES.md                    comment les onze regles ont ete ecrites, et comment chacune a ete prouvee
+docs/CODELAB.md                              le tutoriel pratique (30 minutes, aucun SDK requis)
+docs/README.fr.md                            le correspondant francais de ce fichier, mis a jour avec lui : les parties qui n'ont pas ete retraduites decrivent encore la premiere version de l'outil
+docs/README.md                               ce que sont les fichiers de docs/
+docs/RULES.fr.md                             le correspondant francais de RULES.md, mis a jour avec lui
+docs/SCENARIO.fr.md                          l'original francais de video/SCENARIO.md
+docs/SUBMISSION-EN.md                        le texte de soumission DevPost, champ par champ
+docs/YOUTUBE-VIDEO.md                        le paquet de publication YouTube (titre, description, fichier, miniature, etapes)
+examples/blackberry_eventfd_mgr.c            le gestionnaire de ressources public de BlackBerry (Apache-2.0)
+examples/qnx80_resmgr_minimal.c              gestionnaire de ressources canonique (ecrit pour ce depot)
+examples/qnx80_resmgr_official_example.c     l'exemple officiel de la documentation QNX 8.0
+examples/qnx80_resmgr_readonly.c             lecture seule, monte hors /dev/
+examples/qnx80_resmgr_relative_path.c        declenche exactement un avertissement QX005
+examples/sys/eventfd.h                       l'en-tete de l'exemple ci-dessus (Apache-2.0)
+media/qx-demo-thumbnail.png                  la miniature de la video (PNG, 1280x720)
+media/qx-demo-v2.mp4                         la video de demonstration (MP4, H.264, 1920x1080, 71,44 s)
+scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies SONT les pixels de la video
+scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
+scripts/run_tests.sh                         lance la suite de tests
+scripts/verifier-citations.py                relit les 12 pages QNX 8.0 citees et verifie les 29 citations
+scripts/verifier-codelab.py                  rejoue chaque commande de docs/CODELAB.md et verifie sa sortie
+scripts/verifier-soumission-devpost.py       verifie le texte de soumission : longueurs, anglais, liens
+scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande
+tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
+tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
+video/SCENARIO.md                            le scenario de la demonstration video
 ```
 
 ## Executer les tests
