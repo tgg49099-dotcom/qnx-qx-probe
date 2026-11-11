@@ -284,10 +284,18 @@ def line_of(src: str, pos: int) -> int:
 
 
 def ident_of(expr: str) -> str | None:
-    """Returns the identifier of a simple expression (&x, *x, x), or None."""
+    """Returns the identifier of a simple expression (&x, *x, x), or None.
+
+    A member expression is reduced to its LAST component: the dispatch
+    tables of a resource manager are often members of a structure
+    (&resmgr->io_funcs, &resmgr.connect_funcs), and the table is then named
+    after the member, not after the structure.
+    """
     e = expr.strip()
     while e.startswith("&") or e.startswith("*"):
         e = e[1:].strip()
+    if "." in e or "->" in e:
+        e = re.split(r"->|\.", e)[-1].strip()
     if not re.fullmatch(r"[A-Za-z_]\w*", e):
         return None
     return e
@@ -368,8 +376,10 @@ def dispatch_tables(src: str) -> dict[str, dict]:
             info["zero"] = True
         elif not init:
             # a static-storage declaration is zeroed by C; an automatic
-            # declaration (inside a function) is not.
-            info["auto"] = depth_at(src, m.start()) > 0
+            # declaration (inside a function) is not.  A member of a
+            # structure has the storage duration of the object that holds
+            # it: it is neither, and the rule must then say nothing.
+            info["auto"] = block_kind(src, m.start()) == "function"
 
     # 2. slot assignments
     for table, slot, _handler in all_assignments(src):
@@ -377,9 +387,10 @@ def dispatch_tables(src: str) -> dict[str, dict]:
         info["used"] = True
         info["slots"].add(slot)
 
-    # 3. tables filled by iofunc_func_init()
-    m = NFUNCS_RE.search(src)
-    if m:
+    # 3. tables filled by iofunc_func_init() — EVERY call: a resource
+    # manager may fill two tables in two calls (a second io table for a
+    # second device, for instance).
+    for m in NFUNCS_RE.finditer(src):
         for expr in (m.group(2), m.group(4)):
             name = ident_of(expr)
             if name:
@@ -411,6 +422,30 @@ def depth_at(src: str, pos: int) -> int:
         elif blanked[i] == "}":
             depth -= 1
     return depth
+
+
+def block_kind(src: str, pos: int) -> str:
+    """Tells where a declaration sits: "struct", "function" or "file".
+
+    A member of a structure or of a union has NO storage duration of its
+    own: it has the one of the object that contains it.  Telling a member
+    apart from a local variable is therefore necessary before calling a
+    dispatch table "automatic" (a member of a static structure is zeroed by
+    C, a local variable is not).
+    """
+    blanked = blank_strings(src)
+    stack: list[int] = []
+    for i in range(min(pos, len(blanked))):
+        if blanked[i] == "{":
+            stack.append(i)
+        elif blanked[i] == "}" and stack:
+            stack.pop()
+    if not stack:
+        return "file"
+    head = src[max(0, stack[-1] - 400):stack[-1]]
+    if re.search(r"\b(?:struct|union)\b[^{};]*\{", head):
+        return "struct"
+    return "function"
 
 
 def gate_present(body: str, want: str, src: str) -> bool:
@@ -482,9 +517,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # Sources : iofunc_func_init() (nio : "The number of entries in the io table
     # that you want to fill"), resmgr_io_funcs_t() (the table and its members),
     # resmgr_connect_funcs_t() (same for the connect table).
-    m = NFUNCS_RE.search(src)
     init_tables: set[str] = set()
-    if m:
+    for m in NFUNCS_RE.finditer(src):
         conn_n, conn_f, io_n, io_f = (x.strip() for x in m.groups())
         for name in (ident_of(conn_f), ident_of(io_f)):
             if name:
@@ -575,18 +609,30 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # dispatch_handler()."
     # Both APIs are canonical: demanding one or the other would produce a
     # false positive on the QNX 8.0 reference code.
+    # A message loop is often DELEGATED: a thread pool takes the blocking
+    # function as a pointer (pool_attr.block_func = &resmgr_block), so a
+    # reference to the function counts as a loop, not only a call.
+    # What is left is a WARN, not an ERROR: one translation unit cannot
+    # prove that the project has no message loop — in a resource manager
+    # split over several files, the loop usually lives in the file that
+    # creates the dispatch context.
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html
     # https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html
-    has_block = bool(re.search(r"\b(?:dispatch_block|resmgr_block)\s*\(", src))
-    has_handler = bool(re.search(r"\b(?:dispatch_handler|resmgr_handler)\s*\(", src))
+    code = strip_comments(blank_strings(src))
+    has_block = bool(re.search(r"\b(?:dispatch_block|resmgr_block)\b", code))
+    has_handler = bool(re.search(r"\b(?:dispatch_handler|resmgr_handler)\b", code))
     if not has_block:
-        f.append(Finding("ERROR", "QX006", path,
-                         "no message loop: neither dispatch_block() nor resmgr_block() "
-                         "is called, so the resource manager never waits for a message"))
+        f.append(Finding("WARN", "QX006", path,
+                         "no message loop in this file: neither dispatch_block() nor "
+                         "resmgr_block() is called or referenced here; in a resource "
+                         "manager split over several files the loop usually lives in "
+                         "another translation unit (it is then set in "
+                         "pool_attr.block_func) — check the whole project"))
     elif not has_handler:
-        f.append(Finding("ERROR", "QX007", path,
+        f.append(Finding("WARN", "QX007", path,
                          "the message loop blocks (dispatch_block()/resmgr_block()) but no "
-                         "handler is called (neither dispatch_handler() nor resmgr_handler())"))
+                         "handler is called or referenced (neither dispatch_handler() "
+                         "nor resmgr_handler()) in this file"))
 
     # C8 — report the io_funcs slots left unassigned (informational).
     # Source: resmgr_io_funcs_t — "You can initialize this table by calling

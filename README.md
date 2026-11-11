@@ -54,8 +54,8 @@ rule, with the quotation and the URL, is in **[RULES.md](RULES.md)**.
 | QX003 | a slot points at a function not found in the analysed files | INFO | `resmgr_io_funcs_t()` |
 | QX004 | a `read`/`write` handler does not call `iofunc_*_verify()` | ERROR | `iofunc_read_verify()` |
 | QX005 | the path mounted by `resmgr_attach()` is **relative** | WARN | `resmgr_attach()` |
-| QX006 | no message loop (`dispatch_block()`/`resmgr_block()`) | ERROR | `resmgr_block()` |
-| QX007 | the loop blocks but no handler is called | ERROR | `resmgr_handler()` |
+| QX006 | no message loop **in this file** (`dispatch_block()`/`resmgr_block()`) | WARN | `resmgr_block()` |
+| QX007 | the loop blocks but no handler is called **in this file** | WARN | `resmgr_handler()` |
 | QX008 | an `io_funcs` slot is not wired (the POSIX default applies) | INFO | `resmgr_io_funcs_t()` |
 | QX009 | the reply returns more parts than `attr.nparts_max` allows | ERROR | `_RESMGR_NPARTS()` |
 | QX010 | the number of slots of `iofunc_func_init()` is a macro | INFO | `iofunc_func_init()` |
@@ -77,13 +77,20 @@ RESULT: 5 finding(s), 0 ERROR, 0 WARN
 
 ### What was corrected in this version
 
-Five rules (QX001, QX002, QX003, QX004, QX011) had a known defect that
-contradicted the official documentation. They are now corrected, and each
-correction is covered by a test that **fails on the previous code** and
-**passes on the current one** — a rule that was simply deleted would prove
-nothing. The rule-by-rule description is in
+Seven rules (QX001, QX002, QX003, QX004, QX006, QX007, QX011) had a known
+defect that contradicted the official documentation. They are now corrected,
+and each correction is covered by a test that **fails on the previous code**
+and **passes on the current one** — a rule that was simply deleted would
+prove nothing. The rule-by-rule description is in
 **[RULES.md](RULES.md)**, section "What was corrected in this version, and
 how it is proved".
+
+The last three of them were found by running the tool on **17 real resource
+managers written by other people** — seven of them published by QNX or
+BlackBerry themselves — and by reading every finding by hand. The corpus,
+the measurement and the five defects of the tool it exposed — nine false
+positives in five files — are in
+**[docs/BENCHMARK.md](docs/BENCHMARK.md)**.
 
 ## What is in the repository
 
@@ -95,6 +102,8 @@ README.md                                    this file
 RULES.md                                     each rule + its official QNX 8.0 source
 qx_probe.py                                  the linter (one file, no dependency)
 docs/AI-ASSISTED-RULES.md                    how the eleven rules were written, and how each one was proved
+docs/BENCHMARK.md                            the benchmark: QX-PROBE on 17 real QNX resource managers
+docs/BENCHMARK.fr.md                         the French counterpart of docs/BENCHMARK.md, updated with it
 docs/CODELAB.md                              the hands-on tutorial (30 minutes, no SDK needed)
 docs/README.fr.md                            the French counterpart of this file, updated with it: the parts that were not retranslated still describe the first version of the tool
 docs/README.md                               what the files under docs/ are
@@ -111,6 +120,7 @@ examples/sys/eventfd.h                       the header of the example above (Ap
 media/qx-demo-thumbnail.png                  the thumbnail of the video (PNG, 1280x720)
 media/qx-demo-v2.mp4                         the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
 scripts/audit-sous-titres-pixels.py          proves that the published subtitles ARE the pixels of the video
+scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
 scripts/run_tests.sh                         runs the test suite
 scripts/verifier-citations.py                re-reads the 12 cited QNX 8.0 pages and checks the 29 quotations
@@ -124,14 +134,16 @@ video/SCENARIO.md                            the video demonstration scenario
 
 The French files under `docs/` are the **French counterparts of their English
 version, updated with it**: `docs/README.fr.md` is the French counterpart of
-this file, and `docs/RULES.fr.md` is the **French counterpart of `RULES.md`,
-updated with it**: it carries the same eleven rules, the same official
-QNX 8.0 sources and the same six quotations of the contest rules. The parts
-of them that were not retranslated still describe the first version of the
-tool. The third one, `docs/SCENARIO.fr.md`, is the **original French version**,
-kept unmodified so the translation can be checked side by side. The English
-files are the ones the contest rules require; the French ones are the
-reference.
+this file, `docs/RULES.fr.md` is the **French counterpart of `RULES.md`,
+updated with it** — it carries the same eleven rules, the same official
+QNX 8.0 sources and the same six quotations of the contest rules — and
+`docs/BENCHMARK.fr.md` is the French counterpart of `docs/BENCHMARK.md`,
+updated with it: the same corpus, the same measurements, the same
+conclusions. The parts of them that were not retranslated still describe the
+first version of the tool. The last one, `docs/SCENARIO.fr.md`, is the
+**original French version**, kept unmodified so the translation can be
+checked side by side. The English files are the ones the contest rules
+require; the French ones are the reference.
 `docs/CODELAB.md` is not a translation but a document written directly in
 English, because the contest rules require the submitted material to be in
 English. `docs/SUBMISSION-EN.md` is the text of the submission form, field by
@@ -180,10 +192,11 @@ $ bash scripts/verify-all.sh
 ```
 
 It runs the test suite, the codelab replay, the pixel audit of the video, the
-re-reading of the 12 cited QNX 8.0 pages and the check of the submission
-text, then prints one table: one line per verification, its result and its
-exit code. It exits 0 only when every row is OK; a check that could not run
-is reported as NOT CHECKED, never as OK.
+re-reading of the 12 cited QNX 8.0 pages, the check of the submission text
+and the benchmark on 17 real QNX resource managers, then prints one table:
+one line per verification, its result and its exit code. It exits 0 only when
+every row is OK; a check that could not run is reported as NOT CHECKED, never
+as OK.
 
 ## Build for QNX 8.0
 

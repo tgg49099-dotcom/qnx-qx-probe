@@ -16,7 +16,8 @@ proof.
 | What | Who wrote it | How the facts were re-read | Where it can be checked |
 |---|---|---|---|
 | The eleven rules, the checker `qx_probe.py`, the 27 tests, this document | an **AI agent** (Claude), working in the repository of the owner, on the instructions of the owner | every quotation, commit name, file name, test name and figure below was re-read **against the files of this repository** — never from memory — and against the **live official pages** | `git log`, `RULES.md`, `tests/test_qx_probe.py`, `scripts/verifier-citations.py` |
-| The corrections of the five defective rules | the same AI agent, in the commit `9706199` (05/11/2026) | by the **counter-proof** of § 4: the current test suite was run against the *previous* code, and the tests that cover the corrections **failed** | `git show 9706199`, `git show 9706199^:qx_probe.py` |
+| The corrections of the five defective rules found on the examples | the same AI agent, in the commit `9706199` (05/11/2026) | by the **counter-proof** of § 4: the current test suite was run against the *previous* code, and the tests that cover the corrections **failed** | `git show 9706199`, `git show 9706199^:qx_probe.py` |
+| The corrections of the two rules the **benchmark on real code** found (QX006, QX007) and of the three false positives of QX011 | the same AI agent, on 11/11/2026, after running the tool on 17 resource managers published by other people | by the same **counter-proof**: the current test suite run against the code of the previous commit (`eeb99e4`) **fails** on 4 assertions, and passes on the current code | `docs/BENCHMARK.md`, `git show eeb99e4:qx_probe.py` |
 | The text submitted to the contest, and the decision to submit | the **owner** (Tgg) | the owner pastes the blocks of `docs/SUBMISSION-EN.md`; every block carries its measured character count | `docs/SUBMISSION-EN.md` |
 | The QNX 8.0 compilation of the examples, and any run on the target | **nobody — not measured** | there is no QNX SDP 8.0 licence in the environment where the project was written; the build path is prepared and its "no SDK" path is verified, the successful compilation is not | `docs/SUBMISSION-EN.md` § 10, `scripts/build_qcc.sh` |
 
@@ -54,6 +55,7 @@ $ bash scripts/run_tests.sh                 # 27 tests, RESULT: QX-PROBE suite G
 $ python3 -I scripts/verifier-citations.py  # the 12 official pages, 29 quotations (RC 0)
 $ git show bfad852:RULES.md                 # the first draft of the eleven rules
 $ git show 9706199 --stat                   # the commit that corrected the five defective rules
+$ git show eeb99e4:qx_probe.py > /tmp/old.py  # the code before the corrections of 11/11/2026
 ```
 
 The counter-proof of § 4 (the tests run against the previous code):
@@ -282,7 +284,7 @@ one WARN; `scripts/run_tests.sh` checks the same case on the example file
 correction was needed for this rule**: the test passes on the first draft and
 on the current code.
 
-### QX006 — no message loop · **ERROR**
+### QX006 — no message loop · **WARN**
 
 **Official source.** `resmgr_block()`, `dispatch_block()`.
 
@@ -296,10 +298,23 @@ and "is a special case of `dispatch_block()`".
 > Exiger l'un des deux produirait un faux positif sur le code de reference. »
 
 **The test.** `test_qx006_boucle_de_messages_absente` — a file that calls
-neither must be reported. It passes on the first draft and on the current code:
-this rule was never defective.
+neither must be reported. It passes on the first draft and on the current code.
 
-### QX007 — the loop blocks but no handler is called · **ERROR**
+**What the benchmark changed (11/11/2026).** The rule was written on examples
+and had never met a real resource manager. The corpus of 17 real code files
+showed two things: a manager that hands the loop over to a **thread pool**
+(`pool_attr.block_func = &resmgr_block;`) never *calls* the blocking function,
+it *references* it; and a manager split over several files has its loop in
+another translation unit, which a single-file tool cannot see. The first is a
+false negative and is fixed (a reference now counts); the second is a false
+positive and changed the **level** from ERROR to **WARN**, because a file that
+holds the handlers but not the loop is a valid architecture. The message now
+says *in this file* and names `pool_attr.block_func`. The measurement is in
+[`docs/BENCHMARK.md`](BENCHMARK.md) §6; the proof that the old code fails and
+the new code passes is `test_api_resmgr_block_et_resmgr_handler`, which
+asserts the delegated case and the level in the same test.
+
+### QX007 — the loop blocks but no handler is called · **WARN**
 
 **Official source.** `resmgr_handler()`, `dispatch_handler()`.
 
@@ -313,6 +328,11 @@ received in `ctp`" and "is a special case of `dispatch_handler()`".
 
 **The test.** `test_qx007_dispatch_absent`. It passes on the first draft and on
 the current code.
+
+**What the benchmark changed (11/11/2026).** Same limit as QX006: the handler
+may live in another translation unit, so the level moved from ERROR to **WARN**
+and the message says *in this file*. A delegated handler
+(`pool_attr.handler_func = (void *)dispatch_handler;`) is also recognised.
 
 ### QX008 — an `io_funcs` slot is not wired · **INFO**
 
@@ -422,9 +442,27 @@ table that is never initialised. The other test of the rule,
 by design: it is the case the rule must keep catching, and a rule that stops
 catching its own case would prove nothing.
 
+**What the benchmark changed (11/11/2026).** Three more false positives of
+the same rule, found on real code — two of them on files published by QNX
+itself:
+
+* a table that is a **member of a structure** was called "automatic": it has
+  the storage duration of the object that holds it, not that of a stack
+  variable;
+* a table initialised through a **member expression** (`&resmgr.io_funcs`) was
+  not recognised as initialised;
+* only the **first** `iofunc_func_init()` call of the file was read, so a
+  second table (one per device) was reported as uninitialised.
+
+The rule now computes the storage duration of the declaration, reduces a
+member expression to the table it designates, and iterates over **every**
+call. The three cases are asserted in `test_qx011_table_mise_a_zero_statique`
+(the same test, so that the suite keeps its published size) and the
+measurement is in [`docs/BENCHMARK.md`](BENCHMARK.md) §6.
+
 ---
 
-## 3. The five defective rules, in one table
+## 3. The seven defective rules, in one table
 
 | Rule | What the documentation said | What the rule did | The test that failed on the previous code | Commit |
 |---|---|---|---|---|
@@ -432,7 +470,15 @@ catching its own case would prove nothing.
 | QX002 | `nio`/`nconnect` = entries **to fill** | compared the wired slots with the filled entries → false positive, real overflow never detected | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` | `9706199` |
 | QX003 | the link is resolved by the linker, over the whole program | condemned a handler defined in another translation unit, at ERROR level | `test_qx003_handler_dans_une_autre_unite_de_compilation`, `test_qx003_handler_non_defini` | `9706199` |
 | QX004 | a delegated check is a check; a gate quoted in a string is not | purely textual search: false positive on a delegated check, false negative on a quoted name | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` | `9706199` |
-| QX011 | `iofunc_func_init()` is one way of initialising a table | warned about every table not filled by it, including the static ones (zero-initialised by C) | `test_qx011_table_mise_a_zero_statique` | `9706199` |
+| QX006 | the loop may be delegated to a thread pool; a project may hold it in another file | looked for a **call** only, and condemned the absence of a loop at ERROR level | `test_api_resmgr_block_et_resmgr_handler` (delegated case) | 11/11/2026 |
+| QX007 | the handler may live in another translation unit | condemned the absence of a handler at ERROR level | `test_api_resmgr_block_et_resmgr_handler` (level) | 11/11/2026 |
+| QX011 | `iofunc_func_init()` is one way of initialising a table | warned about every table not filled by it, including the static ones (zero-initialised by C), the tables that are members of a structure, and the tables filled by a second call | `test_qx011_table_mise_a_zero_statique` | `9706199` (extended 11/11/2026) |
+
+The commit column says **which version corrected the rule**: the five first
+rows were corrected by `9706199` (the examples); the two last rows and the
+extension of QX011 were corrected on **11/11/2026**, after the **benchmark on
+17 real resource managers** (`docs/BENCHMARK.md`) — the examples of the
+repository could not produce them.
 
 ---
 
@@ -473,6 +519,27 @@ RESULT: QX-PROBE suite GREEN (RC 0)
 (the time varies from one run to another; the three lines that matter are the
 number of tests, `OK`, and the exit code)
 
+**What was measured again, on 11/11/2026** — after the benchmark, the *current*
+test suite was run against the code of the previous commit (`git show
+eeb99e4:qx_probe.py`, md5 `bdc705b7636bea56d849a127e7c341a0`), the new code
+being md5 `e3c438a67e947240cc6c26d8adf557e9`:
+
+```
+Ran 27 tests in 0.224s
+FAILED (failures=4)
+```
+
+The **four** failures are the four assertions that the benchmark produced: the
+delegated loop (QX006/QX007), the table that is a member of a structure, the
+table filled by a second `iofunc_func_init()` call, and the level of
+QX006/QX007. The other twenty-three tests pass on **both** versions, and the
+new code passes the whole suite:
+
+```
+Ran 27 tests in 0.167s
+OK
+```
+
 **A test that passes on both versions is not a proof of a correction.** That
 is why the table of § 3 names, for each corrected rule, the test that
 **failed** on the previous code — and why `test_qx011_table_automatique_non_initialisee`
@@ -500,7 +567,7 @@ declares in `RULES.md` (each rule has its own "Known limit" section there).
 * **The AI did not decide what is true about QNX.** It read the official
   pages; the sentences are quoted, the pages are cited, and
   `scripts/verifier-citations.py` re-reads them. Where the documentation and a
-  rule disagreed, **the rule gave way** — five times — and each correction is
+  rule disagreed, **the rule gave way** — seven times — and each correction is
   now covered by a test that failed before it.
 * **The AI did not publish anything.** No account was created, no submission
   was made, no video was uploaded. The owner decides and does.

@@ -99,6 +99,12 @@ class TestNoFalsePositive(unittest.TestCase):
         Sources: resmgr_block() ("This function is a special case of
         dispatch_block()"), resmgr_handler() ("This function is a special
         case of dispatch_handler()").
+
+        The same test covers the DELEGATED loop: a thread pool takes the
+        blocking function as a pointer (pool_attr.block_func =
+        &resmgr_block), so the function is referenced, not called.  The rule
+        used to look for a call only, and to report "no message loop" on a
+        file that does have one.
         """
         src = read("qnx80_resmgr_minimal.c")
         src = src.replace("dispatch_block(ctp)", "resmgr_block(ctp)")
@@ -106,6 +112,30 @@ class TestNoFalsePositive(unittest.TestCase):
         found = qx_probe.analyse("resmgr_block.c", src)
         self.assertEqual(actionable(found), [],
                          msg=f"false positive on the resmgr_block/resmgr_handler idiom: {actionable(found)}")
+
+        delegated = """
+#include <sys/iofunc.h>
+#include <sys/resmgr.h>
+#include <sys/dispatch.h>
+
+static resmgr_connect_funcs_t connect_funcs;
+static resmgr_io_funcs_t      io_funcs;
+
+int start(dispatch_t *dpp)
+{
+    thread_pool_attr_t pool_attr;
+    pool_attr.block_func   = &resmgr_block;
+    pool_attr.handler_func = (void *)dispatch_handler;
+    iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs,
+                     _RESMGR_IO_NFUNCS, &io_funcs);
+    return 0;
+}
+"""
+        found = qx_probe.analyse("delegated_loop.c", delegated)
+        self.assertNotIn("QX006", codes(found),
+                         msg="false positive: the loop is delegated to a thread pool")
+        self.assertNotIn("QX007", codes(found),
+                         msg="false positive: the handler is delegated too")
 
     # ------------------------------------------------------------------
     # QX001 — the dispatch table
@@ -251,6 +281,13 @@ class TestNoFalsePositive(unittest.TestCase):
 
         Sources: iofunc_func_init() ("initializes the passed connect and io
         structures with the POSIX-layer default functions"), resmgr_io_funcs_t().
+
+        The same test covers the two shapes that the rule used to condemn:
+        a table that is a MEMBER of a structure (it has the storage
+        duration of the object that holds it, and it is filled through the
+        member: &resmgr.io_funcs), and a table filled by a SECOND
+        iofunc_func_init() call (a resource manager may fill two io tables,
+        one per device).
         """
         src = mutate("qnx80_resmgr_minimal.c",
                      "    iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs,\n"
@@ -261,6 +298,70 @@ class TestNoFalsePositive(unittest.TestCase):
                          msg="false positive: a static table is zeroed by C")
         self.assertEqual(actionable(found), [],
                          msg=f"false positive on valid code: {actionable(found)}")
+
+        member = """
+#include <sys/iofunc.h>
+#include <sys/resmgr.h>
+
+struct my_resmgr {
+    iofunc_attr_t              attr;
+    resmgr_connect_funcs_t     connect_funcs;
+    resmgr_io_funcs_t          io_funcs;
+};
+
+static struct my_resmgr resmgr = {0};
+
+static int my_read(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb)
+{
+    int rc = iofunc_read_verify(ctp, msg, ocb, NULL);
+    if (rc != EOK) {
+        return rc;
+    }
+    return _RESMGR_PTR(ctp, msg, 0);
+}
+
+int start(dispatch_t *dpp)
+{
+    iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &resmgr.connect_funcs,
+                     _RESMGR_IO_NFUNCS, &resmgr.io_funcs);
+    resmgr.io_funcs.read = my_read;
+    while (1) {
+        dispatch_context_t *ctp = dispatch_block(NULL);
+        if (ctp == NULL) {
+            break;
+        }
+        dispatch_handler(ctp);
+    }
+    return 0;
+}
+"""
+        found = qx_probe.analyse("member.c", member)
+        self.assertNotIn("QX011", codes(found),
+                         msg="false positive: a member has the storage duration "
+                             "of the object that holds it")
+        self.assertEqual(actionable(found), [],
+                         msg=f"false positive on valid code: {actionable(found)}")
+
+        two_calls = """
+#include <sys/iofunc.h>
+#include <sys/resmgr.h>
+
+int start(void)
+{
+    resmgr_connect_funcs_t connect_funcs;
+    resmgr_io_funcs_t      io_funcs;
+    resmgr_io_funcs_t      io_funcs_second;
+
+    iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs,
+                     _RESMGR_IO_NFUNCS, &io_funcs);
+    iofunc_func_init(0, NULL, _RESMGR_IO_NFUNCS, &io_funcs_second);
+    return 0;
+}
+"""
+        found = qx_probe.analyse("two_calls.c", two_calls)
+        self.assertNotIn("QX011", codes(found),
+                         msg="false positive: the second iofunc_func_init() "
+                             "initialises the second table")
 
 
 class TestDetection(unittest.TestCase):
@@ -373,20 +474,32 @@ class TestDetection(unittest.TestCase):
 
     def test_qx006_boucle_de_messages_absente(self):
         """QX006: without dispatch_block()/resmgr_block(), the resmgr never
-        waits for a message."""
+        waits for a message.
+
+        The level is a WARN, not an ERROR: one translation unit cannot prove
+        that the project has no message loop.  The rule was an ERROR until
+        this version, and it cried wolf on a real resource manager whose
+        loop lives in another file (see docs/BENCHMARK.md).
+        """
         src = self._mutate("qnx80_resmgr_minimal.c",
                            "if ((ctp = dispatch_block(ctp)) == NULL) {",
                            "if ((ctp = ctp) == NULL) {")
         found = qx_probe.analyse("broken.c", src)
-        self.assertIn("QX006", codes(found, "ERROR"))
+        self.assertIn("QX006", codes(found, "WARN"))
+        self.assertNotIn("QX006", codes(found, "ERROR"))
 
     def test_qx007_dispatch_absent(self):
         """QX007: blocking without dispatching the message leaves the client
-        blocked."""
+        blocked.
+
+        WARN, for the same reason as QX006: the handler may be called in
+        another translation unit.
+        """
         src = self._mutate("qnx80_resmgr_minimal.c",
                            "dispatch_handler(ctp);", "/* SABOTAGE: message never dispatched */")
         found = qx_probe.analyse("broken.c", src)
-        self.assertIn("QX007", codes(found, "ERROR"))
+        self.assertIn("QX007", codes(found, "WARN"))
+        self.assertNotIn("QX007", codes(found, "ERROR"))
 
     def test_qx008_slot_non_cable_reste_info(self):
         """QX008: an unwired slot of the io table is reported — as INFO.

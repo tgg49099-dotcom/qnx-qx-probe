@@ -40,15 +40,21 @@ cede — jamais le code canonique de QNX.
 
 ## QX003 — un slot pointe vers une fonction non definie
 
-* **Niveau :** ERROR
+* **Niveau :** INFO (c'etait ERROR avant cette version)
 * **Source :** `resmgr_io_funcs_t()`
   <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
 * **Ce que dit la doc :** chaque membre de la table est un pointeur de fonction
   (`int (*read)(resmgr_context_t *ctp, io_read_t *msg, RESMGR_OCB_T *ocb);`).
   Un pointeur nul ou vers une fonction inexistante n'est pas un gestionnaire.
-* **Limite connue :** un handler defini dans un autre fichier de compilation
-  est signale a tort. Une forme plus exacte (resolution multi-fichiers) est
-  prevue mais n'est pas implementee.
+* **Ce que verifie la regle :** le handler affecte a un slot n'est ni defini ni
+  declare dans les fichiers analyses. Le constat dit exactement la condition :
+  « if it is not defined in another translation unit, the link will fail ».
+* **Ce qui a change dans cette version :** une seule unite de compilation ne
+  peut pas prouver qu'un symbole manque — un handler defini dans un autre
+  fichier est parfaitement legal. La regle ne condamne donc plus le code :
+  elle est passee de **ERROR** a **INFO**, et la CLI resout desormais les
+  symboles de **tous** les fichiers qu'elle analyse : le constat disparait
+  des que le handler est defini ailleurs.
 
 ## QX004 — la porte d'acces `iofunc_*_verify()` est absente
 
@@ -58,9 +64,21 @@ cede — jamais le code canonique de QNX.
   * `iofunc_write_verify()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
 * **Ce que dit la doc :** « All read handlers should start with a call to
   `iofunc_read_verify()` and proceed only if it returns EOK. »
-* **Limite connue :** la recherche est textuelle ; un controle delegue a une
-  fonction auxiliaire, ou le nom de la fonction cite dans une chaine de
-  caracteres, ne sont pas distingues.
+* **Ce que verifie la regle :** le corps du handler `read`/`write`, chaines et
+  commentaires effaces, doit contenir la porte — directement, ou via une
+  fonction auxiliaire du meme fichier (un controle delegue est un controle).
+* **Ce qui a change dans cette version :** la recherche etait purement
+  textuelle. Un controle delegue a une fonction auxiliaire etait signale
+  comme une porte manquante (faux positif), et le *nom* de la porte cite
+  dans un message d'erreur etait pris pour une verification (faux negatif).
+  Les deux sont corriges : les chaines et les commentaires sont effaces
+  avant la recherche, et un appel delegue compte.
+* **Limite connue :** la porte est cherchee dans le corps du handler, **dans
+  le fichier analyse** : un controle delegue a une fonction auxiliaire d'un
+  **autre** fichier est toujours signale comme une porte manquante, meme si
+  cette auxiliaire fait partie des fichiers analyses. Une auxiliaire du
+  **meme** fichier est acceptee, et une porte seulement citee dans une chaine
+  ne compte pas.
 
 ## QX005 — le chemin monte par `resmgr_attach()` est relatif
 
@@ -86,7 +104,7 @@ cede — jamais le code canonique de QNX.
 
 ## QX006 — aucune boucle de messages
 
-* **Niveau :** ERROR
+* **Niveau :** WARN
 * **Sources :**
   * `resmgr_block()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html>
   * `dispatch_block()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_block.html>
@@ -96,16 +114,40 @@ cede — jamais le code canonique de QNX.
 * **Pourquoi les deux API sont acceptees :** l'exemple de reference de la
   documentation QNX 8.0 utilise `resmgr_block()`, pas `dispatch_block()`. Exiger
   l'un des deux produirait un faux positif sur le code de reference.
+* **Ce qui a change dans cette version :** la regle cherchait un **appel** a
+  `dispatch_block()` ou `resmgr_block()`. Un gestionnaire qui delegue la
+  boucle a un **pool de threads** — `pool_attr.block_func = &resmgr_block;` —
+  ne les appelle jamais : il les *reference*. La regle accepte maintenant un
+  appel **ou une reference**.
+* **Ce qui a change dans cette version (le niveau) :** la regle etait en
+  **ERROR**, elle est maintenant en **WARN**. QX-PROBE analyse **un fichier a
+  la fois**, et la boucle d'un gestionnaire reparti sur plusieurs fichiers vit
+  dans une autre unite de compilation : signaler l'absence de boucle en ERROR
+  sur le fichier qui porte les handlers, c'est un faux positif sur une
+  architecture valide. Le niveau est maintenant celui qu'un outil qui ne voit
+  qu'un fichier peut defendre, et le message dit exactement ce qu'il veut dire
+  — *dans ce fichier* — et ou regarder (`pool_attr.block_func`). La mesure qui
+  a motive ce changement est dans
+  [`docs/BENCHMARK.fr.md`](BENCHMARK.fr.md) §6.
+* **Limite connue :** la regle ne voit pas les autres fichiers du projet. Elle
+  dit ce que contient le fichier analyse, et le dit dans son message.
 
 ## QX007 — la boucle bloque mais aucun handler n'est appele
 
-* **Niveau :** ERROR
+* **Niveau :** WARN
 * **Sources :**
   * `resmgr_handler()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html>
   * `dispatch_handler()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_handler.html>
 * **Ce que dit la doc :** `resmgr_handler()` « handles the message received in
   `ctp` » et « is a special case of `dispatch_handler()` ». Sans appel a l'un des
   deux, le message reste en attente et le client ne recoit jamais de reponse.
+* **Ce qui a change dans cette version (le niveau) :** comme QX006, cette
+  regle etait en **ERROR** et elle est maintenant en **WARN**, pour la meme
+  raison : un handler peut vivre dans une autre unite de compilation, et un
+  fichier seul ne peut pas prouver que le projet ne traite rien.
+* **Limite connue :** la regle ne voit pas les autres fichiers du projet. Un
+  fichier qui bloque sans appeler de handler est un **rappel de verifier le
+  projet entier**, pas une condamnation du fichier.
 
 ## QX008 — un slot de `io_funcs` n'est pas cable
 
@@ -168,19 +210,41 @@ cede — jamais le code canonique de QNX.
 * **Ce que dit la doc :** c'est cette fonction qui remplit les tables avec les
   valeurs par defaut POSIX. Sans elle, les pointeurs restent a leur valeur
   initiale.
-* **Limite connue :** une initialisation statique a zero, ou un `memset` de la
-  table, est un choix architectural legitime (gestionnaire qui renvoie ENOSYS) ;
-  la regle produit alors un avertissement injustifie. Une forme plus fine est
-  prevue mais n'est pas implementee.
+* **Ce qui a change dans cette version :** la regle signalait **toute** table
+  qui n'etait pas remplie par `iofunc_func_init()`, y compris les tables
+  statiques. Une table statique est mise a zero par C — c'est un choix
+  deliberé (les handlers sont NULL et la couche de base repond ENOSYS), pas un
+  bug. Le faux positif a disparu ; l'avertissement tombe toujours sur le cas
+  pour lequel il a ete ecrit.
+* **Ce qui a change dans cette version (la duree de stockage) :** la regle
+  decidait qu'une table etait « automatique » parce que sa declaration ne
+  disait pas `static`. Une table qui est **membre d'une structure** a la duree
+  de stockage de l'objet qui la porte, et elle est remplie a travers le membre
+  (`iofunc_func_init(…, &resmgr.io_funcs)`). Les deux etaient signales a tort
+  sur de vrais gestionnaires de ressources, dont un publie par QNX lui-meme.
+  La regle calcule maintenant la duree de stockage de la declaration, et
+  reconnait une initialisation faite par expression membre.
+* **Ce qui a change dans cette version (chaque appel) :** la regle lisait le
+  **premier** appel a `iofunc_func_init()` du fichier et ignorait les suivants.
+  Un gestionnaire peut remplir deux tables io — une par device — et la
+  deuxieme etait signalee comme non initialisee. La regle parcourt maintenant
+  **tous** les appels. Ces trois defauts ont ete trouves en faisant tourner
+  l'outil sur 17 vrais gestionnaires de ressources ; la mesure est dans
+  [`docs/BENCHMARK.fr.md`](BENCHMARK.fr.md) §6.
+* **Limite connue :** la regle reconnait les trois initialisations qu'elle
+  connait — `iofunc_func_init()`, un initialiseur de structure C99 et un
+  `memset` a zero. Une table initialisee par **copie d'une autre table**
+  (`io_funcs = model;`) n'est pas reconnue et est avertee, alors que ses
+  pointeurs sont parfaitement definis.
 
 ---
 
 ## Ce qui a ete corrige dans cette version, et comment c'est prouve
 
-Cinq regles avaient un defaut connu qui contredisait la documentation
-officielle (QX001, QX002, QX003, QX004, QX011). Chacune est maintenant
-couverte par un test qui **echoue sur le code precedent** et **passe sur le
-code actuel** :
+Sept regles avaient un defaut connu qui contredisait la documentation
+officielle (QX001, QX002, QX003, QX004, QX006, QX007, QX011). Chacune est
+maintenant couverte par un test qui **echoue sur le code precedent** et
+**passe sur le code actuel** :
 
 | Regle | Defaut corrige | Test qui le prouve |
 |---|---|---|
@@ -188,7 +252,14 @@ code actuel** :
 | QX002 | « slots cables » etait compare a « entrees remplies » ; le vrai debordement n'etait jamais detecte | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` |
 | QX003 | un handler defini dans une autre unite de compilation etait condamne | `test_qx003_handler_dans_une_autre_unite_de_compilation`, `test_qx003_handler_non_defini` |
 | QX004 | une verification deleguee etait ratee ; une porte citee dans une chaine comptait | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
-| QX011 | une table statique (mise a zero) etait avertee a tort | `test_qx011_table_mise_a_zero_statique`, `test_qx011_table_automatique_non_initialisee` |
+| QX006 | une boucle deleguee a un pool de threads (`pool_attr.block_func = &resmgr_block`) n'etait pas reconnue ; un gestionnaire reparti sur plusieurs fichiers etait condamne en ERROR | `test_api_resmgr_block_et_resmgr_handler` (le cas delegue est verifie dans le meme test), `test_qx006_boucle_de_messages_absente` |
+| QX007 | la meme limite que QX006 : le handler peut vivre dans une autre unite de compilation | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
+| QX011 | une table statique (mise a zero) etait avertee a tort ; une table membre d'une structure etait dite « automatique » ; seul le premier appel a `iofunc_func_init()` etait lu | `test_qx011_table_mise_a_zero_statique` (il couvre aussi le cas membre et le deuxieme appel), `test_qx011_table_automatique_non_initialisee` |
+
+Les trois dernieres lignes viennent du **benchmark sur du vrai code** — 17
+gestionnaires de ressources ecrits par d'autres personnes, dont sept
+publies par QNX ou BlackBerry eux-memes. Le corpus, la mesure et la verification manuelle de
+chaque constat sont dans [`docs/BENCHMARK.fr.md`](BENCHMARK.fr.md).
 
 Rejouez la preuve (machine hote seule, aucun SDK QNX n'est necessaire) :
 

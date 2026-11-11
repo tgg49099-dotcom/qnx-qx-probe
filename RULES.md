@@ -146,7 +146,7 @@ gives way — never the canonical QNX code.
   literal (variable, macro) — in that case, nothing can be said.
 
 ## QX006 — no message loop
-* **Level:** ERROR
+* **Level:** WARN
 * **Sources:** `resmgr_block()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_block.html> · `dispatch_block()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_block.html>
 * **What the documentation says:** `resmgr_block()` "waits for a message" and
   "is a special case of `dispatch_block()`". A resource manager that calls
@@ -154,14 +154,37 @@ gives way — never the canonical QNX code.
 * **Why both APIs are accepted:** the reference example in the QNX 8.0
   documentation uses `resmgr_block()`, not `dispatch_block()`. Requiring one of
   the two would produce a false positive on the reference code.
+* **What changed in this version:** the rule used to look for a **call** to
+  `dispatch_block()` or `resmgr_block()`. A resource manager that hands the
+  loop over to a **thread pool** — `pool_attr.block_func = &resmgr_block;` —
+  never calls them: it *references* them. The rule now accepts a call **or a
+  reference**.
+* **What changed in this version (the level):** the rule was at **ERROR**
+  and is now at **WARN**. QX-PROBE analyses **one file at a time**, and the
+  loop of a resource manager split over several files lives in another
+  translation unit: reporting the absence of a loop at ERROR level on the
+  file that holds the handlers is a false positive on a valid architecture.
+  The level is now the one a single-file tool can defend, and the message
+  says exactly what it means — *in this file* — and where to look
+  (`pool_attr.block_func`). The measurement that brought this change is in
+  [`docs/BENCHMARK.md`](docs/BENCHMARK.md) §6.
+* **Known limit:** the rule cannot see the other files of the project. It
+  reports what the analysed file contains, and it says so in the message.
 
 ## QX007 — the loop blocks but no handler is called
-* **Level:** ERROR
+* **Level:** WARN
 * **Sources:** `resmgr_handler()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_handler.html> · `dispatch_handler()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/dispatch_handler.html>
 * **What the documentation says:** `resmgr_handler()` "handles the message
   received in `ctp`" and "is a special case of `dispatch_handler()`". Without
   a call to one of the two, the message stays pending and the client never
   gets an answer.
+* **What changed in this version (the level):** like QX006, this rule was at
+  **ERROR** and is now at **WARN**, for the same reason: a handler may live
+  in another translation unit, and a single file cannot prove that the
+  project handles nothing.
+* **Known limit:** the rule cannot see the other files of the project. A file
+  that blocks but does not call a handler is a **reminder to check the whole
+  project**, not a condemnation of the file.
 
 ## QX008 — an `io_funcs` slot is not wired
 * **Level:** INFO
@@ -226,6 +249,21 @@ gives way — never the canonical QNX code.
   handlers are NULL and the base layer answers `ENOSYS`), not a bug. The
   false positive is gone; the warning still fires on the case it was written
   for.
+* **What changed in this version (the storage duration):** the rule used to
+  decide that a table was "automatic" because its declaration did not say
+  `static`. A table that is a **member of a structure** has the storage
+  duration of the object that holds it, and it is filled through the member
+  (`iofunc_func_init(…, &resmgr.io_funcs)`). Both were reported by mistake
+  on real resource managers, one of them published by QNX itself. The rule
+  now computes the storage duration of the declaration, and recognises an
+  initialisation made through a member expression.
+* **What changed in this version (every call):** the rule used to read the
+  **first** `iofunc_func_init()` call of the file and to ignore the next
+  ones. A resource manager may fill two io tables — one per device — and the
+  second table was reported as uninitialised. The rule now iterates over
+  **every** call. The three defects above were found by running the tool on
+  17 real resource managers; the measurement is in
+  [`docs/BENCHMARK.md`](docs/BENCHMARK.md) §6.
 * **Known limit:** the rule recognises the three initialisations it knows —
   `iofunc_func_init()`, a C99 initialiser and a `memset` to zero. A table
   initialised by **copying another table** (`io_funcs = model;`) is not
@@ -236,9 +274,10 @@ gives way — never the canonical QNX code.
 
 ## What was corrected in this version, and how it is proved
 
-Five rules had a known defect that contradicted the official documentation
-(QX001, QX002, QX003, QX004, QX011). Each of them is now covered by a test
-that **fails on the previous code** and **passes on the current code**:
+Seven rules had a known defect that contradicted the official documentation
+(QX001, QX002, QX003, QX004, QX006, QX007, QX011). Each of them is now covered
+by a test that **fails on the previous code** and **passes on the current
+code**:
 
 | Rule | Defect corrected | Test that proves it |
 |---|---|---|
@@ -246,7 +285,15 @@ that **fails on the previous code** and **passes on the current code**:
 | QX002 | "slots wired" was compared to "entries filled"; the real overflow was never detected | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` |
 | QX003 | a handler defined in another translation unit was condemned | `test_qx003_handler_dans_une_autre_unite_de_compilation`, `test_qx003_handler_non_defini` |
 | QX004 | a delegated check was missed; a gate quoted in a string counted | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
-| QX011 | a static (zero-initialised) table was warned about | `test_qx011_table_mise_a_zero_statique`, `test_qx011_table_automatique_non_initialisee` |
+| QX006 | a loop delegated to a thread pool (`pool_attr.block_func = &resmgr_block`) was not recognised; a resource manager split over several files was condemned at ERROR level | `test_api_resmgr_block_et_resmgr_handler` (the delegated case is asserted in the same test), `test_qx006_boucle_de_messages_absente` |
+| QX007 | the same limit as QX006: the handler may live in another translation unit | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
+| QX011 | a static (zero-initialised) table was warned about; a table that is a member of a structure was called "automatic"; only the first `iofunc_func_init()` call was read | `test_qx011_table_mise_a_zero_statique` (it also covers the member case and the second call), `test_qx011_table_automatique_non_initialisee` |
+
+The last three rows come from the **benchmark on real code** — 17 resource
+managers written by other people, seven of them published by QNX or
+BlackBerry themselves. The
+corpus, the measurement and the manual verification of every finding are in
+[`docs/BENCHMARK.md`](docs/BENCHMARK.md).
 
 Reproduce the proof (host only, no QNX SDK needed):
 

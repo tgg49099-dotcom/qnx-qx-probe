@@ -13,6 +13,7 @@
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 12 cited QNX 8.0 pages, 29 quotations
 #   5  scripts/verifier-soumission-devpost.py the submission text: lengths, English, links
+#   6  scripts/benchmark-corpus.py            the linter on 17 real QNX resource managers
 #
 # THREE STATES, NEVER MIXED
 #
@@ -207,7 +208,7 @@ echo "======================================================================"
 echo "QX-PROBE - replay every published proof of this repository"
 echo "======================================================================"
 echo "repository : $ROOT"
-echo "checks     : 5"
+echo "checks     : 6"
 echo
 
 check "run_tests.sh (27 unit tests)" \
@@ -254,6 +255,15 @@ check "verifier-soumission-devpost.py (13 blocks)" \
       "python3" \
       "[KO ]" \
       python3 -I -B scripts/verifier-soumission-devpost.py
+
+check "benchmark-corpus.py (17 real resource managers)" \
+      "scripts/benchmark-corpus.py" \
+      "FILES ANALYSED" \
+      "2" \
+      "network absent: the corpus could not be fetched" \
+      "python3 git" \
+      "-" \
+      python3 -I -B scripts/benchmark-corpus.py
 
 echo
 echo "======================================================================================================"

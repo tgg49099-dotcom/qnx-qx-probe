@@ -102,7 +102,7 @@ A QNX 8.0 resource manager is where the expensive bugs live. Drop the iofunc_rea
 
 QX-PROBE is a single-file, dependency-free linter for QNX 8.0 resource-manager C code. It runs on Linux, macOS or Windows, needs no QNX SDK or hardware, so it fits in CI. It has 11 rules, and each rule cites the official BlackBerry QNX SDP 8.0 documentation page it comes from.
 
-Five rules had a defect that contradicted the documentation; they are corrected, and each correction is covered by a test that fails on the previous code and passes on the current one.
+Seven rules had a defect that contradicted the documentation; they are corrected, and each correction is covered by a test that fails on the previous code and passes on the current one.
 
 It is a linter, not a certifier: it reports what its rules can prove and stays silent about the rest.
 
@@ -111,7 +111,7 @@ Install: clone, then run python3 -I qx_probe.py your_resmgr.c. Nothing to build.
 Evaluate it in a minute: bash scripts/run_tests.sh runs 27 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
 <!-- FIN:WHATITDOES -->
 
-_Measured: 1189 characters (DevPost limit: 1 200)._
+_Measured: 1190 characters (DevPost limit: 1 200)._
 
 ## 6. "Why we built it"
 
@@ -133,9 +133,9 @@ _Measured: 1798 characters._
 ## 7. "How we built it"
 
 <!-- DEBUT:HOW -->
-QX-PROBE is one Python 3 file — 671 lines, standard library only — that reads the C source of a resource manager and reports what it can prove. The protocol is not expressed in a type system, so the analysis is done on the text of the code, with the comments and the string literals blanked before the search: a gate merely quoted in an error message is not mistaken for a gate.
+QX-PROBE is one Python 3 file — 717 lines, standard library only — that reads the C source of a resource manager and reports what it can prove. The protocol is not expressed in a type system, so the analysis is done on the text of the code, with the comments and the string literals blanked before the search: a gate merely quoted in an error message is not mistaken for a gate.
 
-The hard part was not the detection, it was the silence. A linter for a real-time operating system that reports canonical code by mistake is worse than no linter at all: five of the first rules did exactly that, and they were rewritten. Every rule now cites the official documentation page it comes from, with the sentence it relies on and what it does not do, and docs/AI-ASSISTED-RULES.md shows, rule by rule, the first draft, the documentation it contradicted and the test that fails on the previous code and passes on the current one. The rule set is checked against BlackBerry's own public resource manager (Apache-2.0), which must stay green: 0 errors, 0 warnings.
+The hard part was not the detection, it was the silence. A linter for a real-time operating system that reports canonical code by mistake is worse than no linter at all: seven of its rules did exactly that, and they were rewritten. Every rule now cites the official documentation page it comes from, with the sentence it relies on and what it does not do, and docs/AI-ASSISTED-RULES.md shows, rule by rule, the first draft, the documentation it contradicted and the test that fails on the previous code and passes on the current one. The rule set is checked against BlackBerry's own public resource manager (Apache-2.0), which must stay green: 0 errors, 0 warnings, and against 17 real resource managers published by other people, seven of them by QNX or BlackBerry themselves: 1 error found, every finding read by hand.
 
 The tool was written with an AI agent; the facts were kept out of its reach: every rule is backed by a quoted official page, and scripts/verifier-citations.py re-reads the 12 cited pages and checks that the quoted sentence is still there — 29 quotations; a page it cannot read is reported NOT CHECKED, never verified.
 
@@ -144,7 +144,7 @@ The suite is 27 tests — 10 anti-false-positive, 15 detection, 2 output format 
 The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 12 blocks, 0 differing.
 <!-- FIN:HOW -->
 
-_Measured: 1778 characters._
+_Measured: 1928 characters._
 
 ## 8. "What's next"
 
@@ -174,7 +174,7 @@ nothing to pay for.
 
 REQUIREMENTS
   Python 3 (the standard library only). No QNX SDK, no QNX board, no QEMU,
-  no network access, no licence.
+  no network access for the tool itself, no licence.
 
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
@@ -204,6 +204,15 @@ REQUIREMENTS
      python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c
      RESULT: 6 finding(s), 1 ERROR, 0 WARN      (exit code 1)
 
+4) OPTIONAL - RUN THE TOOL ON 17 REAL QNX RESOURCE MANAGERS
+   python3 -I scripts/benchmark-corpus.py
+   This one needs git and the network: it fetches 13 public repositories, at
+   the exact commits listed in the script, and analyses 17 files.
+   Measured: 21 s. Expected output (last line):
+     VERDICT: 17/17 FILES ANALYSED, 1 ERROR IN TOTAL
+   The one ERROR is a missing access gate in rpi_thermal.c, a file published
+   by QNX itself; every finding was read by hand. See docs/BENCHMARK.md.
+
 EXIT CODES
   0 = no actionable finding
   1 = at least one ERROR or one WARN
@@ -213,9 +222,10 @@ EXIT CODES
 The whole procedure takes less than three seconds on a modern laptop.
 <!-- FIN:TESTING -->
 
-_Measured: 1657 characters._
+_Measured: 2174 characters._
 
-> The three commands are the ones a judge has to type. Everything else in the
+> The three commands of steps 1 to 3 are the ones a judge has to type;
+> step 4 is optional and needs the network. Everything else in the
 > repository — the eleven rules with their official QNX 8.0 source pages
 > ([RULES.md](../RULES.md)), the tutorial
 > ([docs/CODELAB.md](CODELAB.md)), the shot list of the video
@@ -281,6 +291,12 @@ The QNX connection is the product itself, not a mention of QNX in a README.
   - The reference corpus used to validate the tool is BlackBerry's own public
     Apache-2.0 resource manager (examples/blackberry_eventfd_mgr.c), which the
     linter must report with 0 errors and 0 warnings.
+  - The tool was then measured on 17 real QNX resource managers written by
+    other people, seven of them published by QNX or BlackBerry themselves
+    (gitlab.com/qnx/projects, github.com/qnx, github.com/qnx-ports):
+    17/17 files analysed, 1 error, every finding read by hand. That
+    measurement found nine false positives of the tool, in five files, and
+    one true positive - the missing access gate of QNX's own rpi-thermal.
   - The repository contains a real QNX 8.0 build path: scripts/build_qcc.sh
     compiles the example resource managers with qcc -Vgcc_ntoaosdebug -Werror
     for x86_64, aarch64 or armv7.
@@ -298,13 +314,15 @@ The QNX connection is the product itself, not a mention of QNX in a README.
     examples/blackberry_eventfd_mgr.c - BlackBerry's resource manager: 0 errors.
     tests/fixtures/qnx80_resmgr_qx004_no_gate.c - missing access gate:
       RESULT: 6 finding(s), 1 ERROR, 0 WARN (exit code 1).
+    docs/BENCHMARK.md - the benchmark on 17 real QNX resource managers.
+    scripts/benchmark-corpus.py - replays it, on pinned commits.
 
   Resource managers and native message passing are the QNX-specific
   technologies this tool is about: it exists only because QNX works this way.
 
 <!-- FIN:QXUSE -->
 
-_Measured: 2059 characters._
+_Measured: 2631 characters._
 
 ## 12. Links
 
@@ -365,15 +383,15 @@ QX002 (ERROR) — iofunc_func_init() is asked to fill more entries than the tabl
 QX003 (INFO) — a slot of the dispatch table points at a function that is neither defined nor declared in the analysed files; if it is not defined in another translation unit, the link will fail.
 QX004 (ERROR) — a read or write handler never calls iofunc_read_verify() or iofunc_write_verify(): the access gate is missing.
 QX005 (WARN) — resmgr_attach() mounts a relative path, which QNX resolves against the current working directory.
-QX006 (ERROR) — no message loop: neither dispatch_block() nor resmgr_block() is called, so the resource manager never waits for a message.
-QX007 (ERROR) — the message loop blocks (dispatch_block()/resmgr_block()) but no handler is called (neither dispatch_handler() nor resmgr_handler()).
+QX006 (WARN) — no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here, so the resource manager never waits for a message.
+QX007 (WARN) — the message loop blocks (dispatch_block()/resmgr_block()) but no handler is called in this file (neither dispatch_handler() nor resmgr_handler()).
 QX008 (INFO) — a slot of the io_funcs table is left unwired: the documented POSIX default applies, except for notify, for which QNX 8.0 defines none.
 QX009 (ERROR) — a handler returns _RESMGR_NPARTS(k) with k greater than attr.nparts_max, so the answer carries more parts than the IOV array holds.
 QX010 (INFO) — the number of entries given to iofunc_func_init() is a macro, not a literal; no conclusion is drawn from it.
 QX011 (WARN) — a dispatch table declared as an automatic variable is never initialised, so its function pointers hold indeterminate values.
 <!-- FIN:REGLES11 -->
 
-_Measured: 1701 characters._
+_Measured: 1744 characters._
 
 The official QNX 8.0 page behind each rule, the sentence it relies on and what
 it does not do are in [RULES.md](../RULES.md) — one section per rule, with the
@@ -382,10 +400,10 @@ URL of the page.
 ## 14. Five sentences for the repository README
 
 <!-- DEBUT:RESUME5 -->
-QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Five of its first rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 27-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
+QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Seven of its rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 27-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
 <!-- FIN:RESUME5 -->
 
-_Measured: 714 characters._
+_Measured: 709 characters._
 
 ## 15. The remaining questions of the form
 
@@ -406,10 +424,10 @@ This is the mapping, so that nothing is left to chance.
 
 | Criterion | Where it is answered |
 |---|---|
-| **Technological Implementation** | § 7: a real analyser, 671 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 27 tests, and a QNX 8.0 build path (`qcc -Vgcc_ntoaosdebug -Werror`) that is labelled NOT MEASURED rather than faked. |
-| **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages and the submission text, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
+| **Technological Implementation** | § 7: a real analyser, 717 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 27 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntoaosdebug -Werror`) that is labelled NOT MEASURED rather than faked. |
+| **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
-| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27, measured) and passes on the current one; `scripts/verifier-citations.py` re-reads the 12 cited pages and checks that the 29 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED. The only factual sources are the official documentation and BlackBerry's public code. |
+| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 on the first draft, then 4 more on the version of 08/11/2026 - both measured) and passes on the current one; `scripts/verifier-citations.py` re-reads the 12 cited pages and checks that the 29 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
 
 ## 17. Where every figure comes from
 
@@ -426,7 +444,8 @@ Measured on the public repository on **6 November 2026**.
 | Sabotaged fixture | 6 findings, 1 ERROR (QX004), 0 WARN, exit 1 | `python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c` |
 | Codelab | 12 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
 | Official QNX 8.0 pages cited | 12 distinct pages, all HTTP 200 on 06/11/2026, all marked "Page updated: June 11, 2026" | `curl` on each URL of `RULES.md` |
-| The linter | 671 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
+| The linter | 717 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
+| Benchmark on real code | 17 files from 13 public repositories (4 published by QNX), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
 | Video | 1 367 966 bytes, md5 `178e1b58638628a5bc56f11c6fada8e2`, 71.44 s, 1920x1080, H.264, 25 fps, 1786 images, no audio, 19 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
 | Timing of the three commands | clone 1.4 s (2.1 MB), test suite 0.47 s, run on one file 0.06 s | `time` on each command |
 | QNX 8.0 compilation | **NOT MEASURED** | no SDP 8.0 licence in the environment where the project was written; `scripts/build_qcc.sh` stops with an explicit message and exit code 2 |

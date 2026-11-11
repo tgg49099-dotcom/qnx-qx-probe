@@ -230,14 +230,14 @@ src = src.replace("""    ctp = dispatch_context_alloc(dpp);
 open('lab/break_qx006.c', 'w').write(src)
 PY
 $ python3 -I qx_probe.py lab/break_qx006.c
-ERROR QX006  lab/break_qx006.c: no message loop: neither dispatch_block() nor resmgr_block() is called, so the resource manager never waits for a message
+WARN  QX006  lab/break_qx006.c: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
 INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
 INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
 INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
 INFO  QX010  lab/break_qx006.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
 INFO  QX010  lab/break_qx006.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
-RESULT: 6 finding(s), 1 ERROR, 0 WARN
+RESULT: 6 finding(s), 0 ERROR, 1 WARN
 ```
 
 **Why it matters.** `resmgr_block()` *"waits for a message"*. Without it,
@@ -245,6 +245,16 @@ the process attaches its name and exits: the clients that open the device
 block forever. The tool accepts **both** idioms — `dispatch_block()` and
 `resmgr_block()` — because the reference example in the QNX 8.0
 documentation uses the second one.
+
+**Why this one is a WARN and not an ERROR.** QX-PROBE analyses **one file
+at a time**, and the loop of a resource manager split over several files
+lives in another translation unit. The tool cannot prove that the project
+has no message loop, so it says exactly what it can prove: *no loop **in
+this file*** — and it tells you where to look (`pool_attr.block_func`). The
+same rule, applied to real code, is what taught it that lesson: on
+`devu-uvc`, a QNX resource manager published on GitHub, the loop is in
+`main.c` and the handlers are in `uvc_rm.c` — see
+[`docs/BENCHMARK.md`](BENCHMARK.md) §6.
 
 ### 3.4 The reply returns more parts than the IOV holds (QX009)
 

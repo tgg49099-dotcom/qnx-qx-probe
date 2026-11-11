@@ -45,27 +45,34 @@ regle par regle, avec la citation et l'URL, est dans **[RULES.md](RULES.md)**.
 |---|---|---|---|
 | QX001 | le fichier utilise l'API resmgr mais ne cable aucune table de dispatch | ERROR | `resmgr_attach()` |
 | QX002 | plus de slots cables que `iofunc_func_init()` n'en remplit | ERROR | `iofunc_func_init()` |
-| QX003 | un slot pointe vers une fonction non definie dans le fichier | ERROR | `resmgr_io_funcs_t()` |
+| QX003 | un slot pointe vers une fonction non definie dans les fichiers analyses | INFO | `resmgr_io_funcs_t()` |
 | QX004 | un handler `read`/`write` n'appelle pas `iofunc_*_verify()` | ERROR | `iofunc_read_verify()` |
 | QX005 | le chemin monte par `resmgr_attach()` est **relatif** | WARN | `resmgr_attach()` |
-| QX006 | aucune boucle de messages (`dispatch_block()`/`resmgr_block()`) | ERROR | `resmgr_block()` |
-| QX007 | la boucle bloque mais aucun handler n'est appele | ERROR | `resmgr_handler()` |
+| QX006 | aucune boucle de messages **dans ce fichier** (`dispatch_block()`/`resmgr_block()`) | WARN | `resmgr_block()` |
+| QX007 | la boucle bloque mais aucun handler n'est appele **dans ce fichier** | WARN | `resmgr_handler()` |
 | QX008 | un slot de `io_funcs` n'est pas cable (le defaut POSIX s'applique) | INFO | `resmgr_io_funcs_t()` |
 | QX009 | le reply renvoie plus de parties que `attr.nparts_max` n'en autorise | ERROR | `_RESMGR_NPARTS()` |
 | QX010 | le nombre de slots de `iofunc_func_init()` est une macro | INFO | `iofunc_func_init()` |
-| QX011 | aucune table n'est initialisee par `iofunc_func_init()` | WARN | `iofunc_func_init()` |
+| QX011 | aucune table **automatique** n'est initialisee par `iofunc_func_init()` | WARN | `iofunc_func_init()` |
 
 Sortie : `0` si aucun constat actionnable, `1` si au moins un `ERROR` ou `WARN`,
 `2` si l'appel est mal forme. Les constats `INFO` n'affectent jamais le code de
 sortie : ils decrivent l'etat du gestionnaire, ils ne le condamnent pas.
 
-**Ce qui a ete corrige dans cette version :** cinq regles (QX001, QX002,
-QX003, QX004, QX011) avaient un defaut connu qui contredisait la
+**Ce qui a ete corrige dans cette version :** sept regles (QX001, QX002,
+QX003, QX004, QX006, QX007, QX011) avaient un defaut connu qui contredisait la
 documentation officielle. Elles sont maintenant corrigees, et chaque correction
 est couverte par un test qui **echoue sur le code precedent** et **passe sur le
 code actuel** — une regle qu'on a simplement supprimee ne prouverait rien. Le
 detail, regle par regle, est dans **[RULES.md](RULES.md)**, section « Ce qui a
 ete corrige dans cette version, et comment c'est prouve ».
+
+Les trois dernieres ont ete trouvees en faisant tourner la sonde sur **17
+vrais gestionnaires de ressources ecrits par d'autres personnes** — dont sept
+publies par QNX ou BlackBerry eux-memes — et en relisant chaque constat a la
+main. Le corpus, la mesure et les cinq defauts de l'outil qu'il a exposes
+— neuf faux positifs dans cinq fichiers — sont dans
+**[docs/BENCHMARK.fr.md](BENCHMARK.fr.md)**.
 
 ## Ce qui est dans le depot
 
@@ -77,6 +84,8 @@ README.md                                    ce fichier
 RULES.md                                     chaque regle + sa source officielle QNX 8.0
 qx_probe.py                                  la sonde (un seul fichier, sans dependance)
 docs/AI-ASSISTED-RULES.md                    comment les onze regles ont ete ecrites, et comment chacune a ete prouvee
+docs/BENCHMARK.fr.md                         le correspondant francais de docs/BENCHMARK.md, mis a jour avec lui
+docs/BENCHMARK.md                            le benchmark : QX-PROBE sur 17 vrais gestionnaires de ressources QNX
 docs/CODELAB.md                              le tutoriel pratique (30 minutes, aucun SDK requis)
 docs/README.fr.md                            le correspondant francais de ce fichier, mis a jour avec lui : les parties qui n'ont pas ete retraduites decrivent encore la premiere version de l'outil
 docs/README.md                               ce que sont les fichiers de docs/
@@ -93,6 +102,7 @@ examples/sys/eventfd.h                       l'en-tete de l'exemple ci-dessus (A
 media/qx-demo-thumbnail.png                  la miniature de la video (PNG, 1280x720)
 media/qx-demo-v2.mp4                         la video de demonstration (MP4, H.264, 1920x1080, 71,44 s)
 scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies SONT les pixels de la video
+scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/run_tests.sh                         lance la suite de tests
 scripts/verifier-citations.py                relit les 12 pages QNX 8.0 citees et verifie les 29 citations
@@ -124,11 +134,11 @@ $ bash scripts/verify-all.sh
 ```
 
 Elle enchaine la suite de tests, la relecture du codelab, l'audit des pixels
-de la video, la relecture des 12 pages QNX 8.0 citees et le controle du
-texte de soumission, puis affiche un tableau : une ligne par verification,
-son resultat et son code de sortie. Elle ne sort en 0 que si chaque ligne
-est OK ; une verification qui n'a pas pu etre faite est NOT CHECKED, jamais
-OK.
+de la video, la relecture des 12 pages QNX 8.0 citees, le controle du
+texte de soumission et le benchmark sur 17 vrais gestionnaires de ressources
+QNX, puis affiche un tableau : une ligne par verification, son resultat et
+son code de sortie. Elle ne sort en 0 que si chaque ligne est OK ; une
+verification qui n'a pas pu etre faite est NOT CHECKED, jamais OK.
 
 ## Compiler pour QNX 8.0
 
