@@ -175,13 +175,57 @@ The QNX 8.0 documentation is explicit about it, on the page of
 The linter therefore reports `ERROR QX004` on this file, and it is right:
 the access gate is missing. This is a real defect in code published by the
 vendor of the operating system — found by a static linter on the public
-source, without running anything.
+source, without running anything. **No report was sent to QNX, and no third
+party was contacted**: the file was read from its public repository, at the
+pinned commit, and nothing was written anywhere.
 
 **What this does NOT mean.** It does not mean the file is broken in
-production: `resmgr_read()` may be used by a manager whose permissions are
-enforced elsewhere. It means the file does not follow the rule the
-documentation states for read handlers, and that the rule is worth
-reporting.
+production, and it does not mean that the node is left unprotected. It means
+the file does not follow the rule the documentation states for read
+handlers, and that the rule is worth reporting. Concretely:
+
+1. **The opening permissions do exist.** The two nodes are created with the
+   mode `0664` (`mode_t mode = 0664;`, line 732, applied to the two
+   attributes at lines 830-831), and the open is handled by the **default**
+   open handler of the resource-manager library: `iofunc_func_init()` (line
+   824) installs the POSIX-layer default functions, and the open handler is
+   not overridden. The mode of the node is therefore checked against the
+   client when it opens the resource, before any read happens: the default
+   open handler (`iofunc_open_default()`,
+   <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_open_default.html>)
+   calls `iofunc_open()` to check the client's open mode against the
+   attributes of the resource. What the missing gate leaves open is **not**
+   the permission on the node: it is the second check, the one the
+   documentation makes a separate step.
+
+2. **What the missing gate lets through.** The page of
+   `iofunc_read_verify()` says what that step is:
+
+   > This function checks at least that:
+   > the original open included read access
+   > the incoming message is well-formed, including that:
+   > if an xtype is specified that includes extra data headers, the extra data is in the receive buffer
+   > the read offset to be used is non-negative
+
+   and what it returns when the check fails:
+
+   > EBADF
+   > The client didn't open the resource for read access.
+
+   `resmgr_read()` never calls it, so none of these checks is made: a client
+   that opened the node for writing only is served the temperature, and the
+   handler never looks at the `xtype` of the message it answers — the word
+   `xtype` does not appear anywhere in the file — so a read that carries a
+   position, or extra data headers, is served as a plain read of the whole
+   value.
+
+3. **A second real point, visible without the documentation.** The reply
+   ignores `msg->i.nbytes`: the length of the answer is bounded by
+   `ctp->msg_max_size` (1024, line 845), not by the number of bytes the
+   client asked for (lines 530-534). A client that asks for eight bytes
+   receives the whole string. This one is **a candidate for a future rule**,
+   not a finding: QX-PROBE does not detect it today, and nothing here
+   claims that it does.
 
 ---
 

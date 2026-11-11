@@ -120,6 +120,15 @@ CITATIONS: list[tuple[str, str, tuple[str, ...]]] = [
     ("iofunc_read_verify", "i/iofunc_read_verify", (
         "All read handlers should start with a call to iofunc_read_verify() "
         "and proceed only if it returns EOK.",
+        # The four sentences below are the behaviour of the gate itself. They
+        # are quoted in docs/BENCHMARK.md (section 5), not yet in RULES.md:
+        # the checker therefore prints the "not written verbatim in RULES.md"
+        # note for them, which is a note and not a failure.
+        "the original open included read access",
+        "if an xtype is specified that includes extra data headers, the "
+        "extra data is in the receive buffer",
+        "the read offset to be used is non-negative",
+        "The client didn't open the resource for read access.",
     )),
     ("iofunc_write_verify", "i/iofunc_write_verify", (
         "All write handlers should start with a call to iofunc_write_verify() "
