@@ -5,10 +5,11 @@ Host tool: reads C code and reports structural facts about the QNX 8.0
 resource-manager (resmgr) protocol. No dependency, no QNX SDK required.
 
 EVERY RULE IS BACKED BY AN OFFICIAL PAGE of the BlackBerry QNX SDP 8.0
-documentation (C Library Reference, pages updated on June 11, 2026). The
-official URLs are quoted in the comment of each rule and collected in
-RULES.md.  Golden rule: ZERO false positives — a rule that misreports
-canonical QNX 8.0 code is worse than a missing rule.
+documentation (C Library Reference). The official URLs are quoted in the
+comment of each rule and collected in RULES.md; scripts/verifier-citations.py
+re-reads those pages and prints the update date each one carries.  Golden
+rule: ZERO false positives — a rule that misreports canonical QNX 8.0 code
+is worse than a missing rule.
 
 Usage:  python3 -I qx_probe.py <file.c> [file.c ...]
 Exit:   0 = no actionable finding, 1 = at least one ERROR or WARN finding,

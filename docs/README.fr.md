@@ -36,8 +36,10 @@ Concretement, la sonde ne signale **jamais** :
   `_RESMGR_CONNECT_NFUNCS` — le cas normal.
 
 Chaque regle est adossee a une page de la documentation **officielle** BlackBerry
-QNX SDP 8.0 (les pages citees sont mises a jour le 11 juin 2026). Le detail
-regle par regle, avec la citation et l'URL, est dans **[RULES.md](RULES.md)**.
+QNX SDP 8.0 (les 12 pages citees ont ete relues le 12 novembre 2026 ; chacune
+porte la date de mise a jour que QNX lui a donnee, et
+`scripts/verifier-citations.py` affiche cette date). Le detail regle par
+regle, avec la citation et l'URL, est dans **[RULES.md](RULES.md)**.
 
 ## Les onze regles
 

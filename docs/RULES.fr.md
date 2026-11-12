@@ -1,8 +1,11 @@
 # Regles de QX-PROBE et leurs sources officielles QNX 8.0
 
 Chaque regle de la sonde est adossee a une page de la documentation officielle
-**BlackBerry QNX SDP 8.0** (QNX OS 8.0 C Library Reference). Les pages citees
-ci-dessous sont toutes a jour au **11 juin 2026**.
+**BlackBerry QNX SDP 8.0** (QNX OS 8.0 C Library Reference). Les 12 pages
+citees ci-dessous ont ete relues le **12 novembre 2026** : les 12 ont repondu
+HTTP 200 et chacune porte la date de mise a jour que QNX lui a donnee
+(`Page updated: November 05, 2026`). Cette date est affichee par
+`scripts/verifier-citations.py`.
 
 Convention de lecture : une regle sans source officielle est une regle qui
 n'existe pas. Quand la documentation contredit une regle, c'est la regle qui
@@ -286,8 +289,9 @@ pire qu'une regle absente.
 
 Les six exigences qui suivent sont citees **mot pour mot** depuis la page des
 regles du QNX Global Hackathon, consultee le **06/11/2026** (HTTP 200,
-160 476 octets pour la copie enregistree — la page vivante varie d'un octet ou
-deux selon les jetons de session, le texte non) : <https://qnx.devpost.com/rules>. Pour chacune, la video v2
+160 476 octets pour la copie enregistree — la page vivante varie de quelques
+centaines d'octets selon les jetons de session et l'habillage de la page, le
+texte des regles non) : <https://qnx.devpost.com/rules>. Pour chacune, la video v2
 et la maniere dont elle y repond.
 
 *Relu le 07/11/2026 :* la page repond HTTP 200 et son **texte** est
@@ -299,6 +303,18 @@ sur la copie du 06/11, 657 puis 658 pendant la relecture du 07/11 ; remplace
 par un joker, les deux textes sont strictement egaux. Les six citations
 ci-dessous ont ete verifiees caractere par caractere sur la copie du
 07/11/2026 : les six sont toujours exactes.
+
+*Relu encore le 12/11/2026 :* la page repond HTTP 200 et le **texte des
+regles est toujours identique** a la copie du 06/11/2026. Le corps des regles
+— de la ligne de titre a la fin de la page — donne les memes **37 665
+caracteres** dans les quatre copies enregistrees les 06/11, 07/11, 11/11 et
+12/11, mesures par la meme methode que ci-dessus (balises HTML retirees,
+lignes vides supprimees, lignes restantes jointes par des retours a la ligne ;
+les 39 540 caracteres du paragraphe precedent comptent toute la page, navigation
+comprise). Le compteur de participants, qui est vivant et se trouve au-dessus
+de ce texte, est passe de 601 le 06/11 a 1 192 le 11/11 et 1 310 le 12/11. Les
+six citations ci-dessous ont ete reverifiees caractere par caractere sur la
+copie du 12/11/2026 : les six sont toujours exactes.
 
 **1. Duree** — « should be less than three (3) minutes ».
 

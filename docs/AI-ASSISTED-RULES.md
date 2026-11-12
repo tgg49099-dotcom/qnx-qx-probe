@@ -521,8 +521,8 @@ number of tests, `OK`, and the exit code)
 
 **What was measured again, on 11/11/2026** — after the benchmark, the *current*
 test suite was run against the code of the previous commit (`git show
-eeb99e4:qx_probe.py`, md5 `bdc705b7636bea56d849a127e7c341a0`), the new code
-being md5 `e3c438a67e947240cc6c26d8adf557e9`:
+eeb99e4:qx_probe.py`, md5 `bdc705b7636bea56d849a127e7c341a0`), the code of
+that day being md5 `e3c438a67e947240cc6c26d8adf557e9`:
 
 ```
 Ran 27 tests in 0.224s
@@ -539,6 +539,14 @@ new code passes the whole suite:
 Ran 27 tests in 0.167s
 OK
 ```
+
+**The code of 12/11/2026** is md5 `b40f0cea4deddb7a253b18053944c5ab`. It
+differs from the code of that day by the **header of the file only**: the
+update date of the documentation pages was replaced by the sentence that
+points at `scripts/verifier-citations.py`, which prints the update date each
+cited page carries — QNX republished those pages on 05/11/2026, so a fixed
+date in the header would have been false. The eleven rules, their levels,
+their messages and their tests are untouched: the same 27 tests pass.
 
 **A test that passes on both versions is not a proof of a correction.** That
 is why the table of § 3 names, for each corrected rule, the test that

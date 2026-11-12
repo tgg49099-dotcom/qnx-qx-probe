@@ -42,8 +42,10 @@ Concretely, the linter **never** reports:
   that a symbol is missing.
 
 Every rule is backed by an official **BlackBerry QNX SDP 8.0** documentation
-page (the cited pages were updated on 11 June 2026). The detail, rule by
-rule, with the quotation and the URL, is in **[RULES.md](RULES.md)**.
+page (the 12 cited pages were re-read on 12 November 2026; each one carries
+the update date QNX put on it, and `scripts/verifier-citations.py` prints
+that date). The detail, rule by rule, with the quotation and the URL, is in
+**[RULES.md](RULES.md)**.
 
 ## The eleven rules
 

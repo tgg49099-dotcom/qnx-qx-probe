@@ -286,8 +286,11 @@ The QNX connection is the product itself, not a mention of QNX in a README.
     _RESMGR_NPARTS().
   - Every one of the 11 rules cites the official BlackBerry QNX SDP 8.0
     documentation page it comes from, with the URL and the exact sentence it
-    relies on. The 12 pages cited were all reachable on 6 November 2026 and
-    all carry "Page updated: June 11, 2026".
+    relies on. The 12 pages cited were re-read on 12 November 2026: all 12
+    answered HTTP 200, and each one carries the update date QNX put on it
+    ("Page updated: November 05, 2026"). The check is public and repeatable:
+    scripts/verifier-citations.py re-reads the 12 pages, prints the date it
+    finds on each one, and reports a page it cannot read as NOT CHECKED.
   - The reference corpus used to validate the tool is BlackBerry's own public
     Apache-2.0 resource manager (examples/blackberry_eventfd_mgr.c), which the
     linter must report with 0 errors and 0 warnings.
@@ -322,7 +325,7 @@ The QNX connection is the product itself, not a mention of QNX in a README.
 
 <!-- FIN:QXUSE -->
 
-_Measured: 2631 characters._
+_Measured: 2885 characters._
 
 ## 12. Links
 
@@ -431,7 +434,11 @@ This is the mapping, so that nothing is left to chance.
 
 ## 17. Where every figure comes from
 
-Measured on the public repository on **6 November 2026**.
+Measured on the public repository, first on **6 November 2026** and
+re-verified on **12 November 2026** (`bash scripts/verify-all.sh`: 6 checks
+out of 6, RC 0 — the pixel audit of the video needs ffmpeg and pillow; on a
+machine without them that single check reports NOT CHECKED and the command
+returns 2, never a false success).
 
 | Figure | Value | How it was measured |
 |---|---|---|
@@ -443,7 +450,7 @@ Measured on the public repository on **6 November 2026**.
 | Official example of the documentation | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c` |
 | Sabotaged fixture | 6 findings, 1 ERROR (QX004), 0 WARN, exit 1 | `python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c` |
 | Codelab | 12 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
-| Official QNX 8.0 pages cited | 12 distinct pages, all HTTP 200 on 06/11/2026, all marked "Page updated: June 11, 2026" | `curl` on each URL of `RULES.md` |
+| Official QNX 8.0 pages cited | 12 distinct pages, all HTTP 200 when re-read on 12/11/2026, all then marked "Page updated: November 05, 2026" | `curl` on each URL of `RULES.md`; `python3 -I scripts/verifier-citations.py` |
 | The linter | 717 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
 | Benchmark on real code | 17 files from 13 public repositories (4 published by QNX), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
 | Video | 1 367 966 bytes, md5 `178e1b58638628a5bc56f11c6fada8e2`, 71.44 s, 1920x1080, H.264, 25 fps, 1786 images, no audio, 19 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |

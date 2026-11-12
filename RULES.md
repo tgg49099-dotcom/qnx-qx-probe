@@ -5,8 +5,11 @@
 > rules and the same official QNX 8.0 sources.
 
 Every rule of the linter is backed by a page of the official **BlackBerry
-QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The pages
-cited below are all updated as of **11 June 2026**.
+QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The 12 pages
+cited below were re-read on **12 November 2026**: all 12 answered HTTP 200,
+and each one carries the update date QNX put on it (`Page updated:
+November 05, 2026`). The date each page carries is printed by
+`scripts/verifier-citations.py`, so a judge can read it for himself.
 
 Reading convention: **a rule without an official source is a rule that does
 not exist.** When the documentation contradicts a rule, it is the rule that
@@ -359,8 +362,8 @@ absent rule.
 
 The six requirements below are quoted **verbatim** from the QNX Global
 Hackathon rules page, consulted on **06/11/2026** (HTTP 200, 160 476 bytes
-for the saved copy — the live page varies by a byte or two with the session
-tokens, the text does not):
+for the saved copy — the live page varies by a few hundred bytes with the
+session tokens and the page furniture, the text of the rules does not):
 <https://qnx.devpost.com/rules>. For each one: how video v2 answers it.
 
 *Re-read on 07/11/2026:* the page answers HTTP 200 again and its **text** is
@@ -371,6 +374,18 @@ text is the participant counter, which is live: 601 on the copy of 06/11,
 657 then 658 during the re-read of 07/11; replace it by a placeholder and the
 two texts are strictly equal. The six quotations below were checked character
 by character against the copy fetched on 07/11/2026: all six are still exact.
+
+*Re-read again on 12/11/2026:* the page answers HTTP 200 once more, and the
+**text of the rules is still identical** to the copy of 06/11/2026. The body
+of the rules — from the title line to the end of the page — gives the same
+**37 665 characters** in the four copies saved on 06/11, 07/11, 11/11 and
+12/11, measured with the same method as above (HTML tags stripped, blank lines
+dropped, the remaining lines joined by newlines; the 39 540 characters of the
+paragraph above count the whole page, navigation included). The participant
+counter, which is live and sits above that text, went from 601 on 06/11 to
+1 192 on 11/11 and 1 310 on 12/11. The six quotations below were checked again,
+character by character, against the copy fetched on 12/11/2026: all six are
+still exact.
 
 **1. Duration** — "should be less than three (3) minutes".
 

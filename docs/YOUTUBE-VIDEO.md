@@ -186,14 +186,19 @@ wrong text and refuses to pass if the two are not clearly separated.
 ## 9. AI — no clause to declare
 
 **No AI clause found** in the rules. The page
-(https://qnx.devpost.com/rules, read on 6 November 2026 and read again on
-7 November 2026, HTTP 200 both times, **39 540 characters of text** — HTML
+(https://qnx.devpost.com/rules, read on 6 November 2026, read again on
+7 November 2026 and read a third time on 12 November 2026, HTTP 200 the
+three times, **39 540 characters of text** — HTML
 tags stripped, blank lines dropped, the remaining lines joined by newlines;
-the same count on the copy of 6 November and on the copy of 7 November)
+the same count on the copy of 6 November and on the copy of 7 November. Read
+a third time on 12 November 2026, the body of the rules — from its title line
+to the end of the page, navigation apart — still gives the same 37 665
+characters as on the copies of 6, 7 and 11 November)
 contains no requirement to declare, disclose or mention
 the use of AI. The word "AI", taken as a word of its own, occurs **4 times**
 in the whole page, and the 4 occurrences are only **3 different texts**
-(the navigation menu is printed twice):
+(the navigation menu is printed twice) — the same 4 occurrences, in the same
+3 texts, on the copy of 12 November 2026:
 
 * the DevPost navigation menu — *"By use case / AI hackathons"* (a link, not
   a rule; printed twice in the page);
