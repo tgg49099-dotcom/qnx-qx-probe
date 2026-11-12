@@ -173,13 +173,58 @@ La documentation QNX 8.0 est explicite, sur la page de
 Le linteur signale donc `ERROR QX004` sur ce fichier, et il a raison : la
 porte d'acces manque. C'est un vrai defaut dans du code publie par
 l'editeur du systeme d'exploitation — trouve par un linteur statique sur la
-source publique, sans rien executer.
+source publique, sans rien executer. **Aucun rapport n'a ete envoye a QNX, et
+aucun tiers n'a ete contacte** : le fichier a ete lu depuis son depot public,
+au commit fige, et rien n'a ete ecrit nulle part.
 
 **Ce que cela ne veut pas dire.** Cela ne veut pas dire que le fichier est
-casse en production : `resmgr_read()` peut etre utilise par un gestionnaire
-dont les permissions sont verifiees ailleurs. Cela veut dire que le fichier ne
-suit pas la regle que la documentation enonce pour les handlers de lecture, et
-que cette regle vaut la peine d'etre signalee.
+casse en production, ni que le noeud reste non protege. Cela veut dire que le
+fichier ne suit pas la regle que la documentation enonce pour les handlers de
+lecture, et que cette regle vaut la peine d'etre signalee. Concretement :
+
+1. **Les permissions d'ouverture existent.** Les deux noeuds sont crees avec le
+   mode `0664` (`mode_t mode = 0664;`, ligne 732, applique aux deux attributs
+   aux lignes 830-831), et l'ouverture est traitee par le gestionnaire
+   d'ouverture **par defaut** de la bibliotheque resource-manager :
+   `iofunc_func_init()` (ligne 824) installe les fonctions par defaut de la
+   couche POSIX, et le handler d'ouverture n'est pas surcharge. Le mode du
+   noeud est donc verifie contre le client au moment ou il ouvre la ressource,
+   avant toute lecture : le gestionnaire d'ouverture par defaut
+   (`iofunc_open_default()`,
+   <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_open_default.html>)
+   appelle `iofunc_open()` pour verifier le mode d'ouverture du client contre
+   les attributs de la ressource. Ce que la porte manquante laisse passer
+   n'est donc **pas** la permission sur le noeud : c'est la seconde
+   verification, celle que la documentation fait de l'etape a part.
+
+2. **Ce que la porte manquante laisse passer.** La page de
+   `iofunc_read_verify()` dit ce qu'est cette etape :
+
+   > This function checks at least that:
+   > the original open included read access
+   > the incoming message is well-formed, including that:
+   > if an xtype is specified that includes extra data headers, the extra data is in the receive buffer
+   > the read offset to be used is non-negative
+
+   et ce qu'elle retourne quand la verification echoue :
+
+   > EBADF
+   > The client didn't open the resource for read access.
+
+   `resmgr_read()` ne l'appelle jamais, donc aucune de ces verifications n'est
+   faite : un client qui a ouvert le noeud en ecriture seule recoit la
+   temperature, et le handler ne regarde jamais le `xtype` du message auquel il
+   repond — le mot `xtype` n'apparait nulle part dans le fichier — si bien
+   qu'une lecture qui porte une position, ou des en-tetes de donnees
+   supplementaires, est servie comme une lecture simple de la valeur.
+
+3. **Un second point reel, visible sans la documentation.** La reponse ignore
+   `msg->i.nbytes` : la longueur de la reponse est bornee par
+   `ctp->msg_max_size` (1024, ligne 845), et non par le nombre d'octets
+   demandes par le client (lignes 530-534). Un client qui demande huit octets
+   recoit toute la chaine. Celui-ci est **un candidat pour une regle future**,
+   et non un constat : QX-PROBE ne le detecte pas aujourd'hui, et rien ici ne
+   pretend le contraire.
 
 ---
 

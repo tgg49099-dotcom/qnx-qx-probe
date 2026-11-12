@@ -76,8 +76,8 @@ TIMEOUT = 25
 # --------------------------------------------------------------------------
 # The 12 pages cited by RULES.md, and the sentences the rules depend on.
 # Every quotation below is a sentence of the official page (measured on
-# 07/11/2026) and is also written in RULES.md — except the ones marked
-# "not quoted in RULES.md", for a page that RULES.md cites without quoting.
+# 07/11/2026) and is written verbatim in RULES.md: the checker prints a
+# "not written verbatim in RULES.md" note for every quotation that is not.
 # --------------------------------------------------------------------------
 CITATIONS: list[tuple[str, str, tuple[str, ...]]] = [
     ("resmgr_attach", "r/resmgr_attach", (
@@ -121,9 +121,8 @@ CITATIONS: list[tuple[str, str, tuple[str, ...]]] = [
         "All read handlers should start with a call to iofunc_read_verify() "
         "and proceed only if it returns EOK.",
         # The four sentences below are the behaviour of the gate itself. They
-        # are quoted in docs/BENCHMARK.md (section 5), not yet in RULES.md:
-        # the checker therefore prints the "not written verbatim in RULES.md"
-        # note for them, which is a note and not a failure.
+        # are quoted in docs/BENCHMARK.md (section 5) and written verbatim in
+        # RULES.md (rule QX004), so the checker finds them in both.
         "the original open included read access",
         "if an xtype is specified that includes extra data headers, the "
         "extra data is in the receive buffer",

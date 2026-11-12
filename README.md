@@ -123,7 +123,7 @@ scripts/audit-sous-titres-pixels.py          proves that the published subtitles
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
 scripts/run_tests.sh                         runs the test suite
-scripts/verifier-citations.py                re-reads the 12 cited QNX 8.0 pages and checks the 29 quotations
+scripts/verifier-citations.py                re-reads the 12 cited QNX 8.0 pages and checks the 33 quotations
 scripts/verifier-codelab.py                  replays every command of docs/CODELAB.md and checks its output
 scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links
 scripts/verify-all.sh                        replays every published proof in one command

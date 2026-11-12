@@ -62,6 +62,9 @@ gives way — never the canonical QNX code.
   >
   > "The `nconnect` and `nio` arguments indicate how many entries this
   > function should fill. This is in place to support forward compatibility."
+  >
+  > "The `resmgr_connect_funcs_t` structure is a table of the POSIX-level
+  > connect functions that are used by a resource manager."
 * **What the rule checks:** the only honest overflow is a count **larger than
   the table**: more than **34** entries for the io table (the
   `resmgr_io_funcs_t` structure declares 34 function members plus `nfuncs`),
@@ -109,7 +112,22 @@ gives way — never the canonical QNX code.
 * **Sources:** `iofunc_read_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html> · `iofunc_write_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
 * **What the documentation says:** "All read handlers should start with a call
   to `iofunc_read_verify()` and proceed only if it returns EOK." — and the same
-  for `iofunc_write_verify()`.
+  for `iofunc_write_verify()`: "All write handlers should start with a call
+  to `iofunc_write_verify()` and proceed only if it returns EOK."
+
+  The page of `iofunc_read_verify()` also states what that gate checks:
+
+  > This function checks at least that:
+  > the original open included read access
+  > the incoming message is well-formed, including that:
+  > if an xtype is specified that includes extra data headers, the extra data is in the
+  > receive buffer
+  > the read offset to be used is non-negative
+
+  and what it returns when the check fails:
+
+  > EBADF
+  > The client didn't open the resource for read access.
 * **What the rule checks:** the body of the `read`/`write` handler, with the
   strings and the comments blanked, must contain the gate — directly, or
   through a helper function of the same file (a delegated check is a check).
@@ -151,6 +169,18 @@ gives way — never the canonical QNX code.
 * **What the documentation says:** `resmgr_block()` "waits for a message" and
   "is a special case of `dispatch_block()`". A resource manager that calls
   neither never waits for a message: it does nothing.
+
+  The two pages, verbatim:
+
+  > The resmgr_block() function waits for a message (created by a call to
+  > resmgr_context_alloc()) for context ctp.
+  >
+  > This function is a special case of dispatch_block() that you should use
+  > only with a simple resource manager.
+  >
+  > The dispatch_block() function blocks by calling MsgReceive() while waiting
+  > for an event that's registered using one of the attach functions,
+  > message_attach(), pulse_attach(), resmgr_attach(), or select_attach().
 * **Why both APIs are accepted:** the reference example in the QNX 8.0
   documentation uses `resmgr_block()`, not `dispatch_block()`. Requiring one of
   the two would produce a false positive on the reference code.
@@ -178,6 +208,15 @@ gives way — never the canonical QNX code.
   received in `ctp`" and "is a special case of `dispatch_handler()`". Without
   a call to one of the two, the message stays pending and the client never
   gets an answer.
+
+  The two pages, verbatim:
+
+  > The resmgr_handler() function handles the message received in ctp.
+  >
+  > The resmgr_handler() function is a special case of dispatch_handler().
+  >
+  > The dispatch_handler() function handles events received by dispatch_block()
+  > and does one of the following:
 * **What changed in this version (the level):** like QX006, this rule was at
   **ERROR** and is now at **WARN**, for the same reason: a handler may live
   in another translation unit, and a single file cannot prove that the

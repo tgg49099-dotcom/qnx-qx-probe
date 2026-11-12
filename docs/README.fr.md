@@ -105,7 +105,7 @@ scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies 
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/run_tests.sh                         lance la suite de tests
-scripts/verifier-citations.py                relit les 12 pages QNX 8.0 citees et verifie les 29 citations
+scripts/verifier-citations.py                relit les 12 pages QNX 8.0 citees et verifie les 33 citations
 scripts/verifier-codelab.py                  rejoue chaque commande de docs/CODELAB.md et verifie sa sortie
 scripts/verifier-soumission-devpost.py       verifie le texte de soumission : longueurs, anglais, liens
 scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande

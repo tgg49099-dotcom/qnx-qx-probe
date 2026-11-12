@@ -52,7 +52,7 @@ exist either.**
 ```console
 $ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git && cd qnx-qx-probe
 $ bash scripts/run_tests.sh                 # 27 tests, RESULT: QX-PROBE suite GREEN (RC 0)
-$ python3 -I scripts/verifier-citations.py  # the 12 official pages, 29 quotations (RC 0)
+$ python3 -I scripts/verifier-citations.py  # the 12 official pages, 33 quotations (RC 0)
 $ git show bfad852:RULES.md                 # the first draft of the eleven rules
 $ git show 9706199 --stat                   # the commit that corrected the five defective rules
 $ git show eeb99e4:qx_probe.py > /tmp/old.py  # the code before the corrections of 11/11/2026
@@ -574,8 +574,8 @@ declares in `RULES.md` (each rule has its own "Known limit" section there).
 * **The AI did not write the facts of this file from memory.** Every commit
   name, file name, test name, quotation and figure here was re-read against
   the files of this repository, and the quotations of the official pages were
-  re-read against the live pages on **07/11/2026** (`scripts/verifier-citations.py`,
-  12 pages read, 29 quotations found, exit code 0).
+  re-read against the live pages on **12/11/2026** (`scripts/verifier-citations.py`,
+  12 pages read, 33 quotations found, exit code 0).
 
 **What is still open:** the demonstration video has to be uploaded to YouTube
 as a public video by the owner, and the submission form has to be filled in
