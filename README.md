@@ -214,6 +214,54 @@ invents a compiler output.
 licence do not exist in this environment: the examples have never been
 compiled for QNX 8.0, and nothing in this repository pretends otherwise.
 
+## Why this tool counts as QNX 8.0 evidence
+
+The contest rules say exactly what a host tool may offer. Line 149 of the
+copy of the rules that we saved and compared word by word on 12 November 2026
+(the local copy is `/work/qnx/proofs/rules-live-20261112.txt`; the rules
+themselves are public and were fetched from <https://qnx.devpost.com/rules>,
+HTTP 200) reads:
+
+> Evidence of QNX use: Your submission must explain how the project uses or
+> supports QNX. Evidence may include QNX-specific source code or APIs; QNX
+> libraries, headers, buildfiles, toolchains, system images, or configuration
+> files in the repository; a demonstration running on QNX 8.0; or, for
+> host-based developer tools, output or functionality specifically intended to
+> build, analyze, test, deploy, debug, or manage software for QNX 8.0. This
+> list is illustrative, not exhaustive. POSIX-compatible code, interpreted
+> languages, ports of existing software, and tools that run on another
+> operating system remain eligible when the submission clearly demonstrates a
+> meaningful connection to QNX. Entrants should identify the relevant files,
+> functions, output, or demonstration in their submission description so that
+> reviewers can verify the QNX connection.
+
+This repository answers that passage with four things, each of them named
+where a reviewer can open it, and each of them re-playable:
+
+* **the eleven rules** — one line each in the table above, every one of them
+  backed by an official BlackBerry QNX SDP 8.0 documentation page, with the
+  quotation and the URL in **[RULES.md](RULES.md)**;
+* **the 33 quotations** taken from the **12** cited pages, checked word for
+  word by `scripts/verifier-citations.py`, which re-reads the pages and
+  prints the update date QNX put on each of them;
+* **the benchmark on public QNX 8.0 code** — the linter is run on **17 real
+  resource managers**, **seven of them published by QNX or BlackBerry
+  themselves**, every file pinned to the exact commit that was read, with
+  **one true positive and no false positive** on the current version (see
+  **[docs/BENCHMARK.md](docs/BENCHMARK.md)**);
+* **the QNX connection in the rules themselves** — they are not about generic
+  C, they are about the QNX 8.0 resource-manager protocol
+  (`resmgr_attach()`, `iofunc_read_verify()`, `iofunc_func_init()`,
+  `_RESMGR_NPARTS()`), and the code they analyse is QNX 8.0 resource-manager
+  code (`examples/`, and the seventeen files of the benchmark).
+
+What this repository does **not** claim: the QNX 8.0 compilation of the
+examples is **NOT MEASURED** (the QNX SDP 8.0 is not installed in the
+environment where the project was written, and no QNX licence key has been
+used there). `scripts/build_qcc.sh` stops with an explicit
+message and the exit code 2 when `qcc` is absent, and **no compiler output is
+simulated anywhere in this repository**.
+
 ## The demonstration video
 
 `media/qx-demo-v2.mp4` — 1 367 966 bytes, MP4 / H.264, 1920x1080, 25 fps,

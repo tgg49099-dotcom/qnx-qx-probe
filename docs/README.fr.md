@@ -152,6 +152,11 @@ Ce script utilise `qcc` du SDP 8.0 : il n'est donc **pas** exécutable sans le
 SDK. Il s'arrête avec un message explicite si `qcc` est absent, et il n'invente
 jamais une sortie de compilateur.
 
+**La compilation n'est PAS MESUREE (NOT MEASURED).** Le SDP 8.0 n'est pas
+installé dans l'environnement où ce projet a été écrit et aucune clé de licence
+QNX n'y a été utilisée : les exemples n'ont jamais été compilés pour QNX 8.0,
+et rien dans ce dépôt ne prétend le contraire.
+
 ## Licence
 
 Code de QX-PROBE : Apache-2.0 (voir `LICENSE`).
