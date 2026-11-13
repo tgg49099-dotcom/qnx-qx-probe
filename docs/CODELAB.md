@@ -353,9 +353,9 @@ account is required). With the SDK installed, the host tools are on your
 $ bash scripts/build_qcc.sh x86_64
 ```
 
-The script uses `qcc -Vgcc_ntoaosdebug -Werror`, that is: the native QNX
-libraries and **no warning tolerated**. Targets: `x86_64` (a QEMU guest),
-`aarch64`, `armv7`.
+The script uses `qcc -Vgcc_ntox86_64 -Werror` (or `-Vgcc_ntoaarch64le`), that is: the QNX 8.0
+libraries and **no warning tolerated**. Targets: `x86_64` (a QEMU guest)
+and `aarch64` (QNX 8.0 is 64-bit only).
 
 > **Honest note.** The build of these examples has **NOT been measured** in
 > the environment where this tutorial was written: there was no SDP 8.0

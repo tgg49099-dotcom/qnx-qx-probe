@@ -149,7 +149,7 @@ scene.
 
 1. Get the SDP 8.0 (Linux x86_64 host tools) and a non-commercial QNX
    Everywhere licence.
-2. Check the target: `qcc -Vgcc_ntoaosdebug` must compile the examples.
+2. Check the target: `qcc -Vgcc_ntox86_64` must compile the examples.
 3. Re-run `bash scripts/run_tests.sh` and `bash scripts/build_qcc.sh` up to date.
 4. Record a **v3** with the target shot (the QNX 8.0 guest under QEMU), and
    keep the same subtitle rules.

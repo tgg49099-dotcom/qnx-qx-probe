@@ -564,8 +564,8 @@ declares in `RULES.md` (each rule has its own "Known limit" section there).
 
 * **The QNX 8.0 compilation was not performed.** No QNX SDP 8.0 licence was
   available where the project was written. `scripts/build_qcc.sh` is a real
-  build path (`qcc -Vgcc_ntoaosdebug -Werror`, targets `x86_64`, `aarch64`,
-  `armv7`); its "no SDK" path is verified and it stops with an explicit
+  build path (`qcc -Vgcc_ntox86_64` or `-Vgcc_ntoaarch64le`, `-Werror`, targets
+  `x86_64` and `aarch64`); its "no SDK" path is verified and it stops with an explicit
   message and exit code 2 when `qcc` is missing. It never simulates compiler
   output. The successful compilation is **NOT MEASURED**, and it is written as
   such in the submission.

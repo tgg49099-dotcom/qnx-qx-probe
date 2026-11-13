@@ -43,6 +43,11 @@ python3 -I -B tests/test_output_formats.py
 rc4=$?
 [ "$rc" -eq 0 ] && rc=$rc4
 echo
+echo "--- 5. the QNX 8.0 build script, with a fake qcc (the real build stays NOT MEASURED) ---"
+python3 -I -B tests/test_build_qcc.py
+rc5=$?
+[ "$rc" -eq 0 ] && rc=$rc5
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else

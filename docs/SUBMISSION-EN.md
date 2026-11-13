@@ -151,14 +151,14 @@ _Measured: 1928 characters._
 <!-- DEBUT:WHATSNEXT -->
 Three things, in this order.
 
-1. Measure the QNX 8.0 build. The repository already contains a real build path for the example resource managers (scripts/build_qcc.sh, qcc -Vgcc_ntoaosdebug -Werror, targets x86_64, aarch64 and armv7), but it has never been run against a real qcc: the SDP 8.0 licence was not available where this project was written, so the compilation is honestly labelled NOT MEASURED in the repository and in this submission. With the SDK we will compile the examples for QNX 8.0, run them in a QEMU guest, and add that build to the continuous-integration chain.
+1. Measure the QNX 8.0 build. The repository already contains a real build path for the example resource managers (scripts/build_qcc.sh, qcc -Vgcc_ntox86_64 / -Vgcc_ntoaarch64le -Werror, targets x86_64 and aarch64), but it has never been run against a real qcc: the SDP 8.0 licence was not available where this project was written, so the compilation is honestly labelled NOT MEASURED in the repository and in this submission. With the SDK we will compile the examples for QNX 8.0, run them in a QEMU guest, and add that build to the continuous-integration chain.
 
 2. Take the check to the target. The linter reads the source today; the next step is to run the same eleven rules on the QNX side, where a resource manager can report its own protocol at start-up.
 
 3. Widen the coverage. The resource-manager protocol is the first QNX 8.0 interface covered here; message passing and the network interfaces follow, under the same rule: a rule that cannot be justified by an official QNX 8.0 page is removed rather than kept.
 <!-- FIN:WHATSNEXT -->
 
-_Measured: 1039 characters._
+_Measured: 1051 characters._
 
 ## 9. Testing instructions
 
@@ -250,12 +250,12 @@ version, the target (hardware or QEMU), and the toolchain used."*
 
   THE C EXAMPLES - a real QNX 8.0 build path:
 
-    bash scripts/build_qcc.sh [x86_64|aarch64|armv7]
+    bash scripts/build_qcc.sh [x86_64|aarch64]
 
     QNX version : 8.0 (QNX SDP 8.0 host tools)
     Target      : x86_64 by default - a QNX 8.0 guest running under QEMU.
-                   aarch64 and armv7 are also accepted as arguments.
-    Toolchain   : qcc -Vgcc_ntoaosdebug -Werror (the SDP 8.0 compiler)
+                   aarch64 is also accepted as an argument.
+    Toolchain   : qcc -Vgcc_ntox86_64 (or -Vgcc_ntoaarch64le) -Werror (the SDP 8.0 compiler)
 
     This script REQUIRES the QNX SDP 8.0 and a non-commercial QNX Everywhere
     licence (myQNX account). Without qcc it stops with an explicit error message
@@ -272,7 +272,7 @@ version, the target (hardware or QEMU), and the toolchain used."*
     guest, read it with cat /dev/qxprobe-demo.
 <!-- FIN:BUILD -->
 
-_Measured: 1566 characters._
+_Measured: 1573 characters._
 
 ## 11. Evidence of QNX use
 
@@ -301,8 +301,8 @@ The QNX connection is the product itself, not a mention of QNX in a README.
     measurement found nine false positives of the tool, in five files, and
     one true positive - the missing access gate of QNX's own rpi-thermal.
   - The repository contains a real QNX 8.0 build path: scripts/build_qcc.sh
-    compiles the example resource managers with qcc -Vgcc_ntoaosdebug -Werror
-    for x86_64, aarch64 or armv7.
+    compiles the example resource managers with qcc -Vgcc_ntox86_64 or
+    -Vgcc_ntoaarch64le -Werror, for x86_64 or aarch64.
   - The output of the tool is what a QNX developer needs: the findings name the
     file, the line, the QNX API involved and the official documentation page.
 
@@ -325,7 +325,7 @@ The QNX connection is the product itself, not a mention of QNX in a README.
 
 <!-- FIN:QXUSE -->
 
-_Measured: 2885 characters._
+_Measured: 2899 characters._
 
 ## 12. Links
 
@@ -427,7 +427,7 @@ This is the mapping, so that nothing is left to chance.
 
 | Criterion | Where it is answered |
 |---|---|
-| **Technological Implementation** | § 7: a real analyser, 717 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 27 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntoaosdebug -Werror`) that is labelled NOT MEASURED rather than faked. |
+| **Technological Implementation** | § 7: a real analyser, 822 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 27 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntox86_64 -Werror`) that is labelled NOT MEASURED rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
 | **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 on the first draft, then 4 more on the version of 08/11/2026 - both measured) and passes on the current one; `scripts/verifier-citations.py` re-reads the 12 cited pages and checks that the 33 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |

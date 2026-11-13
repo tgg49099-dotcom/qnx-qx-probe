@@ -137,7 +137,7 @@ La video **v0** est filmee (voir plus haut).  Ce qui reste :
 
 1. Disposer du SDP 8.0 (host tools Linux x86_64) et d'une licence QNX Everywhere
    non commerciale.
-2. Verifier la cible : `qcc -Vgcc_ntoaosdebug` doit compiler les deux exemples.
+2. Verifier la cible : `qcc -Vgcc_ntox86_64` doit compiler les deux exemples.
 3. Rejouer `bash scripts/run_tests.sh` et `bash scripts/build_qcc.sh` a jour.
 4. Filmer la **v1** : les plans 3 et 5 (le faux positif assume, la cible
    QNX 8.0), une version en anglais ou sous-titree, et un plan « zero
