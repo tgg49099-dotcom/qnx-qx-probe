@@ -141,7 +141,7 @@ elles ont ete relues a la main avant d'etre crues :
 $ python3 -I scripts/benchmark-corpus.py
 ...
 rpi-thermal/rpi_thermal.c    7 finding(s), 1 ERROR, 0 WARN (exit 1)
-    ERROR QX004 rpi-thermal/rpi_thermal.c:read: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
+    ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
 ...
 devu-uvc/uvc_rm.c             3 finding(s), 0 ERROR, 1 WARN (exit 1)
     WARN QX006 devu-uvc/uvc_rm.c: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project

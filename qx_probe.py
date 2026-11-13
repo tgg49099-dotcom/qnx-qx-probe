@@ -109,7 +109,15 @@ class Finding:
     code: str
     where: str
     message: str
-    line: int = 1     # 1-based line in the raw file (used by --format json/sarif)
+    line: int = 1     # 1-based line in the raw file (used by every output format)
+
+    def loc(self) -> str:
+        """`file:line`, the location format of gcc and clang.
+
+        Editors, IDEs (VS Code, Eclipse-based QNX Momentics) and CI log
+        viewers turn `file:line:` into a link to the source line.
+        """
+        return f"{file_of(self.where)}:{max(1, self.line)}"
 
 
 def strip_comments(src: str) -> str:
@@ -802,7 +810,7 @@ def main(argv: list[str]) -> int:
         findings += analyse(p, raw, known)
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
-    findings.sort(key=lambda x: (order[x.level], x.code, x.where))
+    findings.sort(key=lambda x: (order[x.level], x.code, file_of(x.where), x.line))
     n_err = sum(1 for f in findings if f.level == "ERROR")
     n_warn = sum(1 for f in findings if f.level == "WARN")
     if fmt == "json":
@@ -811,7 +819,7 @@ def main(argv: list[str]) -> int:
         print(to_sarif(findings))
     else:
         for f in findings:
-            print(f"{f.level:5} {f.code}  {f.where}: {f.message}")
+            print(f"{f.level:5} {f.code}  {f.loc()}: {f.message}")
         print(f"\nRESULT: {len(findings)} finding(s), {n_err} ERROR, {n_warn} WARN")
     # An actionable finding (ERROR or WARN) makes the exit code fail: this is
     # what makes the probe usable as a CI gate (in every output format).

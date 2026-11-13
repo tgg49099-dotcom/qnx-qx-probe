@@ -1,7 +1,7 @@
 # QX-PROBE — a static checker for the QNX 8.0 resource-manager protocol
 
-QX-PROBE reads C code and reports the **false positives you cannot afford**
-in a QNX 8.0 driver: a resource manager that never calls
+QX-PROBE reads C code and reports the **resource-manager bugs you cannot
+afford** in a QNX 8.0 driver: a read handler that never calls
 `iofunc_read_verify()`, a message loop that blocks without dispatching, a
 reply that returns more parts than the IOV holds.
 
@@ -11,11 +11,16 @@ what makes it usable in a continuous-integration chain, or for a jury that
 has no hardware.
 
 ```console
-$ python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c
-INFO  QX008  examples/qnx80_resmgr_minimal.c: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+$ python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c
+ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing
 ...
-RESULT: 5 finding(s), 0 ERROR, 0 WARN
+RESULT: 6 finding(s), 1 ERROR, 0 WARN
 ```
+
+Every finding points at a line (`file:line:`, the gcc format), so a click in
+VS Code, in the Eclipse-based QNX Momentics IDE or in a CI log opens the
+source line. On the official QNX example, the same command reports nothing
+actionable (`0 ERROR, 0 WARN`, exit code 0).
 
 ## The golden rule: zero false positives
 

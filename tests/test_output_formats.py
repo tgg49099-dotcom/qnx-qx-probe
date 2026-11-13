@@ -131,5 +131,44 @@ class MachineReadable(unittest.TestCase):
         self.assertEqual(rc, 2)
 
 
+class TextLocations(unittest.TestCase):
+    """Every text finding is `LEVEL CODE file:line: message` (gcc format).
+
+    The text output used to print `file:read:` or `file:io_funcs:` (a slot
+    name, not a line) for QX003, QX004 and QX008, and only `file:` for
+    QX001, QX002, QX006, QX007, QX009, QX010 and QX011: an editor or a CI
+    log could not open the line, and the README promised `file:line`.
+    """
+
+    LINE_RE = r"^(ERROR|WARN |INFO ) QX\d{3}  (?P<file>\S+):(?P<line>\d+): \S"
+
+    def test_every_text_finding_has_a_numeric_line(self):
+        import re
+        for path in ALL_FILES:
+            _rc, out = run(path)
+            for line in out.split("\n"):
+                if not line.startswith(("ERROR", "WARN", "INFO")):
+                    continue
+                m = re.match(self.LINE_RE, line)
+                self.assertIsNotNone(m, msg=line)
+                self.assertEqual(m.group("file"), str(path), msg=line)
+                n = int(m.group("line"))
+                self.assertTrue(1 <= n <= len(path.read_text().split("\n")), msg=line)
+
+    def test_qx004_points_at_the_handler_definition(self):
+        _rc, out = run(FIXTURE)
+        line = [x for x in out.split("\n") if " QX004 " in x][0]
+        n = int(line.split(f"{FIXTURE}:", 1)[1].split(":", 1)[0])
+        self.assertIn("qx_read(", raw_line(FIXTURE, n))
+
+    def test_text_and_json_give_the_same_lines(self):
+        _rc, txt = run(FIXTURE)
+        _rc, js = run("--format", "json", FIXTURE)
+        from_json = sorted(f"{f['file']}:{f['line']}" for f in json.loads(js)["findings"])
+        from_text = sorted(x.split()[2].rstrip(":") for x in txt.split("\n")
+                           if x.startswith(("ERROR", "WARN", "INFO")))
+        self.assertEqual(from_json, from_text)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

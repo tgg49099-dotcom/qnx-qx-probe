@@ -72,11 +72,11 @@ the maximum value for `num`."* — [`_RESMGR_NPARTS()`](https://www.qnx.com/deve
 $ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
 $ cd qnx-qx-probe
 $ python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  examples/qnx80_resmgr_minimal.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_minimal.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  examples/qnx80_resmgr_minimal.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_minimal.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 5 finding(s), 0 ERROR, 0 WARN
 $ echo $?
@@ -114,20 +114,20 @@ from the QNX 8.0 documentation itself:
 
 ```console
 $ python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c
-INFO  QX008  examples/blackberry_eventfd_mgr.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/blackberry_eventfd_mgr.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/blackberry_eventfd_mgr.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  examples/blackberry_eventfd_mgr.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/blackberry_eventfd_mgr.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX008  examples/blackberry_eventfd_mgr.c:35: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/blackberry_eventfd_mgr.c:35: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/blackberry_eventfd_mgr.c:35: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  examples/blackberry_eventfd_mgr.c:146: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/blackberry_eventfd_mgr.c:146: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 5 finding(s), 0 ERROR, 0 WARN
 $ python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c
-INFO  QX008  examples/qnx80_resmgr_official_example.c:my_io_functions: my_io_functions.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_official_example.c:my_io_functions: my_io_functions.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_official_example.c:my_io_functions: my_io_functions.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_official_example.c:my_io_functions: my_io_functions.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  examples/qnx80_resmgr_official_example.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_official_example.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX008  examples/qnx80_resmgr_official_example.c:55: my_io_functions.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_official_example.c:55: my_io_functions.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_official_example.c:55: my_io_functions.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_official_example.c:55: my_io_functions.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  examples/qnx80_resmgr_official_example.c:89: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_official_example.c:89: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 6 finding(s), 0 ERROR, 0 WARN
 ```
@@ -157,12 +157,12 @@ The repository ships the broken file, so you can see the result immediately:
 
 ```console
 $ python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c
-ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:read: qx_read() never calls iofunc_read_verify(): the access gate is missing
-INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  tests/fixtures/qnx80_resmgr_qx004_no_gate.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  tests/fixtures/qnx80_resmgr_qx004_no_gate.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing
+INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:49: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:49: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:49: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:96: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:96: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 6 finding(s), 1 ERROR, 0 WARN
 $ echo $?
@@ -185,12 +185,12 @@ check delegated to a helper function of the same file **is** accepted.
 ```console
 $ python3 -I qx_probe.py examples/qnx80_resmgr_relative_path.c
 WARN  QX005  examples/qnx80_resmgr_relative_path.c:82: resmgr_attach() attaches the relative path 'qxprobe-rel': QNX resolves it against the current working directory (an absolute path is recommended)
-INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  examples/qnx80_resmgr_relative_path.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_relative_path.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX008  examples/qnx80_resmgr_relative_path.c:42: io_funcs.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_relative_path.c:42: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_relative_path.c:42: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_relative_path.c:42: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  examples/qnx80_resmgr_relative_path.c:75: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_relative_path.c:75: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 7 finding(s), 0 ERROR, 1 WARN
 $ echo $?
@@ -230,12 +230,12 @@ src = src.replace("""    ctp = dispatch_context_alloc(dpp);
 open('lab/break_qx006.c', 'w').write(src)
 PY
 $ python3 -I qx_probe.py lab/break_qx006.c
-WARN  QX006  lab/break_qx006.c: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
-INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  lab/break_qx006.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  lab/break_qx006.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  lab/break_qx006.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+WARN  QX006  lab/break_qx006.c:100: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+INFO  QX008  lab/break_qx006.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  lab/break_qx006.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  lab/break_qx006.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  lab/break_qx006.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  lab/break_qx006.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 6 finding(s), 0 ERROR, 1 WARN
 ```
@@ -268,12 +268,12 @@ src = src.replace("return _RESMGR_NPARTS(1);", "return _RESMGR_NPARTS(2);")
 open('lab/break_qx009.c', 'w').write(src)
 PY
 $ python3 -I qx_probe.py lab/break_qx009.c
-ERROR QX009  lab/break_qx009.c: qx_read() returns _RESMGR_NPARTS(2) but the resource manager declares attr.nparts_max = 1: the IOV array holds only 1 component(s)
-INFO  QX008  lab/break_qx009.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  lab/break_qx009.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  lab/break_qx009.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  lab/break_qx009.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  lab/break_qx009.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+ERROR QX009  lab/break_qx009.c:61: qx_read() returns _RESMGR_NPARTS(2) but the resource manager declares attr.nparts_max = 1: the IOV array holds only 1 component(s)
+INFO  QX008  lab/break_qx009.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  lab/break_qx009.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  lab/break_qx009.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  lab/break_qx009.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  lab/break_qx009.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 6 finding(s), 1 ERROR, 0 WARN
 ```
@@ -320,17 +320,17 @@ resolves the symbols of the whole analysed set.
 
 ```console
 $ python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c examples/qnx80_resmgr_readonly.c
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_minimal.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX008  examples/qnx80_resmgr_readonly.c:io_funcs: io_funcs.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_readonly.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_readonly.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  examples/qnx80_resmgr_readonly.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  examples/qnx80_resmgr_minimal.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_minimal.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_readonly.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  examples/qnx80_resmgr_readonly.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_minimal.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX008  examples/qnx80_resmgr_readonly.c:47: io_funcs.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_readonly.c:47: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_readonly.c:47: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  examples/qnx80_resmgr_readonly.c:47: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  examples/qnx80_resmgr_minimal.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_minimal.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_readonly.c:80: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  examples/qnx80_resmgr_readonly.c:80: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 11 finding(s), 0 ERROR, 0 WARN
 ```
@@ -496,7 +496,7 @@ another file:
 ```console
 $ printf 'static int h(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb)\n{\n    (void)ctp; (void)msg; (void)ocb;\n    return 0;\n}\n' > lab/handlers.c
 $ python3 -I qx_probe.py lab/handlers.c
-ERROR QX001  lab/handlers.c: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
+ERROR QX001  lab/handlers.c:1: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
 
 RESULT: 1 finding(s), 1 ERROR, 0 WARN
 ```
@@ -527,13 +527,13 @@ open('lab/gate.c', 'w').write("""static int my_gate(resmgr_context_t *ctp, io_re
 """)
 PY
 $ python3 -I qx_probe.py lab/delegue.c lab/gate.c
-ERROR QX001  lab/gate.c: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
-ERROR QX004  lab/delegue.c:read: qx_read() never calls iofunc_read_verify(): the access gate is missing
-INFO  QX008  lab/delegue.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
-INFO  QX008  lab/delegue.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
-INFO  QX008  lab/delegue.c:io_funcs: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
-INFO  QX010  lab/delegue.c: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
-INFO  QX010  lab/delegue.c: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
+ERROR QX001  lab/gate.c:1: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
+ERROR QX004  lab/delegue.c:48: qx_read() never calls iofunc_read_verify(): the access gate is missing
+INFO  QX008  lab/delegue.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+INFO  QX008  lab/delegue.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
+INFO  QX008  lab/delegue.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
+INFO  QX010  lab/delegue.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
+INFO  QX010  lab/delegue.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
 RESULT: 7 finding(s), 2 ERROR, 0 WARN
 ```

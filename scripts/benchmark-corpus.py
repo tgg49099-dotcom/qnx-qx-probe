@@ -219,7 +219,7 @@ def analyse_entry(entry, cache):
     found = qx_probe.analyse(f"{entry['project']}/{entry['path']}", src)
     n_err = sum(1 for f in found if f.level == "ERROR")
     n_warn = sum(1 for f in found if f.level == "WARN")
-    lines = [f"{f.level} {f.code} {f.where}: {f.message}" for f in found
+    lines = [f"{f.level} {f.code} {f.loc()}: {f.message}" for f in found
              if f.level in ("ERROR", "WARN")]
     return {"status": "OK", "reason": "", "findings": len(found),
             "error": n_err, "warn": n_warn, "lines": lines,

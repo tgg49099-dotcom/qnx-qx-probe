@@ -1,9 +1,10 @@
 # QX-PROBE — analyseur statique du protocole resource-manager QNX 8.0
 
-QX-PROBE lit du code C et signale les **faux positifs que l'on ne peut pas se
-permettre** dans un driver QNX 8.0 : un gestionnaire de ressources qui n'appelle
-jamais `iofunc_read_verify()`, une boucle de messages qui bloque sans distribuer,
-un reply qui renvoie plus de parties que l'IOV n'en contient.
+QX-PROBE lit du code C et signale les **bugs de gestionnaire de ressources que
+l'on ne peut pas se permettre** dans un driver QNX 8.0 : un gestionnaire de
+lecture qui n'appelle jamais `iofunc_read_verify()`, une boucle de messages qui
+bloque sans distribuer, un reply qui renvoie plus de parties que l'IOV n'en
+contient.
 
 C'est un outil **hôte** : il tourne sur Linux, macOS ou Windows, il n'a
 **aucune dépendance** et il ne demande **ni SDK QNX ni carte QNX**. C'est ce qui
@@ -11,11 +12,16 @@ le rend utilisable dans une chaine d'integration continue, ou dans un jury qui
 n'a pas de materiel.
 
 ```console
-$ python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c
-INFO  QX008  examples/qnx80_resmgr_minimal.c: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
+$ python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c
+ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing
 ...
-RESULTAT: 5 constat(s), 0 ERROR, 0 WARN
+RESULT: 6 finding(s), 1 ERROR, 0 WARN
 ```
+
+Chaque constat pointe sur une ligne (`fichier:ligne:`, le format de gcc) : un
+clic dans VS Code, dans l'IDE QNX Momentics (Eclipse) ou dans un journal de CI
+ouvre la ligne du source. Sur l'exemple officiel de QNX, la meme commande ne
+signale rien d'actionnable (`0 ERROR, 0 WARN`, code de sortie 0).
 
 ## Regle d'or : zero faux positif
 
