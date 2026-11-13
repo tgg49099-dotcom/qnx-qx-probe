@@ -137,7 +137,7 @@ scripts/verifier-soumission-devpost.py       checks the submission text: lengths
 scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
-tests/test_output_formats.py                 8 tests: line numbers, JSON and SARIF output
+tests/test_output_formats.py                 9 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 video/SCENARIO.md                            the video demonstration scenario
 ```
 

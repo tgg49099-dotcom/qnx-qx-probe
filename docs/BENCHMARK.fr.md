@@ -126,7 +126,7 @@ Resultat du run du 11 novembre 2026, avec la version du linteur de ce depot :
 | 12 | phila `src/qnx/resmgr.c` | 5 | 0 | 0 | 0 |
 | 13 | codelab `src/hello.c` | 5 | 0 | 0 | 0 |
 | 14 | codelab `src/ticks.c` | 6 | 0 | 0 | 0 |
-| 15 | qnx_advance `block_rm.c` | 6 | 0 | 0 | 0 |
+| 15 | qnx_advance `block_rm.c` | 5 | 0 | 0 | 0 |
 | 16 | qnx_advance `can_rm.c` | 6 | 0 | 0 | 0 |
 | 17 | qnx_advance `qtn_sensor_rm.c` | 5 | 0 | 0 | 0 |
 

@@ -74,6 +74,21 @@ class LineNumbers(unittest.TestCase):
                 self.assertTrue(1 <= x.line <= n, msg=f"{path.name}: {x}")
 
 
+class NoFalseInfo(unittest.TestCase):
+
+    def test_qx003_ignores_a_null_assignment(self):
+        """'g_attr.mount = NULL;' (iofunc_attr_t.mount, seen in a real
+        resource manager of the benchmark) is not a missing handler."""
+        src = ('#include <sys/resmgr.h>\nstatic resmgr_io_funcs_t io_funcs;\n'
+               'static iofunc_attr_t g_attr;\nint main(void) {\n'
+               '  iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &cf, _RESMGR_IO_NFUNCS, &io_funcs);\n'
+               '  g_attr.mount = NULL;\n  io_funcs.read = my_read;\n'
+               '  resmgr_attach(dpp, &a, "/dev/x", _FTYPE_ANY, 0, &cf, &io_funcs, &g_attr);\n'
+               '  resmgr_block(c); resmgr_handler(c);\n}\n')
+        qx003 = [x for x in qx_probe.analyse("t.c", src) if x.code == "QX003"]
+        self.assertEqual([x.message.split(":")[0] for x in qx003], ["io_funcs.read = my_read"])
+
+
 class MachineReadable(unittest.TestCase):
 
     def test_json_has_the_same_findings_and_exit_code(self):

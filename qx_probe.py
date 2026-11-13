@@ -583,6 +583,11 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # therefore no longer CONDENNS it, it reports it (level INFO).
     defined = set(HANDLER_RE.findall(src)) | set(known_symbols or ())
     for table, slot, handler in assigns:
+        # A NULL pointer is not a handler that could be missing at link
+        # time (x.mount = NULL also hits iofunc_attr_t.mount, which is not
+        # a dispatch slot at all): nothing to report.
+        if handler == "NULL":
+            continue
         if handler not in defined:
             f.append(Finding("INFO", "QX003", f"{path}:{slot}",
                              f"{table}.{slot} = {handler}: this handler is neither defined nor "
