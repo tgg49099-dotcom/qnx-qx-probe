@@ -11,7 +11,7 @@ re-reads those pages and prints the update date each one carries.  Golden
 rule: ZERO false positives — a rule that misreports canonical QNX 8.0 code
 is worse than a missing rule.
 
-Usage:  python3 -I qx_probe.py <file.c> [file.c ...]
+Usage:  python3 -I qx_probe.py [--format text|json|sarif] <file.c> [file.c ...]
 Exit:   0 = no actionable finding, 1 = at least one ERROR or WARN finding,
         2 = bad usage.  INFO never changes the exit code.
 """
@@ -109,6 +109,7 @@ class Finding:
     code: str
     where: str
     message: str
+    line: int = 1     # 1-based line in the raw file (used by --format json/sarif)
 
 
 def strip_comments(src: str) -> str:
@@ -118,8 +119,11 @@ def strip_comments(src: str) -> str:
     while i < n:
         if src.startswith("/*", i):
             j = src.find("*/", i + 2)
-            i = n if j < 0 else j + 2
-            out.append(" ")
+            end = n if j < 0 else j + 2
+            # keep the line breaks of a block comment: every reported line
+            # number must be the line of the RAW file.
+            out.append(" " + "\n" * src.count("\n", i, end))
+            i = end
         elif src.startswith("//", i):
             j = src.find("\n", i)
             i = n if j < 0 else j
@@ -284,6 +288,20 @@ def line_of(src: str, pos: int) -> int:
     return src.count("\n", 0, pos) + 1
 
 
+def def_line(src: str, name: str) -> int:
+    """Line of the definition of the function `name` (1 if not found)."""
+    for m in FUNC_DEF_RE.finditer(src):
+        if m.group(1) == name and function_body(src, name, m.end() - 1) is not None:
+            return line_of(src, m.start(1))
+    return 1
+
+
+def assign_line(src: str, slot: str, handler: str) -> int:
+    """Line where `slot` is wired to `handler` (1 if not found)."""
+    m = re.search(r"\.\s*" + re.escape(slot) + r"\s*=\s*" + re.escape(handler) + r"\b", src)
+    return line_of(src, m.start()) if m else 1
+
+
 def ident_of(expr: str) -> str | None:
     """Returns the identifier of a simple expression (&x, *x, x), or None.
 
@@ -371,6 +389,7 @@ def dispatch_tables(src: str) -> dict[str, dict]:
         name = m.group(2)
         info = touch(name)
         info["declared"] = True
+        info.setdefault("pos", m.start())
         info["type"] = m.group(1)
         init = m.group(3)
         if init and ZERO_INIT_RE.search(init):
@@ -491,11 +510,12 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # ("You can initialize this table by calling iofunc_func_init() and then
     # overriding the defaults with your own functions").
     if not tables:
+        m0 = re.search(r"\bresmgr_attach\s*\(", src)
         f.append(Finding("ERROR", "QX001", path,
                          "file uses the QNX resmgr API but no dispatch table is wired "
                          "(no resmgr_io_funcs_t / resmgr_connect_funcs_t table is "
                          "declared, initialised, filled by iofunc_func_init() or passed "
-                         "to resmgr_attach())"))
+                         "to resmgr_attach())", line_of(src, m0.start()) if m0 else 1))
         return f
 
     # C1 bis — resmgr_attach() with a NULL table.
@@ -511,7 +531,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
             if src[args[idx][0]:args[idx][1]].strip() == "NULL":
                 f.append(Finding("ERROR", "QX001", f"{path}:{line_of(src, m2.start())}",
                                  f"resmgr_attach() attaches the resource manager with a NULL "
-                                 f"{label} table: the resource manager has no handler at all"))
+                                 f"{label} table: the resource manager has no handler at all",
+                                 line_of(src, m2.start())))
 
     # C2 — iofunc_func_init() must not be asked to fill more entries than the
     # table holds.
@@ -528,14 +549,16 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
                                      ("connect", conn_n, len(CONNECT_FUNC_SLOTS))):
             if not n_expr.isdigit():
                 f.append(Finding("INFO", "QX010", path,
-                                 f"{label} function count '{n_expr}' is not a literal (macro)"))
+                                 f"{label} function count '{n_expr}' is not a literal (macro)",
+                                 line_of(src, m.start())))
                 continue
             n = int(n_expr)
             if n > count:
                 f.append(Finding("ERROR", "QX002", path,
                                  f"iofunc_func_init() is asked to fill {n} entries of the "
                                  f"{label} table, which has {count} function members in QNX 8.0: "
-                                 f"the library writes past the end of the structure"))
+                                 f"the library writes past the end of the structure",
+                                 line_of(src, m.start())))
 
     # C3 — the dispatch tables must be initialised: an automatic table that is
     # never initialised holds indeterminate function pointers.
@@ -551,7 +574,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
         f.append(Finding("WARN", "QX011", path,
                          f"the dispatch table '{name}' is an automatic variable that is never "
                          f"initialised: its function pointers hold indeterminate values "
-                         f"(iofunc_func_init() or an explicit zero initialiser is expected)"))
+                         f"(iofunc_func_init() or an explicit zero initialiser is expected)",
+                         line_of(src, info.get("pos", 0))))
 
     # C4 — every assigned handler must be a function of the analysed sources.
     # Sources: resmgr_io_funcs_t() (each member is a function pointer).
@@ -563,7 +587,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
             f.append(Finding("INFO", "QX003", f"{path}:{slot}",
                              f"{table}.{slot} = {handler}: this handler is neither defined nor "
                              f"declared in the analysed files; if it is not defined in another "
-                             f"translation unit, the link will fail"))
+                             f"translation unit, the link will fail",
+                             assign_line(src, slot, handler)))
 
     # C5 — io_read / io_write must call the iofunc_*_verify() gate.
     # Sources : iofunc_read_verify() ("All read handlers should start with a
@@ -579,7 +604,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
         want = "iofunc_read_verify" if slot == "read" else "iofunc_write_verify"
         if not gate_present(body, want, src):
             f.append(Finding("ERROR", "QX004", f"{path}:{slot}",
-                             f"{handler}() never calls {want}(): the access gate is missing"))
+                             f"{handler}() never calls {want}(): the access gate is missing",
+                             def_line(src, handler)))
 
     # C6 — the path attached by resmgr_attach() should be ABSOLUTE.
     # Source: resmgr_attach() — "You usually provide an absolute path; if you
@@ -601,7 +627,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
             f.append(Finding("WARN", "QX005", f"{path}:{line_of(src, m2.start())}",
                              f"resmgr_attach() attaches the relative path '{lit}': "
                              f"QNX resolves it against the current working directory "
-                             f"(an absolute path is recommended)"))
+                             f"(an absolute path is recommended)",
+                             line_of(src, m2.start())))
 
     # C7 — the message loop: block, then dispatch.
     # Sources: resmgr_block() — "This function is a special case of
@@ -622,18 +649,20 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     code = strip_comments(blank_strings(src))
     has_block = bool(re.search(r"\b(?:dispatch_block|resmgr_block)\b", code))
     has_handler = bool(re.search(r"\b(?:dispatch_handler|resmgr_handler)\b", code))
+    m_att = re.search(r"\bresmgr_attach\s*\(", code)
+    loop_line = line_of(code, m_att.start()) if m_att else 1
     if not has_block:
         f.append(Finding("WARN", "QX006", path,
                          "no message loop in this file: neither dispatch_block() nor "
                          "resmgr_block() is called or referenced here; in a resource "
                          "manager split over several files the loop usually lives in "
                          "another translation unit (it is then set in "
-                         "pool_attr.block_func) — check the whole project"))
+                         "pool_attr.block_func) — check the whole project", loop_line))
     elif not has_handler:
         f.append(Finding("WARN", "QX007", path,
                          "the message loop blocks (dispatch_block()/resmgr_block()) but no "
                          "handler is called or referenced (neither dispatch_handler() "
-                         "nor resmgr_handler()) in this file"))
+                         "nor resmgr_handler()) in this file", loop_line))
 
     # C8 — report the io_funcs slots left unassigned (informational).
     # Source: resmgr_io_funcs_t — "You can initialize this table by calling
@@ -657,7 +686,8 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
             else:
                 detail = "QNX 8.0 defines no default for this slot: the message is not handled"
             f.append(Finding("INFO", "QX008", f"{path}:{name}",
-                             f"{name}.{slot} is not assigned ({detail})"))
+                             f"{name}.{slot} is not assigned ({detail})",
+                             line_of(src, tables[name].get("pos", 0))))
 
     # C9 — the number of returned parts cannot exceed the declared IOV.
     # Sources: resmgr_attach() — attr.nparts_max = "The number of components
@@ -677,16 +707,80 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
                 n = resolve_count(body, mm.group(1))
                 if n is None or n <= nparts_max:
                     continue
+                fl = def_line(src, fname)
+                mn = re.compile(r"\b_RESMGR_NPARTS\s*\(\s*" + re.escape(mm.group(1)) + r"\s*\)").search(
+                    src, sum(len(x) + 1 for x in src.split("\n")[:fl - 1]))
                 f.append(Finding("ERROR", "QX009", path,
                                  f"{fname}() returns _RESMGR_NPARTS({n}) but the resource "
                                  f"manager declares attr.nparts_max = {nparts_max}: the IOV "
-                                 f"array holds only {nparts_max} component(s)"))
+                                 f"array holds only {nparts_max} component(s)",
+                                 line_of(src, mn.start()) if mn else fl))
     return f
 
 
+TOOL_VERSION = "1.1.0"
+RULES_URL = "https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md"
+# SARIF level of each QX-PROBE level (SARIF 2.1.0, §3.27.10 "level").
+SARIF_LEVEL = {"ERROR": "error", "WARN": "warning", "INFO": "note"}
+
+
+def file_of(where: str) -> str:
+    """The file part of a `where` (file, file:line or file:slot)."""
+    head, sep, tail = where.rpartition(":")
+    return head if sep and head and not tail.startswith(("/", "\\")) else where
+
+
+def to_json(findings: list[Finding]) -> str:
+    import json
+    return json.dumps({"tool": "qx-probe", "version": TOOL_VERSION,
+                       "findings": [{"level": f.level, "code": f.code,
+                                     "file": file_of(f.where), "line": f.line,
+                                     "where": f.where, "message": f.message}
+                                    for f in findings]}, indent=2)
+
+
+def to_sarif(findings: list[Finding]) -> str:
+    """SARIF 2.1.0: the format GitHub code scanning, GitLab and most IDEs read.
+
+    A finding then appears as an annotation on the exact line of a pull
+    request, instead of a line in a CI log.
+    """
+    import json
+    codes = sorted({f.code for f in findings})
+    rules = [{"id": c, "helpUri": f"{RULES_URL}#{c.lower()}",
+              "shortDescription": {"text": c}} for c in codes]
+    results = [{"ruleId": f.code, "ruleIndex": codes.index(f.code),
+                "level": SARIF_LEVEL[f.level],
+                "message": {"text": f.message},
+                "locations": [{"physicalLocation": {
+                    "artifactLocation": {"uri": file_of(f.where).replace("\\", "/")},
+                    "region": {"startLine": max(1, f.line)}}}]}
+               for f in findings]
+    return json.dumps({
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [{"tool": {"driver": {"name": "QX-PROBE", "version": TOOL_VERSION,
+                                       "informationUri": "https://github.com/tgg49099-dotcom/qnx-qx-probe",
+                                       "rules": rules}},
+                  "results": results}]}, indent=2)
+
+
 def main(argv: list[str]) -> int:
-    paths = argv[1:]
-    if not paths:
+    args = argv[1:]
+    fmt = "text"
+    paths = []
+    k = 0
+    while k < len(args):
+        a = args[k]
+        if a.startswith("--format="):
+            fmt = a.split("=", 1)[1]
+        elif a == "--format" and k + 1 < len(args):
+            fmt = args[k + 1]
+            k += 1
+        else:
+            paths.append(a)
+        k += 1
+    if not paths or fmt not in ("text", "json", "sarif"):
         print(__doc__)
         return 2
     sources = []
@@ -704,13 +798,18 @@ def main(argv: list[str]) -> int:
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
     findings.sort(key=lambda x: (order[x.level], x.code, x.where))
-    for f in findings:
-        print(f"{f.level:5} {f.code}  {f.where}: {f.message}")
     n_err = sum(1 for f in findings if f.level == "ERROR")
     n_warn = sum(1 for f in findings if f.level == "WARN")
-    print(f"\nRESULT: {len(findings)} finding(s), {n_err} ERROR, {n_warn} WARN")
+    if fmt == "json":
+        print(to_json(findings))
+    elif fmt == "sarif":
+        print(to_sarif(findings))
+    else:
+        for f in findings:
+            print(f"{f.level:5} {f.code}  {f.where}: {f.message}")
+        print(f"\nRESULT: {len(findings)} finding(s), {n_err} ERROR, {n_warn} WARN")
     # An actionable finding (ERROR or WARN) makes the exit code fail: this is
-    # what makes the probe usable as a CI gate.
+    # what makes the probe usable as a CI gate (in every output format).
     return 1 if (n_err or n_warn) else 0
 
 

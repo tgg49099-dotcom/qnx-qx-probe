@@ -38,6 +38,11 @@ echo "--- 3. unit test suite ---"
 python3 -I -B tests/test_qx_probe.py
 rc=$?
 echo
+echo "--- 4. line numbers and machine-readable output (JSON, SARIF 2.1.0) ---"
+python3 -I -B tests/test_output_formats.py
+rc4=$?
+[ "$rc" -eq 0 ] && rc=$rc4
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else

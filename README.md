@@ -77,6 +77,11 @@ themselves are in English, and so is the summary line:
 RESULT: 5 finding(s), 0 ERROR, 0 WARN
 ```
 
+For a CI chain, `--format json` and `--format sarif` (SARIF 2.1.0, read by
+GitHub code scanning, GitLab and the SARIF viewers of the IDEs) give the
+same findings with the same exit code, each with the line of the source file
+it is about. See **[docs/CI.md](docs/CI.md)**.
+
 ### What was corrected in this version
 
 Seven rules (QX001, QX002, QX003, QX004, QX006, QX007, QX011) had a known
@@ -106,6 +111,7 @@ qx_probe.py                                  the linter (one file, no dependency
 docs/AI-ASSISTED-RULES.md                    how the eleven rules were written, and how each one was proved
 docs/BENCHMARK.md                            the benchmark: QX-PROBE on 17 real QNX resource managers
 docs/BENCHMARK.fr.md                         the French counterpart of docs/BENCHMARK.md, updated with it
+docs/CI.md                                   JSON and SARIF output, and a GitHub Actions example
 docs/CODELAB.md                              the hands-on tutorial (30 minutes, no SDK needed)
 docs/README.fr.md                            the French counterpart of this file, updated with it: the parts that were not retranslated still describe the first version of the tool
 docs/README.md                               what the files under docs/ are
@@ -131,6 +137,7 @@ scripts/verifier-soumission-devpost.py       checks the submission text: lengths
 scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
+tests/test_output_formats.py                 8 tests: line numbers, JSON and SARIF output
 video/SCENARIO.md                            the video demonstration scenario
 ```
 

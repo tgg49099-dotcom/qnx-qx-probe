@@ -184,7 +184,7 @@ check delegated to a helper function of the same file **is** accepted.
 
 ```console
 $ python3 -I qx_probe.py examples/qnx80_resmgr_relative_path.c
-WARN  QX005  examples/qnx80_resmgr_relative_path.c:53: resmgr_attach() attaches the relative path 'qxprobe-rel': QNX resolves it against the current working directory (an absolute path is recommended)
+WARN  QX005  examples/qnx80_resmgr_relative_path.c:82: resmgr_attach() attaches the relative path 'qxprobe-rel': QNX resolves it against the current working directory (an absolute path is recommended)
 INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.write is not assigned (the POSIX default iofunc_write_default() applies unless you override it)
 INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
 INFO  QX008  examples/qnx80_resmgr_relative_path.c:io_funcs: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
