@@ -155,6 +155,58 @@ def strip_comments(src: str) -> str:
     return "".join(out)
 
 
+PP_LINE_RE = re.compile(r"^[ \t]*#[ \t]*(if|ifdef|ifndef|elif|else|endif)\b(.*)$")
+
+
+def strip_dead_code(src: str) -> str:
+    """Blanks the code that the preprocessor provably never compiles.
+
+    Only the constant conditions are resolved: `#if 0` (dead until its
+    `#else`/`#elif`/`#endif`) and the `#else` branch of `#if 1`.  Every
+    other condition (`#ifdef`, `#if defined(...)`, macros) is kept as live
+    code: we cannot know the build configuration, and a rule must not fire on
+    a guess.  Line breaks are kept, so every line number stays the line of
+    the raw file.
+    """
+    lines = src.split("\n")
+    # stack of [kind, dead_now]; kind: "zero", "one" or "other"
+    stack: list[list] = []
+    out = []
+    for line in lines:
+        m = PP_LINE_RE.match(line)
+        if m:
+            d, rest = m.group(1), m.group(2).strip()
+            if d in ("if", "ifdef", "ifndef"):
+                parent_dead = any(fr[1] for fr in stack)
+                if d == "if" and rest == "0":
+                    stack.append(["zero", True])
+                elif d == "if" and rest == "1":
+                    stack.append(["one", False])
+                else:
+                    stack.append(["other", False])
+                if parent_dead:
+                    stack[-1] = ["other", True]
+                    stack[-1].append("inherited")
+            elif stack and d == "elif":
+                fr = stack[-1]
+                if "inherited" not in fr:
+                    fr[0], fr[1] = ("one", True) if fr[0] == "one" else ("other", False)
+            elif stack and d == "else":
+                fr = stack[-1]
+                if "inherited" not in fr:
+                    if fr[0] == "zero":
+                        fr[1] = False
+                    elif fr[0] == "one":
+                        fr[1] = True
+            elif stack and d == "endif":
+                stack.pop()
+            out.append(line)
+            continue
+        dead = any(fr[1] for fr in stack)
+        out.append(" " * len(line) if dead else line)
+    return "\n".join(out)
+
+
 def blank_strings(src: str) -> str:
     """Replaces the CONTENT of string literals with spaces.
 
@@ -239,10 +291,12 @@ def function_body(src: str, name: str, open_paren: int) -> str | None:
         j += 1
     if j >= len(src) or src[j] != "{":
         return None
+    # count the braces on the BLANKED text: a '}' or "{" literal inside the
+    # handler must not end (or extend) its body.
     depth = 1
     k = j + 1
-    while k < len(src):
-        c = src[k]
+    while k < len(blanked):
+        c = blanked[k]
         if c == "{":
             depth += 1
         elif c == "}":
@@ -476,20 +530,27 @@ def block_kind(src: str, pos: int) -> str:
     return "function"
 
 
-def gate_present(body: str, want: str, src: str) -> bool:
-    """True if the access gate `want` is called, directly or through a helper.
+def gate_present(body: str, want: str, src: str, depth: int = 0,
+                 seen: set[str] | None = None) -> bool:
+    """True if the access gate `want` is called, directly or through helpers.
 
     The body has its strings blanked: a gate quoted in an error message does
-    not count.  A check delegated to a helper of the file counts too (the body
-    of the helper is read as well).
+    not count.  A check delegated to a helper of the file counts too, and so
+    does a helper of a helper (up to 4 levels, each function read once): a
+    driver that wraps iofunc_read_verify() in its own access-check function
+    called from a dispatcher is correct code.
     """
     if want in body:
         return True
+    if depth >= 4:
+        return False
+    seen = set() if seen is None else seen
     for callee in set(CALL_RE.findall(body)):
-        if callee in C_KEYWORDS or callee == want:
+        if callee in C_KEYWORDS or callee == want or callee in seen:
             continue
+        seen.add(callee)
         helper = body_of(src, callee)
-        if helper is not None and want in helper:
+        if helper is not None and gate_present(helper, want, src, depth + 1, seen):
             return True
     return False
 
@@ -502,7 +563,7 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     a handler is defined in another translation unit.
     """
     f: list[Finding] = []
-    src = strip_comments(raw)
+    src = strip_dead_code(strip_comments(raw))
 
     headers = [h for h in QNX_HEADERS if h in src]
     is_resmgr = "resmgr" in src or "dispatch" in src

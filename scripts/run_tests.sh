@@ -48,6 +48,11 @@ python3 -I -B tests/test_build_qcc.py
 rc5=$?
 [ "$rc" -eq 0 ] && rc=$rc5
 echo
+echo "--- 6. robustness: correct code in ordinary C styles stays clean, real bugs are found ---"
+python3 -I -B tests/test_robustness.py
+rc6=$?
+[ "$rc" -eq 0 ] && rc=$rc6
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else

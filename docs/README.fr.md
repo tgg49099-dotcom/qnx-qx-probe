@@ -119,6 +119,7 @@ scripts/verifier-soumission-devpost.py       verifie le texte de soumission : lo
 scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
+tests/test_robustness.py                     4 tests : 7 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde dans l'aide d'une aide)
 video/SCENARIO.md                            le scenario de la demonstration video
 ```
 

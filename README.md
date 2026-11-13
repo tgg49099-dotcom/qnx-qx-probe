@@ -142,8 +142,9 @@ scripts/verifier-soumission-devpost.py       checks the submission text: lengths
 scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
-tests/test_output_formats.py                 9 tests: line numbers, JSON and SARIF output, no QX003 on NULL
+tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
+tests/test_robustness.py                     4 tests: 7 variants of the official example in ordinary C styles (#if 0, '}' literal, gate in a helper of a helper)
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
