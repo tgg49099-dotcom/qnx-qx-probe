@@ -564,7 +564,7 @@ guards the case the rule must keep catching. The current code passes the
 whole file:
 
 ```
-Ran 13 tests in 0.673s
+Ran 19 tests in 0.717s
 OK
 ```
 

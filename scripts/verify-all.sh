@@ -8,12 +8,14 @@
 #
 # The checks, in this order:
 #
-#   1  scripts/run_tests.sh                   the 64 unit tests
+#   1  scripts/run_tests.sh                   the 70 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 36 quotations
 #   5  scripts/verifier-soumission-devpost.py the submission text: lengths, English, links
 #   6  scripts/benchmark-corpus.py            the linter on 17 real QNX resource managers
+#   7  scripts/verifier-chiffres-publies.py   the published figures against the real ones
+#   8  scripts/verifier-chiffres-publies.py   the same control, with its counter-proof
 #
 # THREE STATES, NEVER MIXED
 #
@@ -220,10 +222,10 @@ echo "======================================================================"
 echo "QX-PROBE - replay every published proof of this repository"
 echo "======================================================================"
 echo "repository : $ROOT"
-echo "checks     : 6"
+echo "checks     : 8"
 echo
 
-check "run_tests.sh (64 unit tests)" \
+check "run_tests.sh (70 unit tests)" \
       "scripts/run_tests.sh" \
       "RESULT: QX-PROBE suite GREEN" \
       "-" \
@@ -276,6 +278,24 @@ check "benchmark-corpus.py (17 real resource managers)" \
       "python3 git" \
       "-" \
       python3 -I -B scripts/benchmark-corpus.py
+
+check "verifier-chiffres-publies.py (published figures)" \
+      "scripts/verifier-chiffres-publies.py" \
+      "VERDICT: THE PUBLISHED FIGURES MATCH THE REPOSITORY" \
+      "2" \
+      "the published figures could not be measured on this machine" \
+      "python3" \
+      "-" \
+      python3 -I -B scripts/verifier-chiffres-publies.py
+
+check "verifier-chiffres-publies.py (counter-proof)" \
+      "scripts/verifier-chiffres-publies.py" \
+      "COUNTER-PROOF: THE FALSE FIGURE WAS DETECTED" \
+      "2" \
+      "the counter-proof could not run on this machine" \
+      "python3" \
+      "-" \
+      python3 -I -B scripts/verifier-chiffres-publies.py --contre-epreuve
 
 echo
 echo "======================================================================================================"

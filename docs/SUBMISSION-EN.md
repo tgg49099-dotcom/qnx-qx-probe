@@ -179,7 +179,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 68 files, about 2.2 MB (measured on 14 November 2026).
+   The published tree is 72 files, about 2.2 MB (measured on 14 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
@@ -193,14 +193,14 @@ REQUIREMENTS
      OK
      Ran 8 tests in 0.245s
      OK
-     Ran 13 tests in 0.673s
+     Ran 19 tests in 0.717s
      OK
      RESULT: QX-PROBE suite GREEN (RC 0)
    The 70 tests are the two-sided contract: 10 of them prove that valid
    QNX 8.0 code produces no actionable finding, 15 prove that a broken file
    produces the expected finding, 2 check the format of the output, 12 check
    the line numbers and the JSON and SARIF output, 4 the QNX 8.0 build
-   script, 8 the robustness of the rules, 13 the reading of a resource
+   script, 8 the robustness of the rules, 19 the reading of a resource
    manager split over several files as one program. The 27 of the first block are the
    file tests/test_qx_probe.py alone: it is that file the video runs.
 
@@ -231,7 +231,7 @@ REQUIREMENTS
    The files given on one command line are read as one program.
    Whole programs: on 9 resource managers of a published QNX source tree,
    21 false errors removed; the one error left is real.
-   The measurement is in docs/BENCHMARK.md, section 10; the 13 tests that
+   The measurement is in docs/BENCHMARK.md, section 10; the 19 tests that
    pin these cases are in tests/test_multifile.py.
 
 EXIT CODES

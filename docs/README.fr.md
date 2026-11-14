@@ -135,6 +135,7 @@ scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies 
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/run_tests.sh                         lance la suite de tests
+scripts/verifier-chiffres-publies.py         verifie que les chiffres publies sont les chiffres du depot
 scripts/verifier-citations.py                relit les 14 pages QNX 8.0 citees et verifie les 36 citations
 scripts/verifier-codelab.py                  rejoue chaque commande de docs/CODELAB.md et verifie sa sortie
 scripts/verifier-soumission-devpost.py       verifie le texte de soumission : longueurs, anglais, liens
@@ -167,14 +168,15 @@ $ bash scripts/verify-all.sh
 
 Elle enchaine la suite de tests, la relecture du codelab, l'audit des pixels
 de la video, la relecture des 14 pages QNX 8.0 citees, le controle du
-texte de soumission et le benchmark sur 17 vrais gestionnaires de ressources
-QNX, puis affiche un tableau : une ligne par verification, son resultat et
-son code de sortie.
+texte de soumission, le benchmark sur 17 vrais gestionnaires de ressources
+QNX et la comparaison des chiffres publies avec les chiffres reels du depot
+(avec la contre-epreuve de cette comparaison), puis affiche un tableau : une
+ligne par verification, son resultat et son code de sortie.
 
 Avant ce tableau, la commande affiche le journal complet de chaque controle
-— les 64 noms de tests, les 12 blocs du codelab rejoues, les 19 scenes de la
+— les 70 noms de tests, les 12 blocs du codelab rejoues, les 19 scenes de la
 video auditees, les 36 citations relues et les 17 fichiers du benchmark :
-**399 lignes** pour le premier des trois runs ci-dessous. Les trois blocs
+**436 lignes** pour le premier des trois runs ci-dessous. Les trois blocs
 qui suivent sont la **fin de la sortie REELLE** (mesuree le 14 novembre 2026
 dans une copie de cette revision ou `docs/CODELAB.md` etait encore le
 fichier public precedent — le controle C compare le codelab publie avec la
@@ -187,14 +189,16 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (64 unit tests)               OK           -                                                0
+run_tests.sh (70 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
 verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
+verifier-chiffres-publies.py (published figures) OK           -                                                0
+verifier-chiffres-publies.py (counter-proof) OK           -                                                0
 ======================================================================================================
-VERDICT: EVERY CHECK PASSED - 6/6 OK (RC 0)
+VERDICT: EVERY CHECK PASSED - 8/8 OK (RC 0)
 ======================================================================================================
 ```
 
@@ -209,17 +213,19 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (64 unit tests)               OK           -                                                0
+run_tests.sh (70 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
 verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
+verifier-chiffres-publies.py (published figures) OK           -                                                0
+verifier-chiffres-publies.py (counter-proof) OK           -                                                0
 ======================================================================================================
 WHAT TO INSTALL (the checks that could not run need these):
   pip install pillow  - required by audit-sous-titres-pixels.py (video)
 ======================================================================================================
-VERDICT: NO CHECK FAILED - 5/6 OK, 1 NOT CHECKED (RC 0)
+VERDICT: NO CHECK FAILED - 7/8 OK, 1 NOT CHECKED (RC 0)
          the check(s) that could not run on this machine are named in the
          table above and are never reported as OK: nothing was disproved,
          but these proofs were NOT re-run here (see the list below).
@@ -236,14 +242,16 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (64 unit tests)               OK           -                                                0
+run_tests.sh (70 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
 benchmark-corpus.py (17 real resource managers) NOT CHECKED  network absent: the corpus could not be fetched  2
+verifier-chiffres-publies.py (published figures) OK           -                                                0
+verifier-chiffres-publies.py (counter-proof) OK           -                                                0
 ======================================================================================================
-VERDICT: NO CHECK FAILED - 3/6 OK, 3 NOT CHECKED (RC 0)
+VERDICT: NO CHECK FAILED - 5/8 OK, 3 NOT CHECKED (RC 0)
          the check(s) that could not run on this machine are named in the
          table above and are never reported as OK: nothing was disproved,
          but these proofs were NOT re-run here (see the list below).
