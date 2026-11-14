@@ -239,10 +239,12 @@ published in `docs/BENCHMARK.md` with a real run of it, then prints one
 table: one line per verification, its result and its exit code.
 
 Before that table, the command prints the full log of every check — the 79
-test names, the 12 replayed codelab blocks, the 19 audited video scenes, the
-36 re-read quotations and the 17 benchmark files: **436 lines** for the run
-below.  The three blocks that follow are the **end of the real output**
-(measured on 14 November 2026 on a working copy of this revision):
+test names, the 12 replayed codelab blocks, the 36 re-read quotations and the
+17 benchmark files: **454 lines** in all for the run below.  The two blocks
+that follow are the **end of the real output**, measured on 14 November 2026
+on the build server of this revision.  That server has no `ffmpeg`, so the
+pixel audit of the video is named in the table, it is **never** reported as
+OK, and the command says what is missing:
 
 ```console
 ======================================================================================================
@@ -252,39 +254,16 @@ VERIFICATION                               RESULT       DETAIL                  
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (79 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
-audit-sous-titres-pixels.py (video)        OK           -                                                0
+audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
 verifier-chiffres-publies.py (published figures) OK           -                                                0
 verifier-chiffres-publies.py (counter-proof) OK           -                                                0
-======================================================================================================
-VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0)
-======================================================================================================
-```
-
-**This is the real output on a machine without Pillow.** The pixel audit
-needs `ffmpeg`, `ffprobe` and `pillow`; when one of them is absent, that
-check is named in the table, it is **never** reported as OK, and the command
-says what is missing:
-
-```console
-======================================================================================================
-SUMMARY - one line per verification
-======================================================================================================
-VERIFICATION                               RESULT       DETAIL                                           EXIT
------------------------------------------- ------------ ------------------------------------------------ ----
-run_tests.sh (79 unit tests)               OK           -                                                0
-verifier-codelab.py (12 blocks)            OK           -                                                0
-audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
-verifier-citations.py (36 quotations)      OK           -                                                0
-verifier-soumission-devpost.py (13 blocks) OK           -                                                0
-benchmark-corpus.py (17 real resource managers) OK           -                                                0
-verifier-chiffres-publies.py (published figures) OK           -                                                0
-verifier-chiffres-publies.py (counter-proof) OK           -                                                0
+verifier-benchmark-publie.py (published benchmark) OK           -                                                0
 ======================================================================================================
 WHAT TO INSTALL (the checks that could not run need these):
-  pip install pillow  - required by audit-sous-titres-pixels.py (video)
+  ffmpeg + ffprobe (https://ffmpeg.org)  - required by audit-sous-titres-pixels.py (video)
 ======================================================================================================
 VERDICT: NO CHECK FAILED - 8/9 OK, 1 NOT CHECKED (RC 0)
          the check(s) that could not run on this machine are named in the
@@ -293,7 +272,11 @@ VERDICT: NO CHECK FAILED - 8/9 OK, 1 NOT CHECKED (RC 0)
 ======================================================================================================
 ```
 
-**This is the real output on a machine without network.** The three checks
+The pixel audit itself was run the same day on a machine that has `ffmpeg`,
+`ffprobe` and Pillow: `python3 -I scripts/audit-sous-titres-pixels.py` ends
+with `VERDICT : PREUVE ETABLIE` (RC 0).
+
+**This is the real output of the same server without network.** The checks
 that read the web cannot run, and they say so:
 
 ```console
@@ -304,14 +287,18 @@ VERIFICATION                               RESULT       DETAIL                  
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (79 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
-audit-sous-titres-pixels.py (video)        OK           -                                                0
+audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
 benchmark-corpus.py (17 real resource managers) NOT CHECKED  network absent: the corpus could not be fetched  2
 verifier-chiffres-publies.py (published figures) OK           -                                                0
 verifier-chiffres-publies.py (counter-proof) OK           -                                                0
+verifier-benchmark-publie.py (published benchmark) NOT CHECKED  network absent: the corpus could not be fetched  2
 ======================================================================================================
-VERDICT: NO CHECK FAILED - 5/9 OK, 3 NOT CHECKED (RC 0)
+WHAT TO INSTALL (the checks that could not run need these):
+  ffmpeg + ffprobe (https://ffmpeg.org)  - required by audit-sous-titres-pixels.py (video)
+======================================================================================================
+VERDICT: NO CHECK FAILED - 4/9 OK, 5 NOT CHECKED (RC 0)
          the check(s) that could not run on this machine are named in the
          table above and are never reported as OK: nothing was disproved,
          but these proofs were NOT re-run here (see the list below).

@@ -460,10 +460,12 @@ This is the mapping, so that nothing is left to chance.
 ## 17. Where every figure comes from
 
 Measured on the public repository, first on **6 November 2026** and
-re-verified on **14 November 2026** (`bash scripts/verify-all.sh`: 9 checks
-out of 9, RC 0 — the pixel audit of the video needs ffmpeg and pillow; on a
-machine without them that single check reports NOT CHECKED, never OK, and the
-command still exits 0 because no published proof was contradicted).
+re-verified on **14 November 2026** (`bash scripts/verify-all.sh`: 9 checks,
+RC 0 — 8 OK on the build server, and the pixel audit of the video NOT CHECKED
+there because it needs ffmpeg and pillow; that check is never reported OK on
+a machine without them, the command still exits 0 because no published proof
+was contradicted, and the audit itself passed the same day on a machine that
+has them).
 
 | Figure | Value | How it was measured |
 |---|---|---|

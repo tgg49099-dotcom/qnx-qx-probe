@@ -176,14 +176,14 @@ EXEMPTIONS = (
     ("docs/RULES.fr.md", "3,12 s",
      "the shortest scene of the video, not its duration",
      r"sc[eè]ne"),
-    ("README.md", "436 lines",
+    ("README.md", "454 lines",
      "the length of the log of the dated verify-all run, not the size of "
      "the linter",
-     r"for the run"),
-    ("docs/README.fr.md", "436 lignes",
+     r"for the run|in all"),
+    ("docs/README.fr.md", "454 lignes",
      "the length of the log of the dated verify-all run, not the size of "
      "the linter",
-     r"pour le premier"),
+     r"pour le premier|en tout"),
     ("docs/SUBMISSION-EN.md", "2.13 s",
      "a timing of the test suite on the machine of the measurement, dated, "
      "not the duration of the video",
