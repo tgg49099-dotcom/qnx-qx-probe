@@ -12,8 +12,10 @@ the record of the **five defects of the tool** it exposed — **nine false
 positives in five files** — the **one true positive** it confirmed, and the
 tests that were written for each of them.
 
-Everything below was measured on **11 November 2026** with the version of
-`qx_probe.py` in this repository.
+The corpus was pinned and first measured on **11 November 2026**; the
+numbers of section 4 are the run of **14 November 2026**, and section 10 is
+the run of the same day, with the version of `qx_probe.py` in this
+repository.
 
 ---
 

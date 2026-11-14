@@ -12,7 +12,9 @@ registre des **cinq defauts de l'outil** qu'il a exposes — **neuf faux
 positifs dans cinq fichiers** —, du **vrai positif** qu'il a confirme, et des
 tests ecrits pour chacun d'eux.
 
-Tout ce qui suit a ete mesure le **11 novembre 2026** avec la version de
+Le corpus a ete epingle et mesure pour la premiere fois le **11 novembre
+2026** ; les nombres de la section 4 sont l'execution du **14 novembre
+2026**, et la section 10 est celle du meme jour, avec la version de
 `qx_probe.py` de ce depot.
 
 ---
