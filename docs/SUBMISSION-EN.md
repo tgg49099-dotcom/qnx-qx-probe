@@ -139,7 +139,7 @@ The hard part was not the detection, it was the silence. A linter for a real-tim
 
 The tool was written with an AI agent; the facts were kept out of its reach: every rule is backed by a quoted official page, and scripts/verifier-citations.py re-reads the 14 cited pages and checks that the quoted sentence is still there — 35 quotations; a page it cannot read is reported NOT CHECKED, never verified.
 
-The suite is 64 tests over 15 classes — 10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 13 whole-program reading of a resource manager split over several files — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
+The suite is 64 tests over 16 classes — 10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 13 whole-program reading of a resource manager split over several files — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
 
 The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 12 blocks, 0 differing.
 <!-- FIN:HOW -->
@@ -463,7 +463,7 @@ command still exits 0 because no published proof was contradicted).
 
 | Figure | Value | How it was measured |
 |---|---|---|
-| Test suite | 64 tests in 5 files, 15 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 13 whole-program) | `bash scripts/run_tests.sh` |
+| Test suite | 64 tests in 5 files, 16 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 13 whole-program) | `bash scripts/run_tests.sh` |
 | BlackBerry's resource manager | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` |
 | Minimal example | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c` |
 | Read-only example | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_readonly.c` |
