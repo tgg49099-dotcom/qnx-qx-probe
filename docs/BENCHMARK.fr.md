@@ -108,7 +108,7 @@ copie dans le depot et aucun fichier du corpus n'y est redistribue.
 
 ## 4. La mesure
 
-Resultat du run du 11 novembre 2026, avec la version du linteur de ce depot :
+Resultat du run du 14 novembre 2026, avec la version du linteur de ce depot :
 
 | # | Fichier | Constats | ERROR | WARN | Code de sortie |
 |---|---|---|---|---|---|
@@ -117,11 +117,11 @@ Resultat du run du 11 novembre 2026, avec la version du linteur de ce depot :
 | 3 | **rpi-thermal `rpi_thermal.c`** | 7 | **1** | 0 | **1** |
 | 4 | shim-demo `eventfd-mgr.c` | 5 | 0 | 0 | 0 |
 | 5 | bsp rpi5 `fan/resmgr.c` | 5 | 0 | 0 | 0 |
-| 6 | qpp `main.c` | 19 | 0 | 0 | 0 |
-| 7 | epoll `epoll-mgr.c` | 13 | 0 | 0 | 0 |
+| 6 | qpp `main.c` | 37 | 0 | 0 | 0 |
+| 7 | epoll `epoll-mgr.c` | 11 | 0 | 0 | 0 |
 | 8 | **devu-uvc `uvc_rm.c`** | 3 | 0 | **1** | **1** |
-| 9 | smbus `smb-ec/main.c` | 7 | 0 | 0 | 0 |
-| 10 | smbus `smb-ich/main.c` | 7 | 0 | 0 | 0 |
+| 9 | smbus `smb-ec/main.c` | 8 | 0 | 0 | 0 |
+| 10 | smbus `smb-ich/main.c` | 8 | 0 | 0 | 0 |
 | 11 | qnx-virtio `gpio/resmgr.c` | 4 | 0 | 0 | 0 |
 | 12 | phila `src/qnx/resmgr.c` | 5 | 0 | 0 | 0 |
 | 13 | codelab `src/hello.c` | 5 | 0 | 0 | 0 |
@@ -144,7 +144,7 @@ rpi-thermal/rpi_thermal.c    7 finding(s), 1 ERROR, 0 WARN (exit 1)
     ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
 ...
 devu-uvc/uvc_rm.c             3 finding(s), 0 ERROR, 1 WARN (exit 1)
-    WARN QX006 devu-uvc/uvc_rm.c: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+    WARN QX006 devu-uvc/uvc_rm.c:511: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
 ```
 
 ---

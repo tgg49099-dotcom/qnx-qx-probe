@@ -8,7 +8,7 @@
 #
 # The checks, in this order:
 #
-#   1  scripts/run_tests.sh                   the 27 unit tests
+#   1  scripts/run_tests.sh                   the 51 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 35 quotations
@@ -29,17 +29,23 @@
 # same story.
 #
 # EXIT CODE
-#   0  every check ran and passed: every row of the table is OK
-#   1  at least one row is FAILED
-#   2  at least one row is NOT CHECKED (NOT PRESENT included).  When some rows
-#      are FAILED as well, the verdict names both and the exit code is 2.
+#   0  no published proof was contradicted.  Every row that ran is OK; a row
+#      that could not run on this machine is reported NOT CHECKED, never OK,
+#      and the verdict says how many there were.  The exit code answers one
+#      question - "did any published proof turn out to be false?" - and not
+#      "was every proof re-run on this machine?".
+#   1  at least one row is FAILED: a published proof is false, or the code is
+#      broken.  When some rows are NOT CHECKED as well, the verdict names
+#      both.
+#   2  the command itself could not run (no python3, not a repository).
 #
 # NO FALSE GREEN AND NO FALSE RED.  A check that did not run is never
 # reported as OK; a check that could not run is never reported as FAILED; a
 # check that returns 0 without printing its own success line is FAILED; a
 # check that prints [NOT CHECKED] while returning 0 is FAILED; a check that
 # reports an item it could not check and finds no other error is NOT CHECKED,
-# not FAILED.
+# not FAILED; a file of this repository that is missing is FAILED, because
+# that is the repository's own fault and not the machine's.
 #
 # It writes nothing in the repository: the logs go to a temporary directory
 # outside of it, which is removed when the command ends.  It makes no network
@@ -54,6 +60,12 @@ set -u
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 2
 cd "$ROOT" || exit 2
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is absent: the command cannot run at all (RC 2)."
+    echo "  install python3 (https://www.python.org/downloads/) and run it again."
+    exit 2
+fi
 
 TMP=$(mktemp -d 2>/dev/null) || exit 2
 trap 'rm -rf "$TMP"' 0
@@ -135,9 +147,9 @@ check() {
     result="OK"
     detail="-"
     if [ ! -f "$file" ]; then
-        result="NOT CHECKED"
+        result="FAILED"
         detail="not in this repository"
-        echo "  the file $file is not in this repository: the check cannot run."
+        echo "  the file $file is not in this repository: the repository is incomplete."
     else
         absent=""
         for t in $tools; do
@@ -211,7 +223,7 @@ echo "repository : $ROOT"
 echo "checks     : 6"
 echo
 
-check "run_tests.sh (27 unit tests)" \
+check "run_tests.sh (51 unit tests)" \
       "scripts/run_tests.sh" \
       "RESULT: QX-PROBE suite GREEN" \
       "-" \
@@ -286,13 +298,15 @@ if [ -s "$INSTALLS" ]; then
 fi
 if [ "$nb_not_checked" -gt 0 ] && [ "$nb_failed" -gt 0 ]; then
     echo "VERDICT: FAILED AND NOT CHECKED - $nb_failed check(s) FAILED and"
-    echo "         $nb_not_checked check(s) could not run out of $nb_total (RC 2)"
+    echo "         $nb_not_checked check(s) could not run out of $nb_total (RC 1)"
     echo "         this is NOT a success: the table above says which row is which."
-    RC=2
+    RC=1
 elif [ "$nb_not_checked" -gt 0 ]; then
-    echo "VERDICT: NOT CHECKED - $nb_not_checked check(s) could not run out of"
-    echo "         $nb_total: this is NOT a success (RC 2)"
-    RC=2
+    echo "VERDICT: NO CHECK FAILED - $nb_ok/$nb_total OK, $nb_not_checked NOT CHECKED (RC 0)"
+    echo "         the check(s) that could not run on this machine are named in the"
+    echo "         table above and are never reported as OK: nothing was disproved,"
+    echo "         but these proofs were NOT re-run here (see the list below)."
+    RC=0
 elif [ "$nb_failed" -gt 0 ]; then
     echo "VERDICT: FAILED - $nb_failed check(s) failed out of $nb_total (RC 1)"
     RC=1

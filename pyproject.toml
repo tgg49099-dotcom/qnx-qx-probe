@@ -1,0 +1,46 @@
+# QX-PROBE - packaging metadata.
+#
+# The tool is a single file with the standard library only; installing it is
+# optional.  `python3 -I qx_probe.py <file.c>` works with nothing installed.
+# This file exists so that the tool can also be installed with pip, which
+# gives it the `qx-probe` command.
+#
+#   pip install .
+#   qx-probe examples/blackberry_eventfd_mgr.c
+#
+# Apache-2.0, like the rest of the repository (LICENSE, NOTICE).
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qx-probe"
+version = "1.2.1"
+description = "Static checker for the QNX 8.0 resource-manager protocol: a host tool, no dependency, no QNX SDK."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "QX-PROBE contributors" }]
+keywords = ["qnx", "qnx8", "sdp8", "static-analysis", "resource-manager", "resmgr"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/tgg49099-dotcom/qnx-qx-probe"
+Documentation = "https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md"
+Source = "https://github.com/tgg49099-dotcom/qnx-qx-probe"
+
+[project.scripts]
+qx-probe = "qx_probe:main"
+
+[tool.setuptools]
+py-modules = ["qx_probe"]

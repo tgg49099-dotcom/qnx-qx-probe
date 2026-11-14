@@ -48,8 +48,23 @@ import tempfile
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:  # pragma: no cover - depends on the machine
-    for _p in ("/work/.pylocal/lib/python3.11/site-packages",):
-        if os.path.isdir(_p) and _p not in sys.path:
+    # The isolated mode (-I) hides the user site-packages, so a Pillow
+    # installed for the user only (pip install --user) is not found.  We add
+    # it back, generically: the PYTHONUSERBASE directory when it is set, and
+    # the user site-packages of the interpreter.  On a machine without
+    # Pillow, nothing is added and the check says so.
+    _candidats = []
+    _ub = os.environ.get("PYTHONUSERBASE")
+    if _ub:
+        _candidats.append(os.path.join(
+            _ub, "lib", "python%d.%d" % sys.version_info[:2], "site-packages"))
+    try:
+        import site
+        _candidats.append(site.getusersitepackages())
+    except Exception:  # pragma: no cover - site is always there
+        pass
+    for _p in _candidats:
+        if _p and os.path.isdir(_p) and _p not in sys.path:
             sys.path.insert(0, _p)
     try:
         from PIL import Image, ImageDraw, ImageFont

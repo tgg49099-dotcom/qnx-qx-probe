@@ -17,10 +17,30 @@ ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never cal
 RESULT: 6 finding(s), 1 ERROR, 0 WARN
 ```
 
+Nothing has to be installed to use it. If you prefer a command of its own,
+`pip install .` reads `pyproject.toml` and gives you the `qx-probe` entry
+point — the same tool, the same exit codes:
+
+```console
+$ pip install .
+$ qx-probe tests/fixtures/qnx80_resmgr_qx004_no_gate.c
+ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing
+...
+RESULT: 6 finding(s), 1 ERROR, 0 WARN
+```
+
 Every finding points at a line (`file:line:`, the gcc format), so a click in
 VS Code, in the Eclipse-based QNX Momentics IDE or in a CI log opens the
 source line. On the official QNX example, the same command reports nothing
 actionable (`0 ERROR, 0 WARN`, exit code 0).
+
+The three things the contest rules ask a submission to state:
+
+| | |
+|---|---|
+| **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 35 quotations, re-read on 14 November 2026) |
+| **Target** | the tool itself is a **host** tool (Linux, macOS, Windows); the C examples target **QNX 8.0 on QEMU x86_64** (`qcc -Vgcc_ntox86_64`) |
+| **Toolchain** | **Python 3, standard library only**, for the tool; **`qcc` from the SDP 8.0**, for the C examples — whose compilation is **NOT MEASURED**, because no SDP 8.0 licence exists in the environment where the project was written |
 
 ## The golden rule: zero false positives
 
@@ -112,6 +132,7 @@ LICENSE                                      Apache-2.0, the full text
 NOTICE                                       attribution of the third-party code and the AI notice
 README.md                                    this file
 RULES.md                                     each rule + its official QNX 8.0 source
+pyproject.toml                               optional packaging: `pip install .` gives the `qx-probe` command
 qx_probe.py                                  the linter (one file, no dependency)
 docs/AI-ASSISTED-RULES.md                    how the eleven rules were written, and how each one was proved
 docs/BENCHMARK.md                            the benchmark: QX-PROBE on 17 real QNX resource managers
@@ -210,9 +231,89 @@ $ bash scripts/verify-all.sh
 It runs the test suite, the codelab replay, the pixel audit of the video, the
 re-reading of the 14 cited QNX 8.0 pages, the check of the submission text
 and the benchmark on 17 real QNX resource managers, then prints one table:
-one line per verification, its result and its exit code. It exits 0 only when
-every row is OK; a check that could not run is reported as NOT CHECKED, never
-as OK.
+one line per verification, its result and its exit code.
+
+Before that table, the command prints the full log of every check — the 51
+test names, the 12 replayed codelab blocks, the 19 audited video scenes, the
+35 re-read quotations and the 17 benchmark files: **392 lines** for the run
+below.  The three blocks that follow are the **end of the real output**
+(measured on 14 November 2026 in a copy of this revision in which
+`docs/CODELAB.md` was still the previously published file — check C compares
+the published codelab with the local copy; on a fresh clone of this
+repository every row reads the same):
+
+```console
+======================================================================================================
+SUMMARY - one line per verification
+======================================================================================================
+VERIFICATION                               RESULT       DETAIL                                           EXIT
+------------------------------------------ ------------ ------------------------------------------------ ----
+run_tests.sh (51 unit tests)               OK           -                                                0
+verifier-codelab.py (12 blocks)            OK           -                                                0
+audit-sous-titres-pixels.py (video)        OK           -                                                0
+verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-soumission-devpost.py (13 blocks) OK           -                                                0
+benchmark-corpus.py (17 real resource managers) OK           -                                                0
+======================================================================================================
+VERDICT: EVERY CHECK PASSED - 6/6 OK (RC 0)
+======================================================================================================
+```
+
+**This is the real output on a machine without Pillow.** The pixel audit
+needs `ffmpeg`, `ffprobe` and `pillow`; when one of them is absent, that
+check is named in the table, it is **never** reported as OK, and the command
+says what is missing:
+
+```console
+======================================================================================================
+SUMMARY - one line per verification
+======================================================================================================
+VERIFICATION                               RESULT       DETAIL                                           EXIT
+------------------------------------------ ------------ ------------------------------------------------ ----
+run_tests.sh (51 unit tests)               OK           -                                                0
+verifier-codelab.py (12 blocks)            OK           -                                                0
+audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
+verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-soumission-devpost.py (13 blocks) OK           -                                                0
+benchmark-corpus.py (17 real resource managers) OK           -                                                0
+======================================================================================================
+WHAT TO INSTALL (the checks that could not run need these):
+  pip install pillow  - required by audit-sous-titres-pixels.py (video)
+======================================================================================================
+VERDICT: NO CHECK FAILED - 5/6 OK, 1 NOT CHECKED (RC 0)
+         the check(s) that could not run on this machine are named in the
+         table above and are never reported as OK: nothing was disproved,
+         but these proofs were NOT re-run here (see the list below).
+======================================================================================================
+```
+
+**This is the real output on a machine without network.** The three checks
+that read the web cannot run, and they say so:
+
+```console
+======================================================================================================
+SUMMARY - one line per verification
+======================================================================================================
+VERIFICATION                               RESULT       DETAIL                                           EXIT
+------------------------------------------ ------------ ------------------------------------------------ ----
+run_tests.sh (51 unit tests)               OK           -                                                0
+verifier-codelab.py (12 blocks)            OK           -                                                0
+audit-sous-titres-pixels.py (video)        OK           -                                                0
+verifier-citations.py (35 quotations)      NOT CHECKED  network absent: the pages could not be read      2
+verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
+benchmark-corpus.py (17 real resource managers) NOT CHECKED  network absent: the corpus could not be fetched  2
+======================================================================================================
+VERDICT: NO CHECK FAILED - 3/6 OK, 3 NOT CHECKED (RC 0)
+         the check(s) that could not run on this machine are named in the
+         table above and are never reported as OK: nothing was disproved,
+         but these proofs were NOT re-run here (see the list below).
+======================================================================================================
+```
+
+**The exit code answers one question: did a published proof turn out to be
+false?** 0 = no (a check that could not run on this machine is reported NOT
+CHECKED, never OK); 1 = yes (at least one row is FAILED); 2 = the command
+itself could not run.
 
 ## Build for QNX 8.0
 

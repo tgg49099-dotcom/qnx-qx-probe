@@ -107,7 +107,7 @@ copied into the repository and no file of the corpus is redistributed here.
 
 ## 4. The measurement
 
-The result of the run of 11 November 2026, with the version of the linter
+The result of the run of 14 November 2026, with the version of the linter
 in this repository. **The same corpus, run with the previous version of the
 tool, produced 3 ERROR and 7 WARN — nine of them false positives; that
 "before" measurement is in § 6.**
@@ -119,11 +119,11 @@ tool, produced 3 ERROR and 7 WARN — nine of them false positives; that
 | 3 | **rpi-thermal `rpi_thermal.c`** | 7 | **1** | 0 | **1** |
 | 4 | shim-demo `eventfd-mgr.c` | 5 | 0 | 0 | 0 |
 | 5 | bsp rpi5 `fan/resmgr.c` | 5 | 0 | 0 | 0 |
-| 6 | qpp `main.c` | 19 | 0 | 0 | 0 |
-| 7 | epoll `epoll-mgr.c` | 13 | 0 | 0 | 0 |
+| 6 | qpp `main.c` | 37 | 0 | 0 | 0 |
+| 7 | epoll `epoll-mgr.c` | 11 | 0 | 0 | 0 |
 | 8 | **devu-uvc `uvc_rm.c`** | 3 | 0 | **1** | **1** |
-| 9 | smbus `smb-ec/main.c` | 7 | 0 | 0 | 0 |
-| 10 | smbus `smb-ich/main.c` | 7 | 0 | 0 | 0 |
+| 9 | smbus `smb-ec/main.c` | 8 | 0 | 0 | 0 |
+| 10 | smbus `smb-ich/main.c` | 8 | 0 | 0 | 0 |
 | 11 | qnx-virtio `gpio/resmgr.c` | 4 | 0 | 0 | 0 |
 | 12 | phila `src/qnx/resmgr.c` | 5 | 0 | 0 | 0 |
 | 13 | codelab `src/hello.c` | 5 | 0 | 0 | 0 |
@@ -146,7 +146,7 @@ rpi-thermal/rpi_thermal.c    7 finding(s), 1 ERROR, 0 WARN (exit 1)
     ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
 ...
 devu-uvc/uvc_rm.c             3 finding(s), 0 ERROR, 1 WARN (exit 1)
-    WARN QX006 devu-uvc/uvc_rm.c: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+    WARN QX006 devu-uvc/uvc_rm.c:511: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
 ```
 
 ---

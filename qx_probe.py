@@ -927,7 +927,12 @@ def to_sarif(findings: list[Finding]) -> str:
                   "results": results}]}, indent=2)
 
 
-def main(argv: list[str]) -> int:
+def main(argv: list[str] | None = None) -> int:
+    # argv defaults to sys.argv so that the console entry point declared in
+    # pyproject.toml (the `qx-probe` command) can call main() with no
+    # argument.  Running the file directly still calls main(sys.argv).
+    if argv is None:
+        argv = sys.argv
     args = argv[1:]
     fmt = "text"
     paths = []

@@ -51,7 +51,7 @@ exist either.**
 
 ```console
 $ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git && cd qnx-qx-probe
-$ bash scripts/run_tests.sh                 # 27 tests, RESULT: QX-PROBE suite GREEN (RC 0)
+$ bash scripts/run_tests.sh                 # 51 tests, RESULT: QX-PROBE suite GREEN (RC 0)
 $ python3 -I scripts/verifier-citations.py  # the 14 official pages, 35 quotations (RC 0)
 $ git show bfad852:RULES.md                 # the first draft of the eleven rules
 $ git show 9706199 --stat                   # the commit that corrected the five defective rules
