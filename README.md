@@ -166,6 +166,7 @@ tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 1
 tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
+tests/test_multifile.py                      13 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
@@ -233,9 +234,9 @@ re-reading of the 14 cited QNX 8.0 pages, the check of the submission text
 and the benchmark on 17 real QNX resource managers, then prints one table:
 one line per verification, its result and its exit code.
 
-Before that table, the command prints the full log of every check — the 51
+Before that table, the command prints the full log of every check — the 64
 test names, the 12 replayed codelab blocks, the 19 audited video scenes, the
-35 re-read quotations and the 17 benchmark files: **392 lines** for the run
+35 re-read quotations and the 17 benchmark files: **399 lines** for the run
 below.  The three blocks that follow are the **end of the real output**
 (measured on 14 November 2026 in a copy of this revision in which
 `docs/CODELAB.md` was still the previously published file — check C compares
@@ -248,7 +249,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (51 unit tests)               OK           -                                                0
+run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
 verifier-citations.py (35 quotations)      OK           -                                                0
@@ -270,7 +271,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (51 unit tests)               OK           -                                                0
+run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
 verifier-citations.py (35 quotations)      OK           -                                                0
@@ -296,7 +297,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (51 unit tests)               OK           -                                                0
+run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
 verifier-citations.py (35 quotations)      NOT CHECKED  network absent: the pages could not be read      2

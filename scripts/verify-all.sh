@@ -8,7 +8,7 @@
 #
 # The checks, in this order:
 #
-#   1  scripts/run_tests.sh                   the 51 unit tests
+#   1  scripts/run_tests.sh                   the 64 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 35 quotations
@@ -223,7 +223,7 @@ echo "repository : $ROOT"
 echo "checks     : 6"
 echo
 
-check "run_tests.sh (51 unit tests)" \
+check "run_tests.sh (64 unit tests)" \
       "scripts/run_tests.sh" \
       "RESULT: QX-PROBE suite GREEN" \
       "-" \

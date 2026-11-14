@@ -51,7 +51,7 @@ exist either.**
 
 ```console
 $ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git && cd qnx-qx-probe
-$ bash scripts/run_tests.sh                 # 51 tests, RESULT: QX-PROBE suite GREEN (RC 0)
+$ bash scripts/run_tests.sh                 # 64 tests, RESULT: QX-PROBE suite GREEN (RC 0)
 $ python3 -I scripts/verifier-citations.py  # the 14 official pages, 35 quotations (RC 0)
 $ git show bfad852:RULES.md                 # the first draft of the eleven rules
 $ git show 9706199 --stat                   # the commit that corrected the five defective rules
@@ -537,6 +537,34 @@ new code passes the whole suite:
 
 ```
 Ran 27 tests in 0.167s
+OK
+```
+
+**What was measured again, on 14/11/2026** — the whole-program test file
+(`tests/test_multifile.py`, added with the revision of 14 November 2026) was
+run against the code of the previous commit (`git show ef17d75:qx_probe.py`,
+md5 `f19865ab9633cdfc2aa5337c89c06a9f`), the code of that day being md5
+`9e116ff3d2cd2c0b70e053aae15dc9d5`:
+
+```
+Ran 13 tests in 0.626s
+FAILED (failures=12)
+```
+
+The **twelve** failures are the twelve assertions the revision of 14 November
+brings: a handler file alone is not a program without a dispatch table
+(QX001), a loop or a gate helper in another file of the same program counts
+(QX006, QX007), the root path `""` is not a relative path (QX005), a
+block-scope `extern` table is not an automatic table (QX011), an OCB of its
+own bound with `resmgr_open_bind()` is an INFO and not an ERROR (QX004), and
+the command line reports `--help`, an unknown option and a missing file
+without a traceback. The thirteenth test,
+`test_iofunc_ocb_without_gate_stays_error`, passes on both versions: it
+guards the case the rule must keep catching. The current code passes the
+whole file:
+
+```
+Ran 13 tests in 0.673s
 OK
 ```
 
