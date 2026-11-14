@@ -226,6 +226,14 @@ REQUIREMENTS
    The one ERROR is a missing access gate in rpi_thermal.c, a file published
    by QNX itself; every finding was read by hand. See docs/BENCHMARK.md.
 
+5) OPTIONAL - RUN THE TOOL ON A PROGRAM SPLIT OVER SEVERAL FILES
+   python3 -I qx_probe.py $(find myservice -name '*.c')
+   The files given on one command line are read as one program.
+   Whole programs: on 9 resource managers of a published QNX source tree,
+   21 false errors removed; the one error left is real.
+   The measurement is in docs/BENCHMARK.md, section 10; the 13 tests that
+   pin these cases are in tests/test_multifile.py.
+
 EXIT CODES
   0 = no actionable finding
   1 = at least one ERROR or one WARN
@@ -235,7 +243,7 @@ EXIT CODES
 The whole procedure takes less than three seconds on a modern laptop.
 <!-- FIN:TESTING -->
 
-_Measured: 2742 characters._
+_Measured: 3183 characters._
 
 > The three commands of steps 1 to 3 are the ones a judge has to type;
 > step 4 is optional and needs the network. Everything else in the
