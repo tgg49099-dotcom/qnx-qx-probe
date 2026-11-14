@@ -1,8 +1,8 @@
 # Regles de QX-PROBE et leurs sources officielles QNX 8.0
 
 Chaque regle de la sonde est adossee a une page de la documentation officielle
-**BlackBerry QNX SDP 8.0** (QNX OS 8.0 C Library Reference). Les 12 pages
-citees ci-dessous ont ete relues le **12 novembre 2026** : les 12 ont repondu
+**BlackBerry QNX SDP 8.0** (QNX OS 8.0 C Library Reference). Les 14 pages
+citees ci-dessous ont ete relues les **12 et 14 novembre 2026** : les 14 ont repondu
 HTTP 200 et chacune porte la date de mise a jour que QNX lui a donnee
 (`Page updated: November 05, 2026`). Cette date est affichee par
 `scripts/verifier-citations.py`.
@@ -65,11 +65,19 @@ cede — jamais le code canonique de QNX.
 * **Sources :**
   * `iofunc_read_verify()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html>
   * `iofunc_write_verify()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
+  * `iofunc_read_default()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_default.html>
+  * `iofunc_write_default()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_default.html>
 * **Ce que dit la doc :** « All read handlers should start with a call to
   `iofunc_read_verify()` and proceed only if it returns EOK. »
 * **Ce que verifie la regle :** le corps du handler `read`/`write`, chaines et
   commentaires effaces, doit contenir la porte — directement, ou via une
   fonction auxiliaire du meme fichier (un controle delegue est un controle).
+  Un handler qui appelle le traitement POSIX par defaut
+  `iofunc_read_default()` / `iofunc_write_default()` a aussi sa porte : les
+  pages officielles de ces fonctions (relues le 14 novembre 2026) disent
+  « The `iofunc_read_default()` function calls `iofunc_read_verify()` to
+  verify if this read operation should be permitted » (de meme pour
+  l'ecriture). Un appel compte ; une mention en commentaire ou en chaine non.
 * **Ce qui a change dans cette version :** la recherche etait purement
   textuelle. Un controle delegue a une fonction auxiliaire etait signale
   comme une porte manquante (faux positif), et le *nom* de la porte cite

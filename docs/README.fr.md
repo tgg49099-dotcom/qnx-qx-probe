@@ -42,7 +42,7 @@ Concretement, la sonde ne signale **jamais** :
   `_RESMGR_CONNECT_NFUNCS` — le cas normal.
 
 Chaque regle est adossee a une page de la documentation **officielle** BlackBerry
-QNX SDP 8.0 (les 12 pages citees ont ete relues le 12 novembre 2026 ; chacune
+QNX SDP 8.0 (les 14 pages citees ont ete relues les 12 et 14 novembre 2026 ; chacune
 porte la date de mise a jour que QNX lui a donnee, et
 `scripts/verifier-citations.py` affiche cette date). Le detail regle par
 regle, avec la citation et l'URL, est dans **[RULES.md](RULES.md)**.
@@ -113,13 +113,13 @@ scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies 
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/run_tests.sh                         lance la suite de tests
-scripts/verifier-citations.py                relit les 12 pages QNX 8.0 citees et verifie les 33 citations
+scripts/verifier-citations.py                relit les 14 pages QNX 8.0 citees et verifie les 35 citations
 scripts/verifier-codelab.py                  rejoue chaque commande de docs/CODELAB.md et verifie sa sortie
 scripts/verifier-soumission-devpost.py       verifie le texte de soumission : longueurs, anglais, liens
 scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
-tests/test_robustness.py                     6 tests : 17 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro)
+tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
 video/SCENARIO.md                            le scenario de la demonstration video
 ```
 
@@ -143,7 +143,7 @@ $ bash scripts/verify-all.sh
 ```
 
 Elle enchaine la suite de tests, la relecture du codelab, l'audit des pixels
-de la video, la relecture des 12 pages QNX 8.0 citees, le controle du
+de la video, la relecture des 14 pages QNX 8.0 citees, le controle du
 texte de soumission et le benchmark sur 17 vrais gestionnaires de ressources
 QNX, puis affiche un tableau : une ligne par verification, son resultat et
 son code de sortie. Elle ne sort en 0 que si chaque ligne est OK ; une

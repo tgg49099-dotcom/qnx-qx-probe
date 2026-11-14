@@ -11,7 +11,7 @@
 #   1  scripts/run_tests.sh                   the 27 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
-#   4  scripts/verifier-citations.py          the 12 cited QNX 8.0 pages, 33 quotations
+#   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 35 quotations
 #   5  scripts/verifier-soumission-devpost.py the submission text: lengths, English, links
 #   6  scripts/benchmark-corpus.py            the linter on 17 real QNX resource managers
 #
@@ -238,7 +238,7 @@ check "audit-sous-titres-pixels.py (video)" \
       "-" \
       python3 -I -B scripts/audit-sous-titres-pixels.py
 
-check "verifier-citations.py (33 quotations)" \
+check "verifier-citations.py (35 quotations)" \
       "scripts/verifier-citations.py" \
       "VERDICT: ALL CITATIONS VERIFIED" \
       "2" \

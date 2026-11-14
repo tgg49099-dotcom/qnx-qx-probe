@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Re-reads the 12 official QNX 8.0 pages cited by the rules and checks that
+"""Re-reads the 14 official QNX 8.0 pages cited by the rules and checks that
 the sentence each rule depends on is still on the page.
 
 WHAT THIS SCRIPT IS FOR
@@ -74,7 +74,7 @@ BASE = "https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/top
 TIMEOUT = 25
 
 # --------------------------------------------------------------------------
-# The 12 pages cited by RULES.md, and the sentences the rules depend on.
+# The 14 pages cited by RULES.md, and the sentences the rules depend on.
 # Every quotation below is a sentence of the official page (measured on
 # 07/11/2026) and is written verbatim in RULES.md: the checker prints a
 # "not written verbatim in RULES.md" note for every quotation that is not.
@@ -133,6 +133,16 @@ CITATIONS: list[tuple[str, str, tuple[str, ...]]] = [
         "All write handlers should start with a call to iofunc_write_verify() "
         "and proceed only if it returns EOK.",
     )),
+    # Added on 14/11/2026: the POSIX default handlers run the gate
+    # themselves, so a handler that delegates to them is gated (rule QX004).
+    ("iofunc_read_default", "i/iofunc_read_default", (
+        "The iofunc_read_default() function calls iofunc_read_verify() to "
+        "verify if this read operation should be permitted.",
+    )),
+    ("iofunc_write_default", "i/iofunc_write_default", (
+        "The iofunc_write_default() function calls iofunc_write_verify() to "
+        "verify if this write operation should be permitted.",
+    )),
     ("resmgr_block", "r/resmgr_block", (
         "The resmgr_block() function waits for a message (created by a call "
         "to resmgr_context_alloc() ) for context ctp .",
@@ -172,6 +182,8 @@ USERS: dict[str, str] = {
     "resmgr_connect_funcs_t": "QX002",
     "iofunc_read_verify": "QX004",
     "iofunc_write_verify": "QX004",
+    "iofunc_read_default": "QX004",
+    "iofunc_write_default": "QX004",
     "resmgr_block": "QX006",
     "dispatch_block": "QX006",
     "resmgr_handler": "QX007",
@@ -280,7 +292,7 @@ def check_page(name: str, path: str, quotes: tuple[str, ...],
 
 def run(repo: str) -> int:
     print("=" * 78)
-    print("QX-PROBE - verification of the 12 official QNX 8.0 citations")
+    print("QX-PROBE - verification of the 14 official QNX 8.0 citations")
     print("=" * 78)
     print(f"User-Agent : {UA}")
     print(f"one request per page, no retry; {len(CITATIONS)} pages, "

@@ -34,6 +34,19 @@ and the correct twins of the first four were told "read is not assigned".
 A `->read` on a structure that is NOT a dispatch table is ignored
 (ok_other_struct_arrow.c).
 
+The v7 variants (14 November 2026) follow the official QNX 8.0 pages
+iofunc_read_default() and iofunc_write_default(): "The
+iofunc_read_default() function calls iofunc_read_verify() to verify if
+this read operation should be permitted" (same for writes).  Before v7,
+two CORRECT handlers that delegate to the POSIX default got a false
+ERROR QX004:
+
+  ok_read_delegates_default.c     read handler returns iofunc_read_default()
+  ok_write_delegates_default.c    write handler returns iofunc_write_default()
+
+while a default that is only MENTIONED (comment, message string) is still
+no gate (bad_default_only_mentioned.c).
+
 Unknown conditions (`#ifdef X`) stay live code: the linter never guesses a
 build configuration (ok_gate_in_ifdef.c).
 
@@ -106,6 +119,22 @@ class WiredSlotIsNotReportedUnassigned(unittest.TestCase):
                "static int r(void) { return 0; }\n"
                "void f(struct ops *o) { o->read = r; }\n")
         self.assertEqual(qx_probe.slot_assignments(src), [])
+
+
+class DefaultHandlerRunsTheGate(unittest.TestCase):
+    """iofunc_*_default() calls iofunc_*_verify() itself (QNX 8.0 pages)."""
+
+    def test_delegating_handlers_are_gated(self):
+        for name in ("ok_read_delegates_default.c", "ok_write_delegates_default.c"):
+            with self.subTest(fixture=name):
+                rc, out = run(FIX / name)
+                self.assertEqual(rc, 0, out)
+                self.assertNotIn("QX004", out)
+
+    def test_mention_is_not_a_call(self):
+        rc, out = run(FIX / "bad_default_only_mentioned.c")
+        self.assertEqual(rc, 1, out)
+        self.assertEqual(out.count("ERROR QX004"), 1, out)
 
 
 class DeadCodeKeepsLineNumbers(unittest.TestCase):

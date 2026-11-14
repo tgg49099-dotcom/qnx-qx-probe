@@ -5,8 +5,8 @@
 > rules and the same official QNX 8.0 sources.
 
 Every rule of the linter is backed by a page of the official **BlackBerry
-QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The 12 pages
-cited below were re-read on **12 November 2026**: all 12 answered HTTP 200,
+QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The 14 pages
+cited below were re-read on **12 and 14 November 2026**: all 14 answered HTTP 200,
 and each one carries the update date QNX put on it (`Page updated:
 November 05, 2026`). The date each page carries is printed by
 `scripts/verifier-citations.py`, so a judge can read it for himself.
@@ -112,7 +112,7 @@ gives way — never the canonical QNX code.
 
 ## QX004 — the `iofunc_*_verify()` access gate is missing
 * **Level:** ERROR
-* **Sources:** `iofunc_read_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html> · `iofunc_write_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html>
+* **Sources:** `iofunc_read_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html> · `iofunc_write_verify()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html> · `iofunc_read_default()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_default.html> · `iofunc_write_default()` — <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_default.html>
 * **What the documentation says:** "All read handlers should start with a call
   to `iofunc_read_verify()` and proceed only if it returns EOK." — and the same
   for `iofunc_write_verify()`: "All write handlers should start with a call
@@ -134,6 +134,13 @@ gives way — never the canonical QNX code.
 * **What the rule checks:** the body of the `read`/`write` handler, with the
   strings and the comments blanked, must contain the gate — directly, or
   through a helper function of the same file (a delegated check is a check).
+  A handler that calls the POSIX default `iofunc_read_default()` /
+  `iofunc_write_default()` is gated too: the official pages of these
+  functions (re-read on 14 November 2026) say "The `iofunc_read_default()` function
+  calls `iofunc_read_verify()` to verify if this read operation should be
+  permitted" and "The `iofunc_write_default()` function calls
+  `iofunc_write_verify()` to verify if this write operation should be
+  permitted". A call counts; a mention in a comment or a string does not.
 * **What changed in this version:** the search was purely textual. A check
   delegated to a helper was reported as a missing gate (false positive), and
   the *name* of the gate quoted inside an error message was taken for a

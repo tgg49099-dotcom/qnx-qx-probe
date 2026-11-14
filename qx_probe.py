@@ -64,6 +64,15 @@ IO_FUNC_DEFAULTS = {
     "notify": None,
 }
 
+# QNX 8.0 default handlers that call the access gate themselves (pages
+# iofunc_read_default() and iofunc_write_default(), re-read on 14 November
+# 2026): "The iofunc_read_default() function calls iofunc_read_verify() to
+# verify if this read operation should be permitted."
+GATE_DELEGATES = {
+    "iofunc_read_verify": "iofunc_read_default",
+    "iofunc_write_verify": "iofunc_write_default",
+}
+
 # iofunc_func_init(): connect_nfuncs, connect_funcs, io_nfuncs, io_funcs
 NFUNCS_RE = re.compile(
     r"iofunc_func_init\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)",
@@ -609,6 +618,13 @@ def gate_present(body: str, want: str, src: str, depth: int = 0,
     """
     if want in body:
         return True
+    # The POSIX default handler runs the gate itself: iofunc_read_default()
+    # "calls iofunc_read_verify() to verify if this read operation should be
+    # permitted" (and iofunc_write_default() calls iofunc_write_verify()), so a
+    # handler that delegates to it is gated.  A call, not a mere mention.
+    alt = GATE_DELEGATES.get(want)
+    if alt and re.search(r"\b" + alt + r"\s*\(", body):
+        return True
     if depth >= 4:
         return False
     seen = set() if seen is None else seen
@@ -864,7 +880,7 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     return f
 
 
-TOOL_VERSION = "1.2.0"
+TOOL_VERSION = "1.2.1"
 RULES_URL = "https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md"
 # SARIF level of each QX-PROBE level (SARIF 2.1.0, §3.27.10 "level").
 SARIF_LEVEL = {"ERROR": "error", "WARN": "warning", "INFO": "note"}

@@ -558,7 +558,7 @@ inside the file it analyses. Only a helper in another file is missed.
 ## References — the official QNX 8.0 pages used here
 
 All of them are pages of the **BlackBerry QNX SDP 8.0** C Library
-Reference, re-read on **12 November 2026**: all 12 answered HTTP 200, and
+Reference, re-read on **12 and 14 November 2026**: all 14 answered HTTP 200, and
 each one carries the update date QNX put on it (`Page updated:
 November 05, 2026`).
 
@@ -576,6 +576,8 @@ November 05, 2026`).
 | `iofunc_func_init()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html> |
 | `iofunc_read_verify()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html> |
 | `iofunc_write_verify()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_verify.html> |
+| `iofunc_read_default()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_default.html> |
+| `iofunc_write_default()` | <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_write_default.html> |
 
 The full description of the eleven rules, with the quotation and the URL
 for each one, is in **[RULES.md](../RULES.md)**.

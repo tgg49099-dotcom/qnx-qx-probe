@@ -47,7 +47,7 @@ Concretely, the linter **never** reports:
   that a symbol is missing.
 
 Every rule is backed by an official **BlackBerry QNX SDP 8.0** documentation
-page (the 12 cited pages were re-read on 12 November 2026; each one carries
+page (the 14 cited pages were re-read on 12 and 14 November 2026; each one carries
 the update date QNX put on it, and `scripts/verifier-citations.py` prints
 that date). The detail, rule by rule, with the quotation and the URL, is in
 **[RULES.md](RULES.md)**.
@@ -136,7 +136,7 @@ scripts/audit-sous-titres-pixels.py          proves that the published subtitles
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
 scripts/run_tests.sh                         runs the test suite
-scripts/verifier-citations.py                re-reads the 12 cited QNX 8.0 pages and checks the 33 quotations
+scripts/verifier-citations.py                re-reads the 14 cited QNX 8.0 pages and checks the 35 quotations
 scripts/verifier-codelab.py                  replays every command of docs/CODELAB.md and checks its output
 scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links
 scripts/verify-all.sh                        replays every published proof in one command
@@ -144,7 +144,7 @@ tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the test
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
 tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
-tests/test_robustness.py                     6 tests: 17 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro)
+tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
@@ -208,7 +208,7 @@ $ bash scripts/verify-all.sh
 ```
 
 It runs the test suite, the codelab replay, the pixel audit of the video, the
-re-reading of the 12 cited QNX 8.0 pages, the check of the submission text
+re-reading of the 14 cited QNX 8.0 pages, the check of the submission text
 and the benchmark on 17 real QNX resource managers, then prints one table:
 one line per verification, its result and its exit code. It exits 0 only when
 every row is OK; a check that could not run is reported as NOT CHECKED, never
@@ -255,7 +255,7 @@ where a reviewer can open it, and each of them re-playable:
 * **the eleven rules** — one line each in the table above, every one of them
   backed by an official BlackBerry QNX SDP 8.0 documentation page, with the
   quotation and the URL in **[RULES.md](RULES.md)**;
-* **the 33 quotations** taken from the **12** cited pages, checked word for
+* **the 35 quotations** taken from the **14** cited pages, checked word for
   word by `scripts/verifier-citations.py`, which re-reads the pages and
   prints the update date QNX put on each of them;
 * **the benchmark on public QNX 8.0 code** — the linter is run on **17 real
