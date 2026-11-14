@@ -90,6 +90,9 @@ CITATIONS: list[tuple[str, str, tuple[str, ...]]] = [
         "current working directory.",
         "The number of components to allocate for the IOV array.",
         "or NULL to use the default attributes",
+        "If path is NULL, only the first step will be done, unless "
+        "RESMGR_FLAG_ATTACH_LOCAL is set in attr.flags or "
+        "_RESMGR_FLAG_FTYPEONLY is set in flags",
     )),
     ("resmgr_io_funcs_t", "r/resmgr_io_funcs_t", (
         "You can initialize this table by calling iofunc_func_init() and then "

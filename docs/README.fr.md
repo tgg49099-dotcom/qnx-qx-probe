@@ -40,7 +40,7 @@ dire :
 
 | | |
 |---|---|
-| **Version QNX** | **QNX SDP 8.0** — chaque regle est adossee a une page de la BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 35 citations, relues le 14 novembre 2026) |
+| **Version QNX** | **QNX SDP 8.0** — chaque regle est adossee a une page de la BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 36 citations, relues le 14 novembre 2026) |
 | **Cible** | l'outil lui-meme est un outil **hote** (Linux, macOS, Windows) ; les exemples C ciblent **QNX 8.0 sur QEMU x86_64** (`qcc -Vgcc_ntox86_64`) |
 | **Chaine d'outils** | **Python 3, bibliotheque standard uniquement**, pour l'outil ; **`qcc` du SDP 8.0**, pour les exemples C — dont la compilation n'est **PAS MESUREE**, car aucune licence SDP 8.0 n'existe dans l'environnement ou ce projet a ete ecrit |
 
@@ -135,14 +135,14 @@ scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies 
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/run_tests.sh                         lance la suite de tests
-scripts/verifier-citations.py                relit les 14 pages QNX 8.0 citees et verifie les 35 citations
+scripts/verifier-citations.py                relit les 14 pages QNX 8.0 citees et verifie les 36 citations
 scripts/verifier-codelab.py                  rejoue chaque commande de docs/CODELAB.md et verifie sa sortie
 scripts/verifier-soumission-devpost.py       verifie le texte de soumission : longueurs, anglais, liens
 scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
 tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
-tests/test_multifile.py                      13 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
+tests/test_multifile.py                      17 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
 video/SCENARIO.md                            le scenario de la demonstration video
 ```
 
@@ -173,7 +173,7 @@ son code de sortie.
 
 Avant ce tableau, la commande affiche le journal complet de chaque controle
 — les 64 noms de tests, les 12 blocs du codelab rejoues, les 19 scenes de la
-video auditees, les 35 citations relues et les 17 fichiers du benchmark :
+video auditees, les 36 citations relues et les 17 fichiers du benchmark :
 **399 lignes** pour le premier des trois runs ci-dessous. Les trois blocs
 qui suivent sont la **fin de la sortie REELLE** (mesuree le 14 novembre 2026
 dans une copie de cette revision ou `docs/CODELAB.md` etait encore le
@@ -190,7 +190,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
-verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
 ======================================================================================================
@@ -212,7 +212,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
-verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
 ======================================================================================================
@@ -239,7 +239,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
-verifier-citations.py (35 quotations)      NOT CHECKED  network absent: the pages could not be read      2
+verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
 benchmark-corpus.py (17 real resource managers) NOT CHECKED  network absent: the corpus could not be fetched  2
 ======================================================================================================

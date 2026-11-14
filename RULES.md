@@ -53,6 +53,18 @@ gives way — never the canonical QNX code.
   NULL to use the default attributes") and says nothing about the two
   dispatch tables, so the rule takes the strict reading — a NULL table means
   a resource manager with no handler at all.
+* **v9 — a NULL path is not a resource manager (14/11/2026):** the
+  documentation of `resmgr_attach()` lists three steps (set up the
+  framework, bind the tables to a link ID, register the path) and adds:
+  "If path is NULL, only the first step will be done, unless
+  RESMGR_FLAG_ATTACH_LOCAL is set in attr.flags or _RESMGR_FLAG_FTYPEONLY
+  is set in flags". Such a call binds no table, so `NULL` tables there are
+  correct; the rule no longer reports them. Measured on procnto
+  (`proc/message.c`) in a published QNX 6.4 source tree: 2 false ERROR
+  before, 0 after. With `RESMGR_FLAG_ATTACH_LOCAL` or
+  `_RESMGR_FLAG_FTYPEONLY` the tables are bound and the ERROR stays
+  (`tests/test_multifile.py`, class `FrameworkOnlyAttach`, 4 tests, the
+  first one red on v8).
 
 ## QX002 — `iofunc_func_init()` is asked to fill more entries than the table holds
 * **Level:** ERROR
@@ -346,6 +358,7 @@ code**:
 | QX006 | a loop delegated to a thread pool (`pool_attr.block_func = &resmgr_block`) was not recognised; a resource manager split over several files was condemned at ERROR level | `test_api_resmgr_block_et_resmgr_handler` (the delegated case is asserted in the same test), `test_qx006_boucle_de_messages_absente` |
 | QX007 | the same limit as QX006: the handler may live in another translation unit | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
 | QX001, QX004, QX005, QX006, QX007, QX011 (v8) | measured on 9 resource managers of a published QNX 6.4 source tree: 21 false ERROR and 10 false WARN on correct code (the one ERROR left is real) (handler files, a loop or a gate helper in another file, the root path `""`, a block-scope `extern` table, an OCB of its own) | `tests/test_multifile.py` (13 tests, 12 red on v7) |
+| QX001 (v9) | `resmgr_attach()` with a NULL path (framework set-up only, no table bound) was reported twice in procnto | `tests/test_multifile.py`, class `FrameworkOnlyAttach` (4 tests, 1 red on v8) |
 | QX011 | a static (zero-initialised) table was warned about; a table that is a member of a structure was called "automatic"; only the first `iofunc_func_init()` call was read | `test_qx011_table_mise_a_zero_statique` (it also covers the member case and the second call), `test_qx011_table_automatique_non_initialisee` |
 
 The last three rows come from the **benchmark on real code** — 17 resource

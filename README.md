@@ -38,7 +38,7 @@ The three things the contest rules ask a submission to state:
 
 | | |
 |---|---|
-| **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 35 quotations, re-read on 14 November 2026) |
+| **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 36 quotations, re-read on 14 November 2026) |
 | **Target** | the tool itself is a **host** tool (Linux, macOS, Windows); the C examples target **QNX 8.0 on QEMU x86_64** (`qcc -Vgcc_ntox86_64`) |
 | **Toolchain** | **Python 3, standard library only**, for the tool; **`qcc` from the SDP 8.0**, for the C examples — whose compilation is **NOT MEASURED**, because no SDP 8.0 licence exists in the environment where the project was written |
 
@@ -157,7 +157,7 @@ scripts/audit-sous-titres-pixels.py          proves that the published subtitles
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
 scripts/run_tests.sh                         runs the test suite
-scripts/verifier-citations.py                re-reads the 14 cited QNX 8.0 pages and checks the 35 quotations
+scripts/verifier-citations.py                re-reads the 14 cited QNX 8.0 pages and checks the 36 quotations
 scripts/verifier-codelab.py                  replays every command of docs/CODELAB.md and checks its output
 scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links
 scripts/verify-all.sh                        replays every published proof in one command
@@ -166,7 +166,7 @@ tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 1
 tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
-tests/test_multifile.py                      13 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
+tests/test_multifile.py                      17 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
@@ -252,7 +252,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
-verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
 ======================================================================================================
@@ -274,7 +274,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  dependency absent: pip install pillow            2
-verifier-citations.py (35 quotations)      OK           -                                                0
+verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
 benchmark-corpus.py (17 real resource managers) OK           -                                                0
 ======================================================================================================
@@ -300,7 +300,7 @@ VERIFICATION                               RESULT       DETAIL                  
 run_tests.sh (64 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        OK           -                                                0
-verifier-citations.py (35 quotations)      NOT CHECKED  network absent: the pages could not be read      2
+verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
 benchmark-corpus.py (17 real resource managers) NOT CHECKED  network absent: the corpus could not be fetched  2
 ======================================================================================================
@@ -357,7 +357,7 @@ where a reviewer can open it, and each of them re-playable:
 * **the eleven rules** — one line each in the table above, every one of them
   backed by an official BlackBerry QNX SDP 8.0 documentation page, with the
   quotation and the URL in **[RULES.md](RULES.md)**;
-* **the 35 quotations** taken from the **14** cited pages, checked word for
+* **the 36 quotations** taken from the **14** cited pages, checked word for
   word by `scripts/verifier-citations.py`, which re-reads the pages and
   prints the update date QNX put on each of them;
 * **the benchmark on public QNX 8.0 code** — the linter is run on **17 real

@@ -22,10 +22,18 @@ cede — jamais le code canonique de QNX.
   « a pointer to the `resmgr_connect_funcs_t` structure that defines the
   POSIX-level connect functions » ; sans ces tables, le gestionnaire n'a rien a
   executer pour le client.
-* **Limite connue :** la detection est lexicale (`.slot = handler`). Un
-  initialiseur de structure C99 (`resmgr_io_funcs_t f = { .read = my_read };`)
-  ou un nom de variable libre n'est pas vu. Une regle plus fine est prevue mais
-  n'est pas implementee : mieux vaut un constat manquant qu'un faux positif.
+* **Etat actuel (v9, 14/11/2026) :** les quatre facons documentees de cabler
+  une table sont reconnues (declaration, initialiseur C99, `iofunc_func_init()`,
+  table passee a `resmgr_attach()`), avec les deux orthographes des membres
+  (`.read` et `.io_read`). Un fichier qui ne declare aucune table et n'appelle
+  pas `resmgr_attach()` (fichier de handlers d'un programme en plusieurs
+  fichiers) n'est pas signale. Une table **NULL** passee a `resmgr_attach()`
+  est une ERROR, **sauf** si le chemin est NULL : la doc dit « If path is
+  NULL, only the first step will be done, unless RESMGR_FLAG_ATTACH_LOCAL is
+  set in attr.flags or _RESMGR_FLAG_FTYPEONLY is set in flags » ; l'appel ne
+  fait alors que preparer le cadre de dispatch et ne lie aucune table (mesure
+  sur procnto, `proc/message.c` : 2 fausses ERROR avant v9, 0 apres). Detail
+  et preuves : [RULES.md](../RULES.md).
 
 ## QX002 — plus de slots cables que `iofunc_func_init()` n'en remplit
 

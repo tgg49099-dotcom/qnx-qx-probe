@@ -140,5 +140,43 @@ class CommandLine(unittest.TestCase):
         self.assertEqual(one, two)
 
 
+class FrameworkOnlyAttach(unittest.TestCase):
+    """v9 (14/11/2026): resmgr_attach() with a NULL path.
+
+    Source: resmgr_attach() -- "If path is NULL, only the first step will be
+    done, unless RESMGR_FLAG_ATTACH_LOCAL is set in attr.flags or
+    _RESMGR_FLAG_FTYPEONLY is set in flags"; the first step only sets up the
+    framework, the tables are bound in the second.  Measured on procnto
+    (proc/message.c) in the same published QNX source tree: 2 false ERROR
+    QX001 before v9, 0 after.
+    """
+
+    def _qx001(self, name, src=None):
+        p = FIX / name
+        found = qx_probe.analyse(str(p), src if src is not None else p.read_text())
+        return [x for x in found if x.code == "QX001" and x.level == "ERROR"]
+
+    def test_null_path_null_tables_is_correct(self):
+        self.assertEqual(self._qx001("framework_init.c"), [])
+        rc, out, _ = run(str(FIX / "framework_init.c"))
+        self.assertEqual(acting(out), [], msg=out)
+        self.assertEqual(rc, 0, msg=out)
+
+    def test_ftypeonly_binds_the_tables(self):
+        self.assertEqual(len(self._qx001("framework_ftypeonly.c")), 2)
+
+    def test_attach_local_binds_the_tables(self):
+        src = (FIX / "framework_init.c").read_text().replace(
+            "rattr.nparts_max = 1;",
+            "rattr.nparts_max = 1;\n    rattr.flags = RESMGR_FLAG_ATTACH_LOCAL;")
+        self.assertEqual(len(self._qx001("framework_init.c", src)), 2)
+
+    def test_named_path_with_null_tables_still_error(self):
+        src = (FIX / "framework_init.c").read_text().replace(
+            "resmgr_attach(dpp, &rattr, NULL, 0, 0,",
+            'resmgr_attach(dpp, &rattr, "/dev/mine", _FTYPE_ANY, 0,')
+        self.assertEqual(len(self._qx001("framework_init.c", src)), 2)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

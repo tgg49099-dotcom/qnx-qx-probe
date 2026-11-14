@@ -285,6 +285,28 @@ def split_args(src: str, open_paren: int) -> list[tuple[int, int]]:
     return [(a, b) for a, b in spans if src[a:b].strip()]
 
 
+def framework_only_attach(src: str, args: list[tuple[int, int]]) -> bool:
+    """True when a resmgr_attach() call only sets up the dispatch framework.
+
+    Source: resmgr_attach() — "The function does three main things: On the
+    first resmgr_attach() call for any dispatch framework, it sets up the
+    framework to handle resource manager operations. It allocates a unique
+    link ID and associates the connect_funcs, io_funcs, and handle pointers
+    with this link ID. It registers the pathname [...]. If path is NULL, only
+    the first step will be done, unless RESMGR_FLAG_ATTACH_LOCAL is set in
+    attr.flags or _RESMGR_FLAG_FTYPEONLY is set in flags".  Such a call never
+    binds the two tables, so NULL tables there are correct (measured on
+    procnto's proc/message.c in a published QNX 6.4 source tree).
+    """
+    if len(args) < 5:
+        return False
+    path_arg = src[args[2][0]:args[2][1]].strip()
+    flags_arg = src[args[4][0]:args[4][1]]
+    return (path_arg in ("NULL", "0", "(void *)0", "(void*)0")
+            and "_RESMGR_FLAG_FTYPEONLY" not in flags_arg
+            and "RESMGR_FLAG_ATTACH_LOCAL" not in src)
+
+
 def string_literal(text: str) -> str | None:
     """Returns the content of a string literal, or None if it is not one."""
     m = re.fullmatch(r'"((?:[^"\\]|\\.)*)"', text.strip())
@@ -681,6 +703,11 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None,
     # overriding the defaults with your own functions").
     if not tables:
         m0 = re.search(r"\bresmgr_attach\s*\(", src)
+        if m0 and all(framework_only_attach(src, split_args(src, m.end() - 1))
+                      for m in re.finditer(r"\bresmgr_attach\s*\(", src)):
+            # Every resmgr_attach() of the file has a NULL path: it only sets
+            # up the framework and binds no table (see framework_only_attach).
+            m0 = None
         if not m0:
             # A file that neither declares a table nor attaches a path is a
             # helper or handler file of a resource manager split over several
@@ -704,7 +731,7 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None,
     # resource manager with no handler at all.
     for m2 in re.finditer(r"\bresmgr_attach\s*\(", src):
         args = split_args(src, m2.end() - 1)
-        if len(args) < 7:
+        if len(args) < 7 or framework_only_attach(src, args):
             continue
         for idx, label in ((5, "connect_funcs"), (6, "io_funcs")):
             if src[args[idx][0]:args[idx][1]].strip() == "NULL":
