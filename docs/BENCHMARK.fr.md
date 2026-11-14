@@ -112,6 +112,7 @@ copie dans le depot et aucun fichier du corpus n'y est redistribue.
 
 Resultat du run du 14 novembre 2026, avec la version du linteur de ce depot :
 
+<!-- BENCH:TABLE -->
 | # | Fichier | Constats | ERROR | WARN | Code de sortie |
 |---|---|---|---|---|---|
 | 1 | rpi-gpio `resmgr/main.c` | 5 | 0 | 0 | 0 |
@@ -135,19 +136,26 @@ Resultat du run du 14 novembre 2026, avec la version du linteur de ce depot :
 **17/17 fichiers analyses, 1 ERROR au total.** Les constats qui ne sont pas
 ERROR sont les informationnels (QX008, QX010) : un slot non cable, un nombre
 de slots tenu dans une macro. Ce ne sont pas des defauts.
+<!-- /BENCH:TABLE -->
 
 Les deux lignes qui portent un constat sont tout l'interet du corpus, et
 elles ont ete relues a la main avant d'etre crues :
 
+<!-- BENCH:CONSOLE -->
 ```console
 $ python3 -I scripts/benchmark-corpus.py
 ...
-rpi-thermal/rpi_thermal.c    7 finding(s), 1 ERROR, 0 WARN (exit 1)
+rpi-thermal/rpi_thermal.c                                               7 finding(s), 1 ERROR, 0 WARN (exit 1)
     ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
 ...
-devu-uvc/uvc_rm.c             3 finding(s), 0 ERROR, 1 WARN (exit 1)
+devu-uvc/uvc_rm.c                                                       3 finding(s), 0 ERROR, 1 WARN (exit 1)
     WARN QX006 devu-uvc/uvc_rm.c:511: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+...
+
+17/17 files analysed, 1 ERROR in total
+VERDICT: 17/17 FILES ANALYSED, 1 ERROR IN TOTAL
 ```
+<!-- /BENCH:CONSOLE -->
 
 ---
 

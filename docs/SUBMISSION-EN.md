@@ -108,7 +108,7 @@ It is a linter, not a certifier: it reports what its rules can prove and stays s
 
 Install: clone, then run python3 -I qx_probe.py your_resmgr.c. Nothing to build.
 
-Evaluate it in a minute: bash scripts/run_tests.sh runs 70 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
+Evaluate it in a minute: bash scripts/run_tests.sh runs 79 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
 <!-- FIN:WHATITDOES -->
 
 _Measured: 1190 characters (DevPost limit: 1 200)._
@@ -139,12 +139,12 @@ The hard part was not the detection, it was the silence. A linter for a real-tim
 
 The tool was written with an AI agent; the facts were kept out of its reach: every rule is backed by a quoted official page, and scripts/verifier-citations.py re-reads the 14 cited pages and checks that the quoted sentence is still there — 36 quotations; a page it cannot read is reported NOT CHECKED, never verified.
 
-The suite is 70 tests over 17 classes — 10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 19 whole-program reading of a resource manager split over several files — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
+The suite is 79 tests over 19 classes — 10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 19 whole-program reading of a resource manager split over several files, 9 controls of the published figures and benchmark — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
 
 The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 12 blocks, 0 differing.
 <!-- FIN:HOW -->
 
-_Measured: 2114 characters._
+_Measured: 2165 characters._
 
 ## 8. "What's next"
 
@@ -179,7 +179,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 72 files, about 2.2 MB (measured on 14 November 2026).
+   The published tree is 75 files, about 2.2 MB (measured on 14 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
@@ -195,13 +195,17 @@ REQUIREMENTS
      OK
      Ran 19 tests in 0.717s
      OK
+     Ran 9 tests in 0.529s
+     OK
      RESULT: QX-PROBE suite GREEN (RC 0)
-   The 70 tests are the two-sided contract: 10 of them prove that valid
+   The 79 tests are the two-sided contract: 10 of them prove that valid
    QNX 8.0 code produces no actionable finding, 15 prove that a broken file
    produces the expected finding, 2 check the format of the output, 12 check
    the line numbers and the JSON and SARIF output, 4 the QNX 8.0 build
    script, 8 the robustness of the rules, 19 the reading of a resource
-   manager split over several files as one program. The 27 of the first block are the
+   manager split over several files as one program, 9 the controls that
+   compare the published figures and the published benchmark with the real
+   ones, each with its counter-proof. The 27 of the first block are the
    file tests/test_qx_probe.py alone: it is that file the video runs.
 
 3) RUN THE TOOL ON A REAL QNX 8.0 RESOURCE MANAGER
@@ -243,7 +247,7 @@ EXIT CODES
 The whole procedure takes less than three seconds on a modern laptop.
 <!-- FIN:TESTING -->
 
-_Measured: 3183 characters._
+_Measured: 3351 characters._
 
 > The three commands of steps 1 to 3 are the ones a judge has to type;
 > step 4 is optional and needs the network. Everything else in the
@@ -448,7 +452,7 @@ This is the mapping, so that nothing is left to chance.
 
 | Criterion | Where it is answered |
 |---|---|
-| **Technological Implementation** | § 7: a real analyser, 1087 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 70 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntox86_64 -Werror`) that is labelled NOT MEASURED rather than faked. |
+| **Technological Implementation** | § 7: a real analyser, 1087 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 79 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntox86_64 -Werror`) that is labelled NOT MEASURED rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
 | **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 measured on 07/11/2026 against the code before commit `9706199`, 4 failures measured on 11/11/2026 after the benchmark, and 4 failures out of 8 measured on 14/11/2026 against commit `268f157`, and 12 failures out of 13 measured on 14/11/2026 against commit `ef17d75` - all measured) and passes on the current one; `scripts/verifier-citations.py` re-reads the 14 cited pages and checks that the 35 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
@@ -456,14 +460,14 @@ This is the mapping, so that nothing is left to chance.
 ## 17. Where every figure comes from
 
 Measured on the public repository, first on **6 November 2026** and
-re-verified on **14 November 2026** (`bash scripts/verify-all.sh`: 6 checks
-out of 6, RC 0 — the pixel audit of the video needs ffmpeg and pillow; on a
+re-verified on **14 November 2026** (`bash scripts/verify-all.sh`: 9 checks
+out of 9, RC 0 — the pixel audit of the video needs ffmpeg and pillow; on a
 machine without them that single check reports NOT CHECKED, never OK, and the
 command still exits 0 because no published proof was contradicted).
 
 | Figure | Value | How it was measured |
 |---|---|---|
-| Test suite | 70 tests in 5 files, 17 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 19 whole-program) | `bash scripts/run_tests.sh` |
+| Test suite | 79 tests in 6 files, 19 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 12 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 19 whole-program, 9 published figures and benchmark) | `bash scripts/run_tests.sh` |
 | BlackBerry's resource manager | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` |
 | Minimal example | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c` |
 | Read-only example | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_readonly.c` |

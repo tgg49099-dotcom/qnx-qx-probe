@@ -8,7 +8,7 @@
 #
 # The checks, in this order:
 #
-#   1  scripts/run_tests.sh                   the 70 unit tests
+#   1  scripts/run_tests.sh                   the 79 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 36 quotations
@@ -16,6 +16,7 @@
 #   6  scripts/benchmark-corpus.py            the linter on 17 real QNX resource managers
 #   7  scripts/verifier-chiffres-publies.py   the published figures against the real ones
 #   8  scripts/verifier-chiffres-publies.py   the same control, with its counter-proof
+#   9  scripts/verifier-benchmark-publie.py   the published benchmark against a real run
 #
 # THREE STATES, NEVER MIXED
 #
@@ -222,10 +223,10 @@ echo "======================================================================"
 echo "QX-PROBE - replay every published proof of this repository"
 echo "======================================================================"
 echo "repository : $ROOT"
-echo "checks     : 8"
+echo "checks     : 9"
 echo
 
-check "run_tests.sh (70 unit tests)" \
+check "run_tests.sh (79 unit tests)" \
       "scripts/run_tests.sh" \
       "RESULT: QX-PROBE suite GREEN" \
       "-" \
@@ -296,6 +297,15 @@ check "verifier-chiffres-publies.py (counter-proof)" \
       "python3" \
       "-" \
       python3 -I -B scripts/verifier-chiffres-publies.py --contre-epreuve
+
+check "verifier-benchmark-publie.py (published benchmark)" \
+      "scripts/verifier-benchmark-publie.py" \
+      "VERDICT: THE PUBLISHED BENCHMARK IS THE REAL OUTPUT" \
+      "2" \
+      "network absent: the corpus could not be fetched" \
+      "python3 git" \
+      "-" \
+      python3 -I -B scripts/verifier-benchmark-publie.py
 
 echo
 echo "======================================================================================================"

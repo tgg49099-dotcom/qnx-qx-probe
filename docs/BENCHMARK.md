@@ -114,6 +114,7 @@ in this repository. **The same corpus, run with the previous version of the
 tool, produced 3 ERROR and 7 WARN — nine of them false positives; that
 "before" measurement is in § 6.**
 
+<!-- BENCH:TABLE -->
 | # | File | Findings | ERROR | WARN | Exit code |
 |---|---|---|---|---|---|
 | 1 | rpi-gpio `resmgr/main.c` | 5 | 0 | 0 | 0 |
@@ -137,19 +138,26 @@ tool, produced 3 ERROR and 7 WARN — nine of them false positives; that
 **17/17 files analysed, 1 ERROR in total.** The findings that are not ERROR
 are the informational ones (QX008, QX010): a slot that is not wired, a
 number of slots held in a macro. Those are not defects.
+<!-- /BENCH:TABLE -->
 
 The two lines that carry a finding are the whole point of the corpus, and
 both were read by hand before being believed:
 
+<!-- BENCH:CONSOLE -->
 ```console
 $ python3 -I scripts/benchmark-corpus.py
 ...
-rpi-thermal/rpi_thermal.c    7 finding(s), 1 ERROR, 0 WARN (exit 1)
+rpi-thermal/rpi_thermal.c                                               7 finding(s), 1 ERROR, 0 WARN (exit 1)
     ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
 ...
-devu-uvc/uvc_rm.c             3 finding(s), 0 ERROR, 1 WARN (exit 1)
+devu-uvc/uvc_rm.c                                                       3 finding(s), 0 ERROR, 1 WARN (exit 1)
     WARN QX006 devu-uvc/uvc_rm.c:511: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+...
+
+17/17 files analysed, 1 ERROR in total
+VERDICT: 17/17 FILES ANALYSED, 1 ERROR IN TOTAL
 ```
+<!-- /BENCH:CONSOLE -->
 
 ---
 

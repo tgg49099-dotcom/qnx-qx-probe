@@ -1,0 +1,24 @@
+QX-PROBE on 17 real QNX resource managers
+
+rpi-gpio/resmgr/main.c                                                  5 finding(s), 0 ERROR, 0 WARN (exit 0)
+rpi-mailbox/rpi_mbox.c                                                  7 finding(s), 0 ERROR, 0 WARN (exit 0)
+rpi-thermal/rpi_thermal.c                                               7 finding(s), 1 ERROR, 0 WARN (exit 1)
+    ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
+shim-demo/eventfd-mgr.c                                                 5 finding(s), 0 ERROR, 0 WARN (exit 0)
+bsp_raspberrypi-bcm2712-rpi5/src/hardware/support/bcm2712/fan/resmgr.c    5 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx-posix-publish-subscribe/qpp/main.c                                 37 finding(s), 0 ERROR, 0 WARN (exit 0)
+epoll/epoll-mgr.c                                                      11 finding(s), 0 ERROR, 0 WARN (exit 0)
+devu-uvc/uvc_rm.c                                                       3 finding(s), 0 ERROR, 1 WARN (exit 1)
+    WARN QX006 devu-uvc/uvc_rm.c:511: no message loop in this file: neither dispatch_block() nor resmgr_block() is called or referenced here; in a resource manager split over several files the loop usually lives in another translation unit (it is then set in pool_attr.block_func) — check the whole project
+smbus/smb-ec/main.c                                                     8 finding(s), 0 ERROR, 0 WARN (exit 0)
+smbus/smb-ich/main.c                                                    8 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx-virtio/src/gpio/resmgr.c                                            4 finding(s), 0 ERROR, 0 WARN (exit 0)
+phila-bedside-monitor-qnx/src/qnx/resmgr.c                              5 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx8-resmgr-codelab/src/hello.c                                         5 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx8-resmgr-codelab/src/ticks.c                                         6 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx_advance/module04_drivers/block_rm.c                                 5 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx_advance/module04_drivers/can_rm.c                                   6 finding(s), 0 ERROR, 0 WARN (exit 0)
+qnx_advance/module04_drivers/qtn_sensor_rm.c                            5 finding(s), 0 ERROR, 0 WARN (exit 0)
+
+17/17 files analysed, 1 ERROR in total
+VERDICT: 17/17 FILES ANALYSED, 1 ERROR IN TOTAL

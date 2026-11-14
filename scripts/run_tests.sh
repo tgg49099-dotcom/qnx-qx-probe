@@ -58,6 +58,11 @@ python3 -I -B tests/test_multifile.py
 rc7=$?
 [ "$rc" -eq 0 ] && rc=$rc7
 echo
+echo "--- 8. the controls of the published figures and of the published benchmark, with their counter-proofs ---"
+python3 -I -B tests/test_published_figures.py
+rc8=$?
+[ "$rc" -eq 0 ] && rc=$rc8
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else
