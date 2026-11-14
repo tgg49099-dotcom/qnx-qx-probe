@@ -166,7 +166,7 @@ tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 1
 tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
-tests/test_multifile.py                      17 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
+tests/test_multifile.py                      19 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
 video/SCENARIO.md                            the video demonstration scenario
 ```
 

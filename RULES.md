@@ -65,6 +65,19 @@ gives way — never the canonical QNX code.
   `_RESMGR_FLAG_FTYPEONLY` the tables are bound and the ERROR stays
   (`tests/test_multifile.py`, class `FrameworkOnlyAttach`, 4 tests, the
   first one red on v8).
+* **v10 — a mount-only registration needs no I/O table (14/11/2026):** the
+  QNX 8.0 guide *Writing a Resource Manager* (page "Mount resmgr",
+  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.resmgr/topic/messages_Mount_resmgr.html>)
+  says: "In order to receive mount requests, the resource manager should
+  register a NULL path with an FTYPE of _FTYPE_MOUNT and with the flag
+  _RESMGR_FLAG_FTYPEONLY", and its example passes `NULL, /* No io handlers */`.
+  With `_FTYPE_MOUNT` and `_RESMGR_FLAG_FTYPEONLY` a NULL `io_funcs` is no
+  longer reported; a NULL `connect_funcs` still is (the mount callout lives
+  there). Measured on the code of the 37 pages of that guide that carry
+  resource-manager code: 1 false ERROR before (this example), 0 after
+  (2 more tests in the same class, both red on v9). This page is quoted
+  here but is not read by `scripts/verifier-citations.py`, which covers the
+  C Library Reference only.
 
 ## QX002 — `iofunc_func_init()` is asked to fill more entries than the table holds
 * **Level:** ERROR
@@ -359,6 +372,7 @@ code**:
 | QX007 | the same limit as QX006: the handler may live in another translation unit | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
 | QX001, QX004, QX005, QX006, QX007, QX011 (v8) | measured on 9 resource managers of a published QNX 6.4 source tree: 21 false ERROR and 10 false WARN on correct code (the one ERROR left is real) (handler files, a loop or a gate helper in another file, the root path `""`, a block-scope `extern` table, an OCB of its own) | `tests/test_multifile.py` (13 tests, 12 red on v7) |
 | QX001 (v9) | `resmgr_attach()` with a NULL path (framework set-up only, no table bound) was reported twice in procnto | `tests/test_multifile.py`, class `FrameworkOnlyAttach` (4 tests, 1 red on v8) |
+| QX001 (v10) | the mount-only registration of the official guide (`_FTYPE_MOUNT`, `_RESMGR_FLAG_FTYPEONLY`, no I/O table) was reported | same class, 2 more tests (red on v9) |
 | QX011 | a static (zero-initialised) table was warned about; a table that is a member of a structure was called "automatic"; only the first `iofunc_func_init()` call was read | `test_qx011_table_mise_a_zero_statique` (it also covers the member case and the second call), `test_qx011_table_automatique_non_initialisee` |
 
 The last three rows come from the **benchmark on real code** — 17 resource

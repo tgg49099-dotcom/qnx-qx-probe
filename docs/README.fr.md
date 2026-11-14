@@ -142,7 +142,7 @@ scripts/verify-all.sh                        rejoue toutes les preuves publiees 
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
 tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
-tests/test_multifile.py                      17 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
+tests/test_multifile.py                      19 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
 video/SCENARIO.md                            le scenario de la demonstration video
 ```
 

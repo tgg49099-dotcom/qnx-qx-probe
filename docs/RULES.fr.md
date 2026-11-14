@@ -33,7 +33,10 @@ cede — jamais le code canonique de QNX.
   set in attr.flags or _RESMGR_FLAG_FTYPEONLY is set in flags » ; l'appel ne
   fait alors que preparer le cadre de dispatch et ne lie aucune table (mesure
   sur procnto, `proc/message.c` : 2 fausses ERROR avant v9, 0 apres). Detail
-  et preuves : [RULES.md](../RULES.md).
+  et preuves : [RULES.md](../RULES.md). Depuis v10, un enregistrement pour
+  les seules demandes de montage (`_FTYPE_MOUNT` + `_RESMGR_FLAG_FTYPEONLY`,
+  exemple officiel du guide « Writing a Resource Manager ») peut passer une
+  table d'E/S NULL ; la table de connexion reste exigee.
 
 ## QX002 — plus de slots cables que `iofunc_func_init()` n'en remplit
 

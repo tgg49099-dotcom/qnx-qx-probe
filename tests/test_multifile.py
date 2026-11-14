@@ -177,6 +177,16 @@ class FrameworkOnlyAttach(unittest.TestCase):
             'resmgr_attach(dpp, &rattr, "/dev/mine", _FTYPE_ANY, 0,')
         self.assertEqual(len(self._qx001("framework_init.c", src)), 2)
 
+    def test_mount_only_registration_needs_no_io_table(self):
+        """QNX 8.0 guide, "Mount resmgr": a NULL path, _FTYPE_MOUNT and
+        _RESMGR_FLAG_FTYPEONLY, with "NULL, /* No io handlers */"."""
+        self.assertEqual(self._qx001("mount_only.c"), [])
+
+    def test_mount_only_still_needs_a_connect_table(self):
+        src = (FIX / "mount_only.c").read_text().replace(
+            "&mount_connect, NULL, &handle)", "NULL, NULL, &handle)")
+        self.assertEqual(len(self._qx001("mount_only.c", src)), 1)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

@@ -733,7 +733,17 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None,
         args = split_args(src, m2.end() - 1)
         if len(args) < 7 or framework_only_attach(src, args):
             continue
+        mount_only = ("_FTYPE_MOUNT" in src[args[3][0]:args[3][1]]
+                      and "_RESMGR_FLAG_FTYPEONLY" in src[args[4][0]:args[4][1]])
         for idx, label in ((5, "connect_funcs"), (6, "io_funcs")):
+            if idx == 6 and mount_only:
+                # Writing a Resource Manager (QNX 8.0), "Mount resmgr": "In
+                # order to receive mount requests, the resource manager should
+                # register a NULL path with an FTYPE of _FTYPE_MOUNT and with
+                # the flag _RESMGR_FLAG_FTYPEONLY"; its example passes
+                # "NULL, /* No io handlers */": only the mount callout of the
+                # connect table is used.
+                continue
             if src[args[idx][0]:args[idx][1]].strip() == "NULL":
                 f.append(Finding("ERROR", "QX001", f"{path}:{line_of(src, m2.start())}",
                                  f"resmgr_attach() attaches the resource manager with a NULL "
