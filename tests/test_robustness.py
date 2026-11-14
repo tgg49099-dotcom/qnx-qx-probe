@@ -17,6 +17,23 @@ ERROR QX004, and two REAL bugs were missed:
                                   never compiled, the handler has no gate
   bad_gate_in_else_of_if1.c       same, in the `#else` branch of `#if 1`
 
+The v6 variants (14 November 2026) cover the ways C code wires a slot
+without the plain `table.slot = handler` spelling.  Before v6, four real
+bugs were missed and one correct file got a false ERROR QX004:
+
+  bad_amp.c / bad_desig_amp.c     handler wired as `= &my_io_read` (the
+                                  address-of operator), gate missing
+  bad_ptr.c                       table filled through a local pointer
+                                  (`iof->io_read = ...`), gate missing
+  bad_param.c                     table filled by a set-up function that
+                                  takes `resmgr_io_funcs_t *`, gate missing
+  ok_macro.c                      the gate is wrapped in a project macro
+                                  (false ERROR QX004 before v6)
+
+and the correct twins of the first four were told "read is not assigned".
+A `->read` on a structure that is NOT a dispatch table is ignored
+(ok_other_struct_arrow.c).
+
 Unknown conditions (`#ifdef X`) stay live code: the linter never guesses a
 build configuration (ok_gate_in_ifdef.c).
 
@@ -49,7 +66,7 @@ class CorrectCodeStaysClean(unittest.TestCase):
 
     def test_every_ok_fixture(self):
         files = sorted(FIX.glob("ok_*.c"))
-        self.assertGreaterEqual(len(files), 4)
+        self.assertGreaterEqual(len(files), 10)
         for f in files:
             with self.subTest(fixture=f.name):
                 rc, out = run(f)
@@ -62,7 +79,7 @@ class RealBugsAreFound(unittest.TestCase):
 
     def test_every_bad_fixture(self):
         files = sorted(FIX.glob("bad_*.c"))
-        self.assertGreaterEqual(len(files), 3)
+        self.assertGreaterEqual(len(files), 7)
         for f in files:
             with self.subTest(fixture=f.name):
                 rc, out = run(f)
@@ -72,6 +89,23 @@ class RealBugsAreFound(unittest.TestCase):
                 want = 1 + next(i for i, l in enumerate(raw)
                                 if l.startswith("static int my_io_read("))
                 self.assertIn(f"{f.name}:{want}:", out.replace(str(FIX) + "/", ""))
+
+
+class WiredSlotIsNotReportedUnassigned(unittest.TestCase):
+    """A read slot wired through &, a pointer or a set-up function is wired."""
+
+    def test_no_false_unassigned_info(self):
+        for name in ("ok_amp.c", "ok_ptr.c", "ok_param.c", "ok_desig_amp.c"):
+            with self.subTest(fixture=name):
+                rc, out = run(FIX / name)
+                self.assertEqual(rc, 0, out)
+                self.assertNotIn(".read is not assigned", out)
+
+    def test_other_structure_is_not_a_table(self):
+        src = ("struct ops { int (*read)(void); };\n"
+               "static int r(void) { return 0; }\n"
+               "void f(struct ops *o) { o->read = r; }\n")
+        self.assertEqual(qx_probe.slot_assignments(src), [])
 
 
 class DeadCodeKeepsLineNumbers(unittest.TestCase):

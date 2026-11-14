@@ -68,11 +68,23 @@ IO_FUNC_DEFAULTS = {
 NFUNCS_RE = re.compile(
     r"iofunc_func_init\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)",
     re.DOTALL)
-# Assignment of a table slot: <variable> . <slot> = <handler>.
-# The variable name is free: the official iofunc_func_init() example uses
-# "my_io_functions", most code uses "io_funcs".
+# Assignment of a table slot: <variable> . <slot> = <handler>, or
+# <pointer> -> <slot> = <handler>.  The variable name is free: the official
+# iofunc_func_init() example uses "my_io_functions", most code uses
+# "io_funcs".  The handler may be written with its address-of operator
+# (= &my_read): in C both spellings give the same function pointer.
 MEMBER_ASSIGN_RE = re.compile(
-    r"\b([A-Za-z_]\w*)\s*\.\s*([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)")
+    r"\b([A-Za-z_]\w*)\s*(\.|->)\s*([A-Za-z_]\w*)\s*=(?!=)\s*&?\s*([A-Za-z_]\w*)")
+# Pointer to a dispatch table: resmgr_io_funcs_t *iof [= &table].
+PTR_DECL_RE = re.compile(
+    r"\b(?:resmgr_io_funcs_t|resmgr_connect_funcs_t)\s*\*\s*(?:const\s+)?([A-Za-z_]\w*)"
+    r"(?:\s*=(?!=)\s*([^;,)]+))?")
+# Function definition head (any return type): name ( params ) {
+FUNC_HEAD_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\(([^()]*)\)\s*\{")
+# Preprocessor macro, function-like or object-like.
+MACRO_RE = re.compile(
+    r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)(\([^)]*\))?((?:[^\n]*\\\n)*[^\n]*)$",
+    re.MULTILINE)
 # Declaration of a dispatch table (with or without a C99 initialiser).
 TABLE_DECL_RE = re.compile(
     r"\b(resmgr_io_funcs_t|resmgr_connect_funcs_t)\s+([A-Za-z_]\w*)\s*(=\s*\{[^}]*\})?")
@@ -360,7 +372,8 @@ def def_line(src: str, name: str) -> int:
 
 def assign_line(src: str, slot: str, handler: str) -> int:
     """Line where `slot` is wired to `handler` (1 if not found)."""
-    m = re.search(r"\.\s*" + re.escape(slot) + r"\s*=\s*" + re.escape(handler) + r"\b", src)
+    m = re.search(r"(?:\.|->)\s*" + re.escape(slot) + r"\s*=\s*&?\s*" + re.escape(handler)
+                  + r"\b", src)
     return line_of(src, m.start()) if m else 1
 
 
@@ -382,17 +395,71 @@ def ident_of(expr: str) -> str | None:
     return e
 
 
+def table_pointers(src: str) -> dict[str, set[str]]:
+    """Returns {pointer: {tables it points at}} for the dispatch-table pointers.
+
+    A table is often filled through a pointer: a local alias
+    (resmgr_io_funcs_t *iof = &io_funcs; iof->read = my_read;) or a set-up
+    function (static void wire(resmgr_io_funcs_t *io) { io->read = ...; }
+    called as wire(&io_funcs)).  The slots written through the pointer are
+    the slots of the table: forgetting them would hide a missing access gate
+    and call a wired slot "not assigned".  A pointer whose target cannot be
+    found keeps its own name (its slots are still checked).
+    """
+    ptrs: dict[str, set[str]] = {}
+    for m in PTR_DECL_RE.finditer(src):
+        targets = ptrs.setdefault(m.group(1), set())
+        if m.group(2) and m.group(2).strip().startswith("&"):
+            t = ident_of(m.group(2))
+            if t:
+                targets.add(t)
+    for name, targets in ptrs.items():
+        for m in re.finditer(r"(?<![\w.>])" + re.escape(name) + r"\s*=(?!=)\s*&([^;]+);", src):
+            t = ident_of("&" + m.group(1))
+            if t:
+                targets.add(t)
+    # parameters of a set-up function: follow the argument of every call.
+    for h in FUNC_HEAD_RE.finditer(src):
+        fname, params = h.group(1), h.group(2).split(",")
+        if fname in C_KEYWORDS:
+            continue
+        for idx, prm in enumerate(params):
+            pm = PTR_DECL_RE.search(prm)
+            if not pm:
+                continue
+            for c in re.finditer(r"\b" + re.escape(fname) + r"\s*\(", src):
+                if c.start() == h.start():
+                    continue
+                args = split_args(src, c.end() - 1)
+                if idx < len(args):
+                    expr = src[args[idx][0]:args[idx][1]]
+                    t = ident_of(expr) if expr.strip().startswith("&") else None
+                    if t:
+                        ptrs.setdefault(pm.group(1), set()).add(t)
+    return ptrs
+
+
 def slot_assignments(src: str) -> list[tuple[str, str, str]]:
     """Returns [(table, slot, handler)] for every wired table slot.
 
     The slot name must belong to an official QNX 8.0 table
     (resmgr_io_funcs_t / resmgr_connect_funcs_t); the variable name is free,
-    as in the official iofunc_func_init() example.
+    as in the official iofunc_func_init() example.  A slot written through
+    a pointer (p->read = ...) counts only when p is declared as a pointer to
+    a dispatch table: another structure with a "read" member is not one.
     """
     out = []
+    ptrs = table_pointers(src)
     for m in MEMBER_ASSIGN_RE.finditer(src):
-        table, slot, handler = m.group(1), m.group(2), m.group(3)
-        if slot in SLOT_NAMES:
+        table, op, slot, handler = m.group(1), m.group(2), m.group(3), m.group(4)
+        if slot not in SLOT_NAMES:
+            continue
+        if op == "->":
+            if table not in ptrs:
+                continue
+            for target in sorted(ptrs[table]) or [table]:
+                out.append((target, slot, handler))
+        else:
             out.append((table, slot, handler))
     return out
 
@@ -408,7 +475,7 @@ def designated_assignments(src: str) -> list[tuple[str, str, str]]:
         name, init = m.group(2), m.group(3)
         if not init:
             continue
-        for d in re.finditer(r"\.\s*([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)", init):
+        for d in re.finditer(r"\.\s*([A-Za-z_]\w*)\s*=\s*&?\s*([A-Za-z_]\w*)", init):
             slot, handler = d.group(1), d.group(2)
             if slot in SLOT_NAMES:
                 out.append((name, slot, handler))
@@ -545,11 +612,16 @@ def gate_present(body: str, want: str, src: str, depth: int = 0,
     if depth >= 4:
         return False
     seen = set() if seen is None else seen
+    macros = {m.group(1): m.group(3) for m in MACRO_RE.finditer(src)}
     for callee in set(CALL_RE.findall(body)):
         if callee in C_KEYWORDS or callee == want or callee in seen:
             continue
         seen.add(callee)
         helper = body_of(src, callee)
+        if helper is None and callee in macros:
+            # a project macro that wraps the gate
+            # (#define CHECK_READ(c, m, o) iofunc_read_verify(c, m, o, NULL))
+            helper = blank_strings(macros[callee])
         if helper is not None and gate_present(helper, want, src, depth + 1, seen):
             return True
     return False
@@ -792,7 +864,7 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     return f
 
 
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "1.2.0"
 RULES_URL = "https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md"
 # SARIF level of each QX-PROBE level (SARIF 2.1.0, §3.27.10 "level").
 SARIF_LEVEL = {"ERROR": "error", "WARN": "warning", "INFO": "note"}
