@@ -411,3 +411,38 @@ Les deux verifications du depot qui doivent rester vertes :
 $ bash scripts/verify-all.sh
 $ python3 -I tests/test_qx_probe.py
 ```
+
+## 10. Programmes entiers : neuf gestionnaires de sources QNX (v8, 14 novembre 2026)
+
+Le corpus ci-dessus prend un fichier par projet. Les gros services QNX sont
+decoupes : un fichier par handler, les tables dans `main.c`, la boucle
+ailleurs. Pour tester ce cas, QX-PROBE a ete lance **une fois par programme,
+avec tous ses fichiers**, sur neuf gestionnaires de sources QNX 6.4 publiees
+(<https://github.com/vocho/openqnx>, commit `cc95df3543a1c481d4f8ad387e29f0d1ff0c87fe`,
+`trunk/services/` : random, pipe, dumper, slogger, syslogd, devc-ditto,
+mqueue, mq, system/pathmgr — 54 fichiers C). C'est du code plus ancien que
+QNX 8.0, utilise ici seulement pour tester la lecture d'un programme decoupe.
+
+| | ERROR | WARN |
+|---|---|---|
+| v7 | 22 | 20 |
+| v8 | 1 | 10 |
+
+* **21 fausses ERROR retirees** : 19 fichiers de handlers ou d'auxiliaires
+  signales QX001 alors que les tables sont dans un autre fichier du meme
+  programme ; 2 QX004 sur devc-ditto, qui lie son propre OCB par
+  `resmgr_open_bind()` sans la couche OCB iofunc dont `iofunc_read_verify()`
+  a besoin (desormais INFO, « a verifier a la main »).
+* **10 faux WARN retires** : boucle ou handler dans un autre fichier (QX006,
+  QX007), chemin racine `""` lu comme relatif (QX005), table `extern` dans
+  une fonction lue comme table automatique non initialisee (QX011).
+* **L'ERROR restante est vraie** : `io_write()` de syslogd ecrit le message
+  sans appeler `iofunc_write_verify()`, le mode d'ouverture du client n'est
+  jamais controle.
+* **Les 10 WARN restants** sont des fichiers du gestionnaire de chemins du
+  noyau (procnto) : leur boucle est dans procnto, hors des fichiers donnes,
+  et l'avertissement le dit.
+
+Reproduire : voir la section 10 de `BENCHMARK.md` (memes commandes). Les
+fichiers d'essai (`tests/fixtures/multifile/`) sont ecrits pour la suite de
+tests ; aucune ligne n'est copiee de ces sources.

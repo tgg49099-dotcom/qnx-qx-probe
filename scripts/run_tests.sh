@@ -53,6 +53,11 @@ python3 -I -B tests/test_robustness.py
 rc6=$?
 [ "$rc" -eq 0 ] && rc=$rc6
 echo
+echo "--- 7. resource managers split over several files, command line (help, bad option, missing file) ---"
+python3 -I -B tests/test_multifile.py
+rc7=$?
+[ "$rc" -eq 0 ] && rc=$rc7
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else

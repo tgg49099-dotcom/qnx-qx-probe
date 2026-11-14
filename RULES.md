@@ -43,11 +43,12 @@ gives way — never the canonical QNX code.
   these were reported by mistake. The rule now recognises the four documented
   ways of wiring a table, accepts both member spellings, and has gained the
   NULL-table case.
-* **Known limit:** the rule is applied to **every analysed file**, so a file
-  that only *defines handlers* is reported although the two dispatch tables
-  live in another file — until that is fixed, analyse the file that calls
-  `resmgr_attach()`, whose `connect_funcs` and `io_funcs` arguments are the
-  two tables the rule is about. A **NULL** table is reported as well: the
+* **Known limit:** none left for split programs since v8: a file that
+  neither declares a table nor calls `resmgr_attach()` (a handler or helper
+  file) is not reported — before v8 it got a false ERROR, measured on 19
+  handler files of a published QNX 6.4 source tree (slogger, mqueue,
+  dumper, random, path manager). A file that calls `resmgr_attach()` without any table is still
+  an ERROR. A **NULL** table is reported as well: the
   documentation explicitly allows `NULL` only for the `attr` argument ("or
   NULL to use the default attributes") and says nothing about the two
   dispatch tables, so the rule takes the strict reading — a NULL table means
@@ -146,12 +147,16 @@ gives way — never the canonical QNX code.
   the *name* of the gate quoted inside an error message was taken for a
   verification (false negative). Both are fixed: strings and comments are
   blanked before the search, and a delegated call counts.
-* **Known limit:** the gate is looked for in the body of the handler, **in
-  the file being analysed**: a check delegated to a helper of **another**
-  file is still reported as a missing gate, even when that helper is part of
-  the analysed set. A helper of the **same** file is accepted, and a gate
-  merely quoted inside a string does not count — the strings and the
-  comments are blanked before the search.
+* **Known limit:** the gate is followed through helpers (4 levels) in
+  **every analysed file** since v8; a helper in a file that is **not** given
+  on the command line cannot be seen, and the handler is then reported. A
+  gate merely quoted inside a string does not count — the strings and the
+  comments are blanked before the search. A resource manager that binds its
+  **own** OCB with `resmgr_open_bind()` and never uses the iofunc OCB layer
+  (`iofunc_ocb_attach()`, `iofunc_open_default()`) cannot call the gate,
+  whose `ocb` argument is an `iofunc_ocb_t`: the finding is then INFO, a
+  reminder to check the access rights by hand (measured on devc-ditto of the
+  QNX sources).
 
 ## QX005 — the path mounted by `resmgr_attach()` is relative
 * **Level:** WARN
@@ -208,8 +213,11 @@ gives way — never the canonical QNX code.
   says exactly what it means — *in this file* — and where to look
   (`pool_attr.block_func`). The measurement that brought this change is in
   [`docs/BENCHMARK.md`](docs/BENCHMARK.md) §6.
-* **Known limit:** the rule cannot see the other files of the project. It
-  reports what the analysed file contains, and it says so in the message.
+* **Known limit:** the files given on one command line are read as **one
+  program** (v8): a loop in any of them silences the rule in the others, and
+  a file that attaches nothing (a table or handler file) is not reported. A
+  file that is not given cannot be seen — and two unrelated programs given
+  together are read as one.
 
 ## QX007 — the loop blocks but no handler is called
 * **Level:** WARN
@@ -231,8 +239,9 @@ gives way — never the canonical QNX code.
   **ERROR** and is now at **WARN**, for the same reason: a handler may live
   in another translation unit, and a single file cannot prove that the
   project handles nothing.
-* **Known limit:** the rule cannot see the other files of the project. A file
-  that blocks but does not call a handler is a **reminder to check the whole
+* **Known limit:** as QX006, the files given on one command line are read
+  as one program (v8). A file that blocks but does not call a handler, with
+  no handler in the other analysed files, is a **reminder to check the whole
   project**, not a condemnation of the file.
 
 ## QX008 — an `io_funcs` slot is not wired
@@ -336,6 +345,7 @@ code**:
 | QX004 | a delegated check was missed; a gate quoted in a string counted | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
 | QX006 | a loop delegated to a thread pool (`pool_attr.block_func = &resmgr_block`) was not recognised; a resource manager split over several files was condemned at ERROR level | `test_api_resmgr_block_et_resmgr_handler` (the delegated case is asserted in the same test), `test_qx006_boucle_de_messages_absente` |
 | QX007 | the same limit as QX006: the handler may live in another translation unit | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
+| QX001, QX004, QX005, QX006, QX007, QX011 (v8) | measured on 9 resource managers of a published QNX 6.4 source tree: 21 false ERROR and 10 false WARN on correct code (the one ERROR left is real) (handler files, a loop or a gate helper in another file, the root path `""`, a block-scope `extern` table, an OCB of its own) | `tests/test_multifile.py` (13 tests, 12 red on v7) |
 | QX011 | a static (zero-initialised) table was warned about; a table that is a member of a structure was called "automatic"; only the first `iofunc_func_init()` call was read | `test_qx011_table_mise_a_zero_statique` (it also covers the member case and the second call), `test_qx011_table_automatique_non_initialisee` |
 
 The last three rows come from the **benchmark on real code** — 17 resource

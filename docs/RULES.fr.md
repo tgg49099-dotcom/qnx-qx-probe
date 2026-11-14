@@ -84,12 +84,13 @@ cede — jamais le code canonique de QNX.
   dans un message d'erreur etait pris pour une verification (faux negatif).
   Les deux sont corriges : les chaines et les commentaires sont effaces
   avant la recherche, et un appel delegue compte.
-* **Limite connue :** la porte est cherchee dans le corps du handler, **dans
-  le fichier analyse** : un controle delegue a une fonction auxiliaire d'un
-  **autre** fichier est toujours signale comme une porte manquante, meme si
-  cette auxiliaire fait partie des fichiers analyses. Une auxiliaire du
-  **meme** fichier est acceptee, et une porte seulement citee dans une chaine
-  ne compte pas.
+* **Limite connue :** depuis la v8, la porte est suivie a travers les
+  auxiliaires (4 niveaux) dans **tous les fichiers analyses** ; une
+  auxiliaire d'un fichier **non donne** reste invisible. Une porte seulement
+  citee dans une chaine ne compte pas. Un gestionnaire qui lie **son propre**
+  OCB par `resmgr_open_bind()` sans la couche OCB iofunc ne peut pas appeler
+  la porte (son argument `ocb` est un `iofunc_ocb_t`) : le constat passe
+  alors en INFO (mesure sur devc-ditto des sources QNX).
 
 ## QX005 — le chemin monte par `resmgr_attach()` est relatif
 
@@ -140,8 +141,10 @@ cede — jamais le code canonique de QNX.
   — *dans ce fichier* — et ou regarder (`pool_attr.block_func`). La mesure qui
   a motive ce changement est dans
   [`docs/BENCHMARK.fr.md`](BENCHMARK.fr.md) §6.
-* **Limite connue :** la regle ne voit pas les autres fichiers du projet. Elle
-  dit ce que contient le fichier analyse, et le dit dans son message.
+* **Limite connue :** les fichiers donnes sur une meme ligne de commande sont
+  lus comme **un seul programme** (v8) : une boucle dans l'un d'eux suffit,
+  et un fichier qui n'attache rien (tables ou handlers) n'est pas signale.
+  Un fichier non donne reste invisible.
 
 ## QX007 — la boucle bloque mais aucun handler n'est appele
 
@@ -156,9 +159,10 @@ cede — jamais le code canonique de QNX.
   regle etait en **ERROR** et elle est maintenant en **WARN**, pour la meme
   raison : un handler peut vivre dans une autre unite de compilation, et un
   fichier seul ne peut pas prouver que le projet ne traite rien.
-* **Limite connue :** la regle ne voit pas les autres fichiers du projet. Un
-  fichier qui bloque sans appeler de handler est un **rappel de verifier le
-  projet entier**, pas une condamnation du fichier.
+* **Limite connue :** comme QX006, les fichiers d'une meme ligne de commande
+  sont lus comme un seul programme (v8). Un fichier qui bloque sans handler,
+  sans handler non plus dans les autres fichiers, est un **rappel de verifier
+  le projet entier**, pas une condamnation du fichier.
 
 ## QX008 — un slot de `io_funcs` n'est pas cable
 
@@ -265,6 +269,7 @@ maintenant couverte par un test qui **echoue sur le code precedent** et
 | QX004 | une verification deleguee etait ratee ; une porte citee dans une chaine comptait | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
 | QX006 | une boucle deleguee a un pool de threads (`pool_attr.block_func = &resmgr_block`) n'etait pas reconnue ; un gestionnaire reparti sur plusieurs fichiers etait condamne en ERROR | `test_api_resmgr_block_et_resmgr_handler` (le cas delegue est verifie dans le meme test), `test_qx006_boucle_de_messages_absente` |
 | QX007 | la meme limite que QX006 : le handler peut vivre dans une autre unite de compilation | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
+| QX001, QX004, QX005, QX006, QX007, QX011 (v8) | mesure sur 9 gestionnaires de sources QNX 6.4 publiees : 21 fausses ERROR et 10 faux WARN sur du code correct (la seule ERROR restante est vraie) (fichiers de handlers, boucle ou auxiliaire de porte dans un autre fichier, chemin racine `""`, table `extern` dans une fonction, OCB propre) | `tests/test_multifile.py` (13 tests, 12 rouges sur la v7) |
 | QX011 | une table statique (mise a zero) etait avertee a tort ; une table membre d'une structure etait dite « automatique » ; seul le premier appel a `iofunc_func_init()` etait lu | `test_qx011_table_mise_a_zero_statique` (il couvre aussi le cas membre et le deuxieme appel), `test_qx011_table_automatique_non_initialisee` |
 
 Les trois dernieres lignes viennent du **benchmark sur du vrai code** — 17

@@ -406,3 +406,49 @@ The two checks of the repository that must stay green:
 $ bash scripts/verify-all.sh
 $ python3 -I tests/test_qx_probe.py
 ```
+
+## 10. Whole programs: nine resource managers of a QNX source tree (v8, 14 November 2026)
+
+The corpus above is one file per project. Larger QNX services are split:
+one file per handler, the tables in `main.c`, the loop elsewhere. To test
+that case, QX-PROBE was run **once per program, with all its files**, on
+nine resource managers of a published QNX 6.4 source tree
+(<https://github.com/vocho/openqnx>, commit `cc95df3543a1c481d4f8ad387e29f0d1ff0c87fe`,
+`trunk/services/`: random, pipe, dumper, slogger, syslogd, devc-ditto,
+mqueue, mq, system/pathmgr — 54 C files). This is older code than QNX 8.0;
+it is used here only to test how the linter reads a split program.
+
+| | ERROR | WARN |
+|---|---|---|
+| v7 | 22 | 20 |
+| v8 | 1 | 10 |
+
+* **21 false ERROR removed**: 19 handler or helper files reported QX001 ("no
+  dispatch table") although the tables live in another file of the same
+  program; 2 QX004 on devc-ditto, which binds its own OCB with
+  `resmgr_open_bind()` and never uses the iofunc OCB layer that
+  `iofunc_read_verify()` needs (now INFO, "check by hand").
+* **10 false WARN removed**: a loop or a handler in another file of the
+  program (QX006, QX007), the root path `""` of the path manager read as a
+  relative path (QX005), a block-scope `extern` table read as an
+  uninitialised automatic table (QX011).
+* **The ERROR left is real**: `io_write()` of syslogd writes the message
+  without calling `iofunc_write_verify()`, so the open mode of the client is
+  never checked.
+* **The 10 WARN left** are path-manager files of the kernel process
+  (procnto): their message loop is in procnto itself, outside the files
+  given — the warning says exactly that.
+
+Reproduce (each program on one command line):
+
+```
+git clone https://github.com/vocho/openqnx && cd openqnx
+git checkout cc95df3543a1c481d4f8ad387e29f0d1ff0c87fe
+cd trunk/services
+for d in random pipe dumper slogger syslogd devc-ditto mqueue mq system/pathmgr; do
+  python3 -I /path/to/qx_probe.py $(find $d -name '*.c') | tail -1
+done
+```
+
+The fixtures that pin these cases (`tests/fixtures/multifile/`) are written
+for the test suite; no line is copied from these sources.

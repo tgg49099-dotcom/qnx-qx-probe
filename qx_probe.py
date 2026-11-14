@@ -526,6 +526,11 @@ def dispatch_tables(src: str) -> dict[str, dict]:
     for m in TABLE_DECL_RE.finditer(src):
         name = m.group(2)
         info = touch(name)
+        if re.search(r"\bextern\s+(?:const\s+)?$", src[max(0, m.start() - 40):m.start()]):
+            # "extern resmgr_io_funcs_t t;" (even inside a function) only
+            # names a table defined elsewhere: it is never an automatic one.
+            info["used"] = True
+            continue
         info["declared"] = True
         info.setdefault("pos", m.start())
         info["type"] = m.group(1)
@@ -643,12 +648,20 @@ def gate_present(body: str, want: str, src: str, depth: int = 0,
     return False
 
 
-def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[Finding]:
+def analyse(path: str, raw: str, known_symbols: set[str] | None = None,
+            project_has_loop: bool = False,
+            project_has_handler: bool = False,
+            other_src: str = "") -> list[Finding]:
     """Analyses one C file.
 
     `known_symbols`: symbols defined or declared in the OTHER analysed files
     (the CLI accepts several files); without them the checker cannot know that
     a handler is defined in another translation unit.
+    `project_has_loop`: another analysed file blocks on messages
+    (dispatch_block()/resmgr_block()): QX006 is then not reported here.
+    `project_has_handler`: same for dispatch_handler()/resmgr_handler() (QX007).
+    `other_src`: the code of the other analysed files, where QX004 also looks
+    for a helper that runs the access gate.
     """
     f: list[Finding] = []
     src = strip_dead_code(strip_comments(raw))
@@ -668,6 +681,15 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # overriding the defaults with your own functions").
     if not tables:
         m0 = re.search(r"\bresmgr_attach\s*\(", src)
+        if not m0:
+            # A file that neither declares a table nor attaches a path is a
+            # helper or handler file of a resource manager split over several
+            # translation units (one io_read.c, one io_write.c... and the
+            # table in main.c): it has nothing to wire.  Measured on the
+            # resource managers of the QNX source tree (slogger, mqueue,
+            # dumper, random): reporting an ERROR here cried wolf on every
+            # handler file of correct code.
+            return f
         f.append(Finding("ERROR", "QX001", path,
                          "file uses the QNX resmgr API but no dispatch table is wired "
                          "(no resmgr_io_funcs_t / resmgr_connect_funcs_t table is "
@@ -756,6 +778,13 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     # Sources : iofunc_read_verify() ("All read handlers should start with a
     # call to iofunc_read_verify() and proceed only if it returns EOK"),
     # iofunc_write_verify() (same for writes).
+    # The gate takes an iofunc_ocb_t (its QNX 8.0 page declares the ocb
+    # argument as iofunc_ocb_t *): a resource manager that binds its OWN OCB with
+    # resmgr_open_bind() and never uses the iofunc OCB layer cannot call it —
+    # measured on devc-ditto of the QNX source tree.  The finding then drops
+    # to INFO: the access check is still worth a look, but it is not proven.
+    own_ocb = bool(re.search(r"\bresmgr_open_bind\s*\(", src)) and not re.search(
+        r"\biofunc_(?:ocb_attach|open_default|open)\s*\(", src)
     for table, slot, handler in assigns:
         slot = base_slot(slot)
         if slot not in ("read", "write"):
@@ -764,7 +793,15 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
         if body is None:
             continue
         want = "iofunc_read_verify" if slot == "read" else "iofunc_write_verify"
-        if not gate_present(body, want, src):
+        if not gate_present(body, want, src + "\n" + other_src if other_src else src):
+            if own_ocb:
+                f.append(Finding("INFO", "QX004", f"{path}:{slot}",
+                                 f"{handler}() never calls {want}(), but this file binds its "
+                                 f"own OCB with resmgr_open_bind() and never uses the iofunc "
+                                 f"OCB layer, which {want}() needs (its ocb argument is an "
+                                 f"iofunc_ocb_t): check the access rights by hand",
+                                 def_line(src, handler)))
+                continue
             f.append(Finding("ERROR", "QX004", f"{path}:{slot}",
                              f"{handler}() never calls {want}(): the access gate is missing",
                              def_line(src, handler)))
@@ -785,7 +822,7 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
         lit = string_literal(src[args[2][0]:args[2][1]])
         if lit is None:
             continue          # non-literal path (variable, macro): nothing to say
-        if not lit.startswith("/"):
+        if lit and not lit.startswith("/"):   # "" = the root mount, not relative
             f.append(Finding("WARN", "QX005", f"{path}:{line_of(src, m2.start())}",
                              f"resmgr_attach() attaches the relative path '{lit}': "
                              f"QNX resolves it against the current working directory "
@@ -814,13 +851,16 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None) -> list[
     m_att = re.search(r"\bresmgr_attach\s*\(", code)
     loop_line = line_of(code, m_att.start()) if m_att else 1
     if not has_block:
-        f.append(Finding("WARN", "QX006", path,
+        # Nothing to say when another analysed file holds the loop, or when
+        # this file attaches nothing (a table or handler file).
+        if not project_has_loop and m_att:
+            f.append(Finding("WARN", "QX006", path,
                          "no message loop in this file: neither dispatch_block() nor "
                          "resmgr_block() is called or referenced here; in a resource "
                          "manager split over several files the loop usually lives in "
                          "another translation unit (it is then set in "
                          "pool_attr.block_func) — check the whole project", loop_line))
-    elif not has_handler:
+    elif not has_handler and not project_has_handler:
         f.append(Finding("WARN", "QX007", path,
                          "the message loop blocks (dispatch_block()/resmgr_block()) but no "
                          "handler is called or referenced (neither dispatch_handler() "
@@ -944,6 +984,13 @@ def main(argv: list[str] | None = None) -> int:
         elif a == "--format" and k + 1 < len(args):
             fmt = args[k + 1]
             k += 1
+        elif a in ("-h", "--help"):
+            print(__doc__)
+            return 0
+        elif a.startswith("-") and a != "-":
+            print(f"qx_probe: unknown option '{a}'", file=sys.stderr)
+            print(__doc__, file=sys.stderr)
+            return 2
         else:
             paths.append(a)
         k += 1
@@ -952,16 +999,35 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     sources = []
     for p in paths:
-        with open(p, encoding="utf-8", errors="replace") as fh:
-            sources.append((p, fh.read()))
+        try:
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                sources.append((p, fh.read()))
+        except OSError as e:
+            print(f"qx_probe: cannot read '{p}': {e.strerror}", file=sys.stderr)
+            return 2
     # The symbols defined in ALL the analysed files: a handler may
     # legitimately be defined in another translation unit.
     known: set[str] = set()
     for _p, raw in sources:
         known |= set(HANDLER_RE.findall(strip_comments(raw)))
+    # A message loop in ANY analysed file serves the whole resource manager.
+    loop_re = re.compile(r"\b(?:dispatch_block|resmgr_block)\b")
+    hand_re = re.compile(r"\b(?:dispatch_handler|resmgr_handler)\b")
+    codes = {p: strip_comments(blank_strings(strip_dead_code(strip_comments(raw))))
+             for p, raw in sources}
+    live = {p: strip_dead_code(strip_comments(raw)) for p, raw in sources}
+    looped = {p for p, c in codes.items() if loop_re.search(c)}
+    handled = {p for p, c in codes.items() if hand_re.search(c)}
     findings: list[Finding] = []
+    seen: set[tuple] = set()
     for p, raw in sources:
-        findings += analyse(p, raw, known)
+        for x in analyse(p, raw, known, project_has_loop=bool(looped - {p}),
+                         project_has_handler=bool(handled - {p}),
+                         other_src="\n".join(live[q] for q, _r in sources if q != p)):
+            key = (x.level, x.code, x.where, x.line, x.message)
+            if key not in seen:          # one finding is reported once
+                seen.add(key)
+                findings.append(x)
 
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
     findings.sort(key=lambda x: (order[x.level], x.code, file_of(x.where), x.line))

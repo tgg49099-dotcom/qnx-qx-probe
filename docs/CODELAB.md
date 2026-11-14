@@ -403,7 +403,7 @@ tutorial that drifts from the tool is caught by a single command.
    **no** finding — the table is still declared, and a static table is
    zero-initialised by C, which is a deliberate choice (see QX011). This is
    a limit of a static checker, and it is documented in
-   [Known limits](#known-limits-of-this-tool).
+   [RULES.md](../RULES.md) (QX011).
 2. **Make the tool report a NULL dispatch table (QX001, second case).**
    Keep the tables, but pass `NULL` instead of `&connect_funcs` and
    `&io_funcs` to `resmgr_attach()`. The documentation allows `NULL` for
@@ -458,11 +458,10 @@ entries is a macro) are informational by design.
 file of the program on the same command line: the symbols are resolved
 across the whole analysed set.
 
-**"It says the access gate is missing although my helper calls it."** The
-gate must be called **in the body of the handler itself**. The rule follows
-the calls that are inside the file it analyses: a check delegated to a
-helper is not followed, **even if the helper is one of the analysed files**
-(see *Limit 2* below, which shows the exact command).
+**"It says the access gate is missing although my helper calls it."** Give
+the file that defines the helper on the same command line: the rule follows
+the calls of the handler, helpers of helpers included (4 levels), in every
+analysed file (see *Several files* below, which shows the exact command).
 
 **"I want to check one file of a very large project."** You can — a single
 file is checked on its own, and the findings that depend on the other files
@@ -477,39 +476,26 @@ check runs on a laptop, in a container, in a CI job.
 
 ---
 
-## Known limits of this tool
+## Several files: pass the whole program
 
-A static checker sees one file at a time. Two limits are worth knowing in
-this tutorial — they are stated here with the exact command that reproduces
-them, because a tool that hides its limits is not worth trusting. The
-**complete list of the known limits of each of the eleven rules** is in
-**[RULES.md](../RULES.md)**: every rule that was corrected declares the one
-limit it still has.
+A real resource manager is often split: the tables and `resmgr_attach()` in
+one file, one handler per file, the message loop in another. **Pass every
+file of the program on one command line**: the files are then read as one
+program — a handler file has no table to wire, a loop or an access-gate
+helper may live in any of the files. (Until v8 these were the two known
+limits of this tutorial: a handler file got a false ERROR QX001, and a gate
+delegated to a helper of another file a false ERROR QX004.)
 
-### Limit 1 — QX001 and programs split across several files
-
-The rule "the file must wire a dispatch table" is applied to **every**
-analysed file. In a program split across several files, a file that only
-*defines handlers* is therefore reported, although the tables live in
-another file:
+A file that only defines handlers has nothing to wire:
 
 ```console
 $ printf 'static int h(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb)\n{\n    (void)ctp; (void)msg; (void)ocb;\n    return 0;\n}\n' > lab/handlers.c
 $ python3 -I qx_probe.py lab/handlers.c
-ERROR QX001  lab/handlers.c:1: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
-
-RESULT: 1 finding(s), 1 ERROR, 0 WARN
+RESULT: 0 finding(s), 0 ERROR, 0 WARN
 ```
 
-**Until this is fixed, analyse the file that calls `resmgr_attach()`.** That
-is the file the rule is about: the two dispatch tables are the
-`connect_funcs` and `io_funcs` arguments of `resmgr_attach()`.
-
-### Limit 2 — QX004 and a gate delegated to another file
-
-The access gate is looked up in the body of the handler, in the file being
-analysed. A check delegated to a helper function of **another** file is
-therefore reported as a missing gate:
+The access gate delegated to a helper of **another** file is found when both
+files are given:
 
 ```console
 $ python3 - <<'PY'
@@ -527,19 +513,18 @@ open('lab/gate.c', 'w').write("""static int my_gate(resmgr_context_t *ctp, io_re
 """)
 PY
 $ python3 -I qx_probe.py lab/delegue.c lab/gate.c
-ERROR QX001  lab/gate.c:1: file uses the QNX resmgr API but no dispatch table is wired (no resmgr_io_funcs_t / resmgr_connect_funcs_t table is declared, initialised, filled by iofunc_func_init() or passed to resmgr_attach())
-ERROR QX004  lab/delegue.c:48: qx_read() never calls iofunc_read_verify(): the access gate is missing
 INFO  QX008  lab/delegue.c:45: io_funcs.devctl is not assigned (the POSIX default iofunc_devctl_default() applies unless you override it)
 INFO  QX008  lab/delegue.c:45: io_funcs.unblock is not assigned (the POSIX default iofunc_unblock_default() applies unless you override it)
 INFO  QX008  lab/delegue.c:45: io_funcs.notify is not assigned (QNX 8.0 defines no default for this slot: the message is not handled)
 INFO  QX010  lab/delegue.c:93: io function count '_RESMGR_IO_NFUNCS' is not a literal (macro)
 INFO  QX010  lab/delegue.c:93: connect function count '_RESMGR_CONNECT_NFUNCS' is not a literal (macro)
 
-RESULT: 7 finding(s), 2 ERROR, 0 WARN
+RESULT: 5 finding(s), 0 ERROR, 0 WARN
 ```
 
-A helper of the **same** file is accepted — the rule follows the call
-inside the file it analyses. Only a helper in another file is missed.
+Given alone, `lab/delegue.c` still gets ERROR QX004: the checker cannot see
+a file it is not given. The **known limits of each of the eleven rules** are
+in **[RULES.md](../RULES.md)**.
 
 ---
 
