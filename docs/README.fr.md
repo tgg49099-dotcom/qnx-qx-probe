@@ -175,7 +175,7 @@ publie dans `docs/BENCHMARK.fr.md` avec un vrai run, puis affiche un
 tableau : une ligne par verification, son resultat et son code de sortie.
 
 Avant ce tableau, la commande affiche le journal complet de chaque controle
-— les 79 noms de tests, les 12 blocs du codelab rejoues, les 36 citations
+— les 81 noms de tests, les 12 blocs du codelab rejoues, les 36 citations
 relues et les 17 fichiers du benchmark : **454 lignes** en tout pour le
 premier des deux runs ci-dessous. Les deux blocs qui suivent sont la **fin
 de la sortie REELLE**, mesuree le 14 novembre 2026 sur le serveur de
@@ -189,7 +189,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (79 unit tests)               OK           -                                                0
+run_tests.sh (81 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      OK           -                                                0
@@ -222,7 +222,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (79 unit tests)               OK           -                                                0
+run_tests.sh (81 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2

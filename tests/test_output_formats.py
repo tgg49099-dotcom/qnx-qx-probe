@@ -130,6 +130,40 @@ class MachineReadable(unittest.TestCase):
         rc, _ = run("--format", "xml", FIXTURE)
         self.assertEqual(rc, 2)
 
+    def test_sarif_rules_have_a_title_and_a_help_link_that_opens_the_rule(self):
+        # Before 1.2.2 the title of a rule was its bare code ("QX004") and
+        # its help link ended in "#qx004", an anchor RULES.md does not have:
+        # GitHub code scanning showed "QX004" and the link opened the top of
+        # the page.  The anchors are those GitHub gives the headings.
+        headings = [l.lstrip("#").strip() for l in
+                    (REPO / "RULES.md").read_text(encoding="utf-8").splitlines()
+                    if l.startswith("#")]
+        anchors = {qx_probe.github_anchor(h) for h in headings}
+        seen = set()
+        every_c = sorted(EX.glob("*.c")) + sorted((REPO / "tests" / "fixtures").rglob("*.c"))
+        for path in every_c:
+            run0 = json.loads(run("--format", "sarif", path)[1])["runs"][0]
+            for i, rule in enumerate(run0["tool"]["driver"]["rules"]):
+                code = rule["id"]
+                seen.add(code)
+                self.assertNotEqual(rule["shortDescription"]["text"], code)
+                self.assertIn(qx_probe.rule_title(code), rule["shortDescription"]["text"])
+                url, _, frag = rule["helpUri"].partition("#")
+                self.assertEqual(url, qx_probe.RULES_URL)
+                self.assertIn(frag, anchors, msg=f"{code}: #{frag} is not an anchor of RULES.md")
+                levels = {r["level"] for r in run0["results"] if r["ruleIndex"] == i}
+                self.assertEqual(levels, {rule["defaultConfiguration"]["level"]}, msg=code)
+        self.assertGreaterEqual(len(seen), 7, msg="the SARIF of the real files exercises most rules")
+        for code, heading in qx_probe.RULE_HEADINGS.items():
+            self.assertIn(qx_probe.github_anchor(heading), anchors, msg=code)
+
+    def test_the_rule_titles_are_the_headings_of_rules_md(self):
+        headings = [l[3:] for l in
+                    (REPO / "RULES.md").read_text(encoding="utf-8").splitlines()
+                    if l.startswith("## QX")]
+        self.assertEqual(list(qx_probe.RULE_HEADINGS.values()), headings)
+        self.assertEqual(list(qx_probe.RULE_HEADINGS), [h[:5] for h in headings])
+
 
 class TextLocations(unittest.TestCase):
     """Every text finding is `LEVEL CODE file:line: message` (gcc format).

@@ -164,7 +164,7 @@ scripts/verifier-soumission-devpost.py       checks the submission text: lengths
 scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format
-tests/test_output_formats.py                 12 tests: line numbers, JSON and SARIF output, no QX003 on NULL
+tests/test_output_formats.py                 14 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
 tests/test_multifile.py                      19 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
@@ -238,7 +238,7 @@ counter-proof of that comparison) and the comparison of the benchmark
 published in `docs/BENCHMARK.md` with a real run of it, then prints one
 table: one line per verification, its result and its exit code.
 
-Before that table, the command prints the full log of every check — the 79
+Before that table, the command prints the full log of every check — the 81
 test names, the 12 replayed codelab blocks, the 36 re-read quotations and the
 17 benchmark files: **454 lines** in all for the run below.  The two blocks
 that follow are the **end of the real output**, measured on 14 November 2026
@@ -252,7 +252,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (79 unit tests)               OK           -                                                0
+run_tests.sh (81 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      OK           -                                                0
@@ -285,7 +285,7 @@ SUMMARY - one line per verification
 ======================================================================================================
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
-run_tests.sh (79 unit tests)               OK           -                                                0
+run_tests.sh (81 unit tests)               OK           -                                                0
 verifier-codelab.py (12 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2

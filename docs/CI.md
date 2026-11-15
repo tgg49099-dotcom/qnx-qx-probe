@@ -22,6 +22,14 @@ validated in this repository against the official OASIS SARIF 2.1.0 JSON
 schema (35 results on `examples/*.c` and the test fixture: valid; the same
 document with `"version": "2.0"` is rejected).
 
+Each rule of the SARIF document carries its **title** (the heading of
+[RULES.md](../RULES.md), e.g. `QX004: the iofunc_*_verify() access gate is
+missing`), its default level, and a **help link that opens that rule** in
+RULES.md, with its official QNX 8.0 quotation. Before version 1.2.2 the
+title was the bare code and the link ended in `#qx004`, an anchor RULES.md
+does not have, so it opened the top of the page;
+`tests/test_output_formats.py` now checks every title and every anchor.
+
 A minimal GitHub Actions job, for a repository that contains QNX resource
 managers (copy `qx_probe.py` into it, or fetch it at a pinned commit):
 
@@ -39,7 +47,7 @@ jobs:
       - name: QX-PROBE (QNX 8.0 resource-manager protocol)
         run: python3 -I qx_probe.py --format sarif src/*.c > qx-probe.sarif
         continue-on-error: true   # let the upload run; the annotations show the findings
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: qx-probe.sarif
           category: qx-probe

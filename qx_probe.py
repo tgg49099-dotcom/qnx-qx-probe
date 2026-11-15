@@ -957,10 +957,39 @@ def analyse(path: str, raw: str, known_symbols: set[str] | None = None,
     return f
 
 
-TOOL_VERSION = "1.2.1"
+TOOL_VERSION = "1.2.2"
 RULES_URL = "https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md"
 # SARIF level of each QX-PROBE level (SARIF 2.1.0, §3.27.10 "level").
 SARIF_LEVEL = {"ERROR": "error", "WARN": "warning", "INFO": "note"}
+
+# The headings of RULES.md, copied verbatim: a SARIF viewer (GitHub code
+# scanning, VS Code) shows the rule title and opens its help link.  Before
+# 1.2.2 the title was the bare code and the link "#qx004" pointed at no
+# anchor of RULES.md (the page opened at the top).  tests/test_output_formats.py
+# checks that these headings are still the ones of RULES.md.
+RULE_HEADINGS = {
+    "QX001": 'QX001 — no dispatch table wired',
+    "QX002": 'QX002 — `iofunc_func_init()` is asked to fill more entries than the table holds',
+    "QX003": 'QX003 — a slot points at a function not found in the analysed files',
+    "QX004": 'QX004 — the `iofunc_*_verify()` access gate is missing',
+    "QX005": 'QX005 — the path mounted by `resmgr_attach()` is relative',
+    "QX006": 'QX006 — no message loop',
+    "QX007": 'QX007 — the loop blocks but no handler is called',
+    "QX008": 'QX008 — an `io_funcs` slot is not wired',
+    "QX009": 'QX009 — the reply returns more parts than the IOV holds',
+    "QX010": 'QX010 — the number of slots of `iofunc_func_init()` is a macro',
+    "QX011": 'QX011 — an automatic dispatch table is never initialised',
+}
+
+
+def github_anchor(heading: str) -> str:
+    """The anchor GitHub gives a Markdown heading (github-slugger rules):
+    lower case, punctuation removed (``_`` and ``-`` kept), spaces -> ``-``."""
+    return re.sub(r"[^\w\- ]", "", heading.lower(), flags=re.UNICODE).replace(" ", "-")
+
+
+def rule_title(code: str) -> str:
+    return RULE_HEADINGS[code].split(" \u2014 ", 1)[1].replace("`", "")
 
 
 def file_of(where: str) -> str:
@@ -986,8 +1015,15 @@ def to_sarif(findings: list[Finding]) -> str:
     """
     import json
     codes = sorted({f.code for f in findings})
-    rules = [{"id": c, "helpUri": f"{RULES_URL}#{c.lower()}",
-              "shortDescription": {"text": c}} for c in codes]
+    level_of = {f.code: f.level for f in findings}
+    rules = [{"id": c, "name": c,
+              "shortDescription": {"text": f"{c}: {rule_title(c)}"},
+              "helpUri": f"{RULES_URL}#{github_anchor(RULE_HEADINGS[c])}",
+              "help": {"text": f"{c}: {rule_title(c)}. Rule, official QNX 8.0 "
+                               f"source and quotation: {RULES_URL}#"
+                               f"{github_anchor(RULE_HEADINGS[c])}"},
+              "defaultConfiguration": {"level": SARIF_LEVEL[level_of[c]]}}
+             for c in codes]
     results = [{"ruleId": f.code, "ruleIndex": codes.index(f.code),
                 "level": SARIF_LEVEL[f.level],
                 "message": {"text": f.message},

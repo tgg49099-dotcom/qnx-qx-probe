@@ -16,7 +16,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qx-probe"
-version = "1.2.1"
+version = "1.2.2"
 description = "Static checker for the QNX 8.0 resource-manager protocol: a host tool, no dependency, no QNX SDK."
 readme = "README.md"
 requires-python = ">=3.9"

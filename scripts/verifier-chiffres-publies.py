@@ -157,7 +157,7 @@ EXEMPTIONS = (
      r"the format of the output"),
     ("docs/SUBMISSION-EN.md", "6 files",
      "the number of TEST files, not the number of files of the repository",
-     r"79 tests in 6 files"),
+     r"\d+ tests in 6 files"),
     ("docs/SUBMISSION-EN.md", "17 files",
      "the files of the benchmark corpus, not the files of the repository",
      None),
