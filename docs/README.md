@@ -42,9 +42,11 @@ read the video.
 
 > The archived `SCENARIO.fr.md` mentions a video `qx-demo-v0.mp4` (the first,
 > French recording). It is **not** the one published here: the demonstration
-> video of this repository is [`../media/qx-demo-v2.mp4`](../media/qx-demo-v2.mp4)
-> — the English re-recording, made after the five rules that had been
-> corrected at that time were corrected, with the English subtitles burned into
-> the picture. Two more rules were corrected later, on 11/11/2026, after the
-> benchmark on real code; neither of them is shown in the video, so every
-> figure it shows is still the measured one.
+> video of this repository is [`../media/qx-demo-v3.mp4`](../media/qx-demo-v3.mp4)
+> — the English recording of 15 November 2026, made on a clean clone of this
+> repository at commit `3921ffc`, with the English subtitles burned into the
+> picture. Its ten commands were replayed the same day on a fresh clone of the
+> public repository: nine of them reproduced byte for byte (same exit code,
+> same md5 of the output) and the tenth — the test suite — differs only in the
+> decimal of its elapsed time. Every figure the video shows is therefore a
+> measured one.

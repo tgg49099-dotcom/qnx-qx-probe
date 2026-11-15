@@ -170,10 +170,10 @@ EXEMPTIONS = (
      "the size of the saved copy of the contest rules page, dated in the "
      "document",
      r"saved copy"),
-    ("RULES.md", "3.12 s",
+    ("RULES.md", "3.20 s",
      "the shortest scene of the video, not its duration",
      r"scene"),
-    ("docs/RULES.fr.md", "3,12 s",
+    ("docs/RULES.fr.md", "3,20 s",
      "the shortest scene of the video, not its duration",
      r"sc[eè]ne"),
     ("README.md", "454 lines",
@@ -210,7 +210,7 @@ FALSE_FIGURES = (
 )
 
 # The published video whose duration and size are published.
-VIDEO = "media/qx-demo-v2.mp4"
+VIDEO = "media/qx-demo-v3.mp4"
 
 
 class NotMeasurable(Exception):

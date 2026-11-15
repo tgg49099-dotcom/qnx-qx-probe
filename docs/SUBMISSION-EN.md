@@ -179,7 +179,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 75 files, about 2.2 MB (measured on 14 November 2026).
+   The published tree is 75 files, about 2.4 MB (measured on 15 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
@@ -366,15 +366,15 @@ The eleven rules and their official QNX 8.0 sources:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/RULES.md
 Codelab / tutorial (30 minutes, no SDK, no board, no licence):
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md
-Demonstration video (71.44 s, English subtitles burned in, under the
+Demonstration video (89.72 s, English subtitles burned in, under the
 three-minute limit of the rules):
   - YouTube: the rules require the video to be uploaded there and made
     publicly visible. PASTE THE URL OF THE UPLOAD HERE:
     <YOUTUBE_URL_A_COLLER_apres_le_televersement>
   - the same file, already in this repository:
-    https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v2.mp4
+    https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v3.mp4
   - direct download:
-    https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4
+    https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4
 The text of this submission, field by field:
   https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/SUBMISSION-EN.md
 Official QNX 8.0 documentation:
@@ -387,8 +387,8 @@ _Measured: 1445 characters._
 
 **The video field.** The rules require the demonstration video to be *"uploaded
 to and made publicly visible on YouTube"* with *"a link to the video ... provided
-on the submission form"*. The file is ready and verified — 1 367 966 bytes,
-MP4 / H.264, 1920x1080, 25 fps, **71.44 s** (the limit is three minutes), **no
+on the submission form"*. The file is ready and verified — 1 417 251 bytes,
+MP4 / H.264, 1920x1080, 25 fps, **89.72 s** (the limit is three minutes), **no
 audio track at all** and every sentence **burned into the picture** as an
 English subtitle — it is already in the public repository, downloadable from
 the URL above. What remains is to upload it to YouTube as a public video and
@@ -440,7 +440,7 @@ _Measured: 709 characters._
 | Category | **Developer Tooling & Host Tools** (one category only). |
 | New or existing project? | **New.** The project was created during the submission period (2 November – 15 December 2026). |
 | Try it out (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe` |
-| Demonstration video (URL) | The **YouTube** URL, once uploaded as a public video. The file is already in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4` (71.44 s, MP4 / H.264, 1920x1080, 25 fps, no audio, English subtitles burned in). |
+| Demonstration video (URL) | The **YouTube** URL, once uploaded as a public video. The file is already in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4` (89.72 s, MP4 / H.264, 1920x1080, 25 fps, no audio, English subtitles burned in). |
 | Codelab / tutorial (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md` |
 | Licence | Apache-2.0, the full text in `LICENSE` at the root of the repository, visible in the "About" section of the repository page. |
 | Attribution | `examples/blackberry_eventfd_mgr.c` and `examples/sys/eventfd.h` come from BlackBerry Limited's public `shim-demo` repository, under Apache-2.0, *Copyright (c) 2025, BlackBerry Limited*. They are redistributed **without any modification**, with the full licence header kept at the top of each file. The notice is in `NOTICE`. The example is used as the reference corpus: it is resource-manager code published by the vendor itself, and the linter must report it without a false positive. |
@@ -480,7 +480,7 @@ has them).
 | Official QNX 8.0 pages cited | 14 distinct pages, all HTTP 200 when re-read on 12 and 14 November 2026, all then marked "Page updated: November 05, 2026"; 36 quotations checked | `curl` on each URL of `RULES.md`; `python3 -I scripts/verifier-citations.py` |
 | The linter | 1123 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
 | Benchmark on real code | 17 files from 13 public repositories (7 of the 17 files come from repositories published by QNX or BlackBerry), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
-| Video | 1 367 966 bytes, md5 `178e1b58638628a5bc56f11c6fada8e2`, 71.44 s, 1920x1080, H.264, 25 fps, 1786 images, no audio, 19 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
+| Video | 1 417 251 bytes, md5 `98ec689d13bed874bf2b144538a43d91`, 89.72 s, 1920x1080, H.264, 25 fps, 2 243 images, no audio, 18 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
 | Timing of the commands | test suite 2.13 s, run on one file 0.09 s (measured on 14 November 2026; the duration of the clone depends on the network and was not re-measured for this revision) | `time` on each command |
 | QNX 8.0 compilation | **NOT MEASURED** | no SDP 8.0 licence in the environment where the project was written; `scripts/build_qcc.sh` stops with an explicit message and exit code 2 |
 

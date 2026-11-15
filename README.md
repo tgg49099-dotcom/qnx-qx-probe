@@ -152,7 +152,7 @@ examples/qnx80_resmgr_readonly.c             read-only, mounted outside /dev/
 examples/qnx80_resmgr_relative_path.c        triggers exactly one QX005 warning
 examples/sys/eventfd.h                       the header of the example above (Apache-2.0)
 media/qx-demo-thumbnail.png                  the thumbnail of the video (PNG, 1280x720)
-media/qx-demo-v2.mp4                         the demonstration video itself (MP4, H.264, 1920x1080, 71.44 s)
+media/qx-demo-v3.mp4                         the demonstration video itself (MP4, H.264, 1920x1080, 89.72 s)
 scripts/audit-sous-titres-pixels.py          proves that the published subtitles ARE the pixels of the video
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
@@ -374,8 +374,8 @@ simulated anywhere in this repository**.
 
 ## The demonstration video
 
-`media/qx-demo-v2.mp4` — 1 367 966 bytes, MP4 / H.264, 1920x1080, 25 fps,
-71.44 s, no audio track (md5 `178e1b58638628a5bc56f11c6fada8e2`).
+`media/qx-demo-v3.mp4` — 1 417 251 bytes, MP4 / H.264, 1920x1080, 25 fps,
+89.72 s, no audio track (md5 `98ec689d13bed874bf2b144538a43d91`).
 Its thumbnail is `media/qx-demo-thumbnail.png` (PNG, 1280x720), and the exact
 title, description and steps for the mandatory YouTube upload are in
 **[docs/YOUTUBE-VIDEO.md](docs/YOUTUBE-VIDEO.md)**.
@@ -386,7 +386,7 @@ all, so there is no music and no voice-over.
 
 That claim is **machine-checkable, and checked here**: the script
 **[scripts/audit-sous-titres-pixels.py](scripts/audit-sous-titres-pixels.py)**
-re-renders each of the 19 published subtitles (the table of
+re-renders each of the 18 published subtitles (the table of
 `docs/YOUTUBE-VIDEO.md` §8) with the same font, size and position, and
 compares the result with the pixels of the published file. It needs only
 `ffmpeg` and `pillow`:
@@ -394,24 +394,24 @@ compares the result with the pixels of the published file. It needs only
 ```
 $ python3 scripts/audit-sous-titres-pixels.py
 ...
-   IoU moyen (texte attendu)  : 0.998  (min 0.997)
-   IoU moyen (mauvais texte)  : 0.464  (max 0.547)
+   IoU moyen (texte attendu)  : 0.997  (min 0.995)
+   IoU moyen (mauvais texte)  : 0.427  (max 0.554)
 VERDICT : PREUVE ETABLIE
 ```
 
 The last line is the **contre-épreuve**: the same comparison made against the
-*wrong* subtitle (the next scene's) scores at most 0.547, so the check really
+*wrong* subtitle (the next scene's) scores at most 0.554, so the check really
 separates the right text from a wrong one — it is not a test that passes
 anyway.
 
 Every command shown in the video is a command of this repository, so the
 jury can replay them as they are: the checker passes on BlackBerry's own
-public resource manager and on the official example of the QNX 8.0
-documentation, it catches the missing access gate in a deliberately broken
-fixture, and it returns a non-zero exit code — the CI gate. The video also
-shows the **false positive of an earlier version of the tool**, acknowledged
-and corrected: a read-only manager mounted outside `/dev/` gives 0 ERROR and
-0 WARN, and the rule behind it is quoted from the QNX 8.0 documentation. The
+public resource manager, it catches the missing access gate in a
+deliberately broken fixture and returns a non-zero exit code — the CI gate,
+it reads a program split over several files as one program, it emits the
+same findings as SARIF 2.1.0 alerts for GitHub code scanning, and the
+benchmark on 17 real public QNX resource managers finds one real missing
+access gate (`rpi_thermal/rpi_thermal.c:465`). The
 shot that compiles the examples with `qcc` and runs them on a QNX 8.0 guest
 under QEMU is **absent**: it needs the QNX SDP 8.0 licence, which we do not
 have. It was **removed** from the video rather than replaced with a screen

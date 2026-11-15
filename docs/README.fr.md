@@ -130,7 +130,7 @@ examples/qnx80_resmgr_readonly.c             lecture seule, monte hors /dev/
 examples/qnx80_resmgr_relative_path.c        declenche exactement un avertissement QX005
 examples/sys/eventfd.h                       l'en-tete de l'exemple ci-dessus (Apache-2.0)
 media/qx-demo-thumbnail.png                  la miniature de la video (PNG, 1280x720)
-media/qx-demo-v2.mp4                         la video de demonstration (MP4, H.264, 1920x1080, 71,44 s)
+media/qx-demo-v3.mp4                         la video de demonstration (MP4, H.264, 1920x1080, 89,72 s)
 scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies SONT les pixels de la video
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""PROOF that the 19 subtitles published in docs/YOUTUBE-VIDEO.md §8 ARE the
-pixels of the published video media/qx-demo-v2.mp4.
+"""PROOF that the 18 subtitles published in docs/YOUTUBE-VIDEO.md §8 ARE the
+pixels of the published video media/qx-demo-v3.mp4.
 
 A judge can run this from a fresh clone, with nothing but the public
 repository:
@@ -18,7 +18,7 @@ Requirements (all free, all official):
     script stops with the message "FONT NOT FOUND" instead of pretending.
 
 Method (no trust, only measurement):
-  1. the list of the 19 subtitles is read from the PUBLIC table
+  1. the list of the 18 subtitles is read from the PUBLIC table
      (docs/YOUTUBE-VIDEO.md §8) and cross-checked against the second public
      source (video/SCENARIO.md) — the two must say the same thing;
   2. the frame rate is read from the video itself (ffprobe), not assumed;
@@ -76,13 +76,15 @@ except ImportError:  # pragma: no cover - depends on the machine
 
 # --- The geometry of the recording (must match video/SCENARIO.md) ---------
 W, H = 1920, 1080
-SFS = 38            # font size, bold
-SLH = 48            # line height
+SFS = 40            # font size, bold
+SLH = 54            # line height
 SUB_TOP = 880       # first row of the subtitle band
-SUB_MAX_COLS = 78   # wrap width, in characters
-SUB_BG = (26, 31, 40)
-SUB_FG = (247, 250, 253)
-SUB_LINE = (63, 167, 255)
+SUB_MAX_COLS = 70   # wrap width, in characters
+SUB_BG = (24, 29, 37)
+SUB_FG = (250, 250, 250)
+SUB_LINE = (79, 163, 238)
+SUB_LINE_H = 5      # height of the accent line above the band
+SUB_Y = 2           # vertical offset of the first line in the band
 
 FONT_CANDIDATES = [
     os.environ.get("QXPROBE_FONT", ""),
@@ -101,7 +103,7 @@ MAE_MAX = 26.0
 
 DEPOT = (sys.argv[1] if len(sys.argv) > 1
          else os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-VIDEO = os.path.join(DEPOT, "media", "qx-demo-v2.mp4")
+VIDEO = os.path.join(DEPOT, "media", "qx-demo-v3.mp4")
 
 
 def find_font() -> str:
@@ -112,39 +114,21 @@ def find_font() -> str:
 
 
 def wrap(text: str, cols: int) -> list[str]:
-    """The wrapping rule of the recording script (word boundary)."""
-    out = []
-    for raw in text.split("\n"):
-        if len(raw) <= cols:
-            out.append(raw)
-            continue
-        line = ""
-        for word in raw.split(" "):
-            if not line:
-                line = word
-            elif len(line) + 1 + len(word) <= cols:
-                line += " " + word
-            else:
-                out.append(line)
-                line = word
-            while len(line) > cols:
-                out.append(line[:cols])
-                line = line[cols:]
-        if line:
-            out.append(line)
-    return out
+    """The wrapping rule of the recording script (textwrap, word boundary)."""
+    import textwrap
+    return textwrap.wrap(text, cols) or [""]
 
 
 def render_band(text: str, font_path: str) -> "Image.Image":
     """The expected subtitle band, rendered independently of the video."""
     img = Image.new("RGB", (W, H), SUB_BG)
     d = ImageDraw.Draw(img)
-    d.rectangle([0, SUB_TOP, W, SUB_TOP + 4], fill=SUB_LINE)
+    d.rectangle([0, SUB_TOP, W, SUB_TOP + SUB_LINE_H], fill=SUB_LINE)
     if not text:
         return img.crop((0, SUB_TOP, W, H))
     font = ImageFont.truetype(font_path, SFS)
     lines = wrap(text, SUB_MAX_COLS)
-    y = SUB_TOP + (H - SUB_TOP - len(lines) * SLH) // 2 + 6
+    y = SUB_TOP + (H - SUB_TOP - len(lines) * SLH) // 2 + SUB_Y
     for ln in lines:
         w = d.textlength(ln, font=font)
         d.text(((W - w) / 2, y), ln, font=font, fill=SUB_FG)
@@ -196,7 +180,7 @@ def split_cells(line: str) -> list[str]:
 
 
 def table_from_youtube(path: str) -> list[dict]:
-    """The 19 subtitles of the public table of docs/YOUTUBE-VIDEO.md §8."""
+    """The 18 subtitles of the public table of docs/YOUTUBE-VIDEO.md §8."""
     txt = open(path, encoding="utf-8").read()
     rows = []
     for m in re.finditer(
@@ -211,7 +195,7 @@ def table_from_youtube(path: str) -> list[dict]:
 
 
 def table_from_scenario(path: str) -> list[str]:
-    """The same 19 subtitles, from the second public source (video/SCENARIO.md)."""
+    """The same 18 subtitles, from the second public source (video/SCENARIO.md)."""
     if not os.path.isfile(path):
         return []
     out = []
@@ -236,7 +220,7 @@ def probe_fps(path: str) -> float:
 def main() -> int:
     ok = True
     print("=" * 78)
-    print("PREUVE — les 19 sous-titres publies sont-ils les PIXELS de la video ?")
+    print("PREUVE — les 18 sous-titres publies sont-ils les PIXELS de la video ?")
     print("=" * 78)
     print(f"depot  : {DEPOT}")
     print(f"video  : {VIDEO}")
@@ -261,8 +245,8 @@ def main() -> int:
 
     rows = table_from_youtube(os.path.join(DEPOT, "docs", "YOUTUBE-VIDEO.md"))
     print(f"\nA. table publique docs/YOUTUBE-VIDEO.md §8 : {len(rows)} lignes")
-    if len(rows) != 19:
-        print("ECHEC : la table publique ne contient pas 19 sous-titres")
+    if len(rows) != 18:
+        print("ECHEC : la table publique ne contient pas 18 sous-titres")
         return 1
 
     scen = table_from_scenario(os.path.join(DEPOT, "video", "SCENARIO.md"))

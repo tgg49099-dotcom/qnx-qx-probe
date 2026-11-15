@@ -433,9 +433,9 @@ still exact.
 
 **1. Duration** — "should be less than three (3) minutes".
 
-*How the video answers it:* it runs **71.44 s** (measured with `ffprobe` on
+*How the video answers it:* it runs **89.72 s** (measured with `ffprobe` on
 the file of the repository), well under the three minutes, and over the one
-minute asked for internally. No scene is shorter than 3.12 s, so every
+minute asked for internally. No scene is shorter than 3.20 s, so every
 burned-in subtitle stays on screen for at least 2.5 s.
 
 **2. The device** — "should include footage that shows the Project functioning
@@ -490,7 +490,7 @@ are quoted with the official page that carries them.
 *How the video answers it:* every command in the video is a command of the
 public repository, typed as it is written, and every output on screen was
 produced at recording time. A judge can replay them and get the same
-results: 27 tests green, exit code 0 on correct code, exit code 1 on the
+results: 81 tests green, exit code 0 on correct code, exit code 1 on the
 broken fixture.
 
 **6. Build and run instructions** — "Include build and run instructions

@@ -12,17 +12,19 @@ goes. Nothing else is required, and nothing has to be written from scratch.
 QX-PROBE: a linter for QNX 8.0 resource managers
 ```
 
-## 2. Description — paste exactly this (1 651 characters)
+## 2. Description — paste exactly this (1722 characters)
 
 ```
 QX-PROBE is a dependency-free static checker for QNX 8.0 resource managers: it reads your C source and reports the protocol mistakes the compiler cannot see — a missing access gate, a message loop that never dispatches, a reply that returns more parts than the IOV holds. Each of its eleven rules is backed by an official QNX SDP 8.0 documentation page, cited in the repository.
 
-What this video shows (71.44 s, English, no music, no voice-over):
+What this video shows (89.72 s, English, no music, no voice-over):
 - the real corpus: a QNX 8.0 resource manager published under Apache-2.0;
 - the checker stays green on correct code (0 ERROR, 0 WARN);
-- the false positive of an earlier version, acknowledged: a read-only manager mounted outside /dev/ gives 0 ERROR, 0 WARN, and the rule behind it is quoted from the QNX 8.0 documentation;
 - the same code with one access gate removed: 1 ERROR, exit code 1;
-- the 27-test suite, green;
+- a real program split over several files, read as one program;
+- the same findings as SARIF 2.1.0 alerts for GitHub code scanning, each one with a link to its rule;
+- the benchmark on 17 real public QNX resource managers: one real missing access gate found;
+- the 81-test suite, green;
 - zero dependency: the Python standard library only, no QNX SDK, no board.
 
 Every sentence is burned into the picture (English subtitles, one per scene);
@@ -30,7 +32,7 @@ the file has no audio track at all.
 
 Repository (Apache-2.0): https://github.com/tgg49099-dotcom/qnx-qx-probe
 Codelab (30 minutes, no SDK, no board, no licence): https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md
-The video file itself, downloadable: https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4
+The video file itself, downloadable: https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4
 
 Category: Developer Tooling & Host Tools.
 Written with AI assistance (the tool, its rules and this documentation); every QNX 8.0 claim cites an official documentation page, and the reference corpus is BlackBerry's public Apache-2.0 code (see NOTICE in the repository).
@@ -40,19 +42,19 @@ Written with AI assistance (the tool, its rules and this documentation); every Q
 
 | | |
 |---|---|
-| File | `media/qx-demo-v2.mp4` (in the public repository) |
-| Download | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v2.mp4 |
-| Local copy | `/work/qnx/depot-public/media/qx-demo-v2.mp4` |
-| MD5 | `178e1b58638628a5bc56f11c6fada8e2` |
-| Size | 1 367 966 bytes |
-| Duration (measured with ffprobe) | **71.44 s** — the limit is 180 s, the target 60–120 s |
-| Format | MP4 / H.264 (High, yuv420p), 1920x1080, 25 fps, 1786 frames |
+| File | `media/qx-demo-v3.mp4` (in the public repository) |
+| Download | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4 |
+| Local copy | `/work/qnx/depot-public/media/qx-demo-v3.mp4` |
+| MD5 | `98ec689d13bed874bf2b144538a43d91` |
+| Size | 1 417 251 bytes |
+| Duration (measured with ffprobe) | **89.72 s** — the limit is 180 s, the target 60–120 s |
+| Format | MP4 / H.264 (High, yuv420p), 1920x1080, 25 fps, 2 243 frames |
 | Audio | **none** — the file has no audio stream at all |
 | Language | English, no voice-over |
 | Subtitles | burned into the picture (no separate subtitle file) |
 
 Check the MD5 after the download, before the upload:
-`md5sum qx-demo-v2.mp4` must print `178e1b58638628a5bc56f11c6fada8e2`.
+`md5sum qx-demo-v3.mp4` must print `98ec689d13bed874bf2b144538a43d91`.
 
 ## 4. The thumbnail
 
@@ -61,14 +63,16 @@ Check the MD5 after the download, before the upload:
 | File | `media/qx-demo-thumbnail.png` (in the public repository) |
 | Download | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-thumbnail.png |
 | Local copy | `/work/qnx/depot-public/media/qx-demo-thumbnail.png` |
-| MD5 | `c7e26bd7fa6105fca7594afb4f277775` |
-| Size | 240 247 bytes |
+| MD5 | `d2d5ddea71f5f9c538f10c1a7b9031b8` |
+| Size | 404 633 bytes |
 | Image | PNG, 1280x720 |
 
-It is frame 1074 of the video (t = 42.96 s): the checker reporting the missing
-access gate, with the real command line above it and the burned-in subtitle
-below it. Checked on the published file: that frame, scaled down to 1280x720,
-matches the published thumbnail on **94.6 %** of its pixels (within 8/255).
+It is frame 1 750 of the video (t = 70.00 s): the benchmark on the 17 real
+public QNX resource managers, with the real missing access gate found in
+`rpi_thermal/rpi_thermal.c:465`, the real command line above it and the
+burned-in subtitle below it. Checked on the published file: that frame, scaled
+down to 1280x720, matches the published thumbnail on **98.3 %** of its pixels
+(within 8/255).
 
 ## 5. The five gestures
 
@@ -104,71 +108,72 @@ Both links are checked by the verification script: every URL of
 
 * **No audio at all** — `ffprobe -show_streams` lists a single video stream,
   no audio stream; so no music, no voice-over, nothing copyrighted.
-* **No logo of any company**, no third-party image: the 72 frames taken one
-  per second over the 71.44 s were looked at one by one (six contact sheets),
-  and the 19 frames that carry the 19 burned-in subtitles were extracted and
-  read at full resolution.
+* **No logo of any company**, no third-party image: the 90 frames taken one
+  per second over the 89.72 s were looked at one by one (three contact sheets
+  of 30 frames), and the 18 frames that carry the 18 burned-in subtitles were
+  extracted and read at full resolution.
 * **Every line of text on screen** comes from the recording script, which
   executes the real commands and prints their real output. The audit of that
-  text — the terminal lines plus the 19 burned-in subtitles, rebuilt from the
-  recording script with the commands re-executed in the repository, **6 063
-  characters** (4 887 for the terminal alone) — counts: "BlackBerry" 4,
-  "blackberry" 7 (the
-  file name `blackberry_eventfd_mgr.c`), "Apache" 2 and "apache" 1 (the
-  licence header and its URL), "Python" 2 and "python3" 5 (the toolchain,
-  which the rules require us to name), "POSIX" 7 (in the tool's own output),
-  "QNX" 16 (the subject of the contest). **No other company name appears**,
-  and "Linux" does not appear at all.
-* The word **"BlackBerry"** appears four times, as plain text: in the caption
-  *"The corpus: a real QNX 8.0 resource manager, published by BlackBerry"*,
-  in two burned-in subtitles, and in the Apache-2.0 header of the corpus
-  (*"Copyright (c) 2025, BlackBerry Limited"*). That is the attribution the
-  Apache-2.0 licence **requires** us to keep, and the corpus is used with the
-  author's permission; the rule only forbids third-party marks *"unless the
-  Entrant has permission to use such material"*.
+  text — the terminal lines plus the 18 burned-in subtitles, rebuilt from the
+  recording timeline with the commands **re-executed on a fresh clone of the
+  public repository**, **9 072 characters** (7 964 for the terminal alone) —
+  counts: "BlackBerry" 3, "blackberry" 7 (the file name
+  `blackberry_eventfd_mgr.c`), "Apache" 2 and "apache" 1 (the licence header
+  and its URL), "Python" 1 and "python3" 7 (the toolchain, which the rules
+  require us to name), "POSIX" 10 (in the tool's own output), "QNX" 10 (the
+  subject of the contest). **No other company name appears**, and "Linux" does
+  not appear at all.
+* The word **"BlackBerry"** appears three times, as plain text: in the caption
+  *"The corpus: BlackBerry's own resource manager, under Apache-2.0"*, in the
+  burned-in subtitle *"BlackBerry's own resource manager: 0 ERROR, 0 WARN"*,
+  and in the Apache-2.0 header of the corpus (*"Copyright (c) 2025, BlackBerry
+  Limited"*). That is the attribution the Apache-2.0 licence **requires** us to
+  keep, and the corpus is used with the author's permission; the rule only
+  forbids third-party marks *"unless the Entrant has permission to use such
+  material"*.
 * The **subtitles** are burned into the picture (there is no separate `.srt`
   file and no text stream in the MP4): one short sentence per scene, in
-  English, two lines at most, at least 2.5 s on screen, drawn in a band at the
-  bottom that never covers a line of code or of output.
+  English, two lines at most, at least 3.20 s on screen (the rules ask for
+  2.5 s), drawn in a band at the bottom that never covers a line of code or of
+  output.
 
-## 8. The 19 burned-in subtitles
+## 8. The 18 burned-in subtitles
 
 There is no separate subtitle file: every sentence below is drawn **in the
 pixels** of the frames, in a band at the bottom of the picture that never
 covers a line of code or of output. One sentence per scene, in English, two
-lines at most, at least 3.12 s on screen (the rules ask for 2.5 s).
+lines at most, at least 3.20 s on screen (the rules ask for 2.5 s).
 
 | # | from (s) | to (s) | duration (s) | subtitle |
 |---|---|---|---|---|
-| 0 | 0.00–3.12 | 3.12 | A linter for QNX 8.0 resource managers. It runs on the host. |
-| 1 | 3.12–6.24 | 3.12 | It reports the protocol mistakes the QNX compiler cannot see. |
-| 2 | 6.24–9.36 | 3.12 | Every command of this video is a command of the public repository. |
-| 3 | 10.24–14.48 | 4.24 | The Apache-2.0 header of BlackBerry's own resource manager. |
-| 4 | 14.48–17.60 | 3.12 | Correct QNX 8.0 code must produce no error and no warning. |
-| 5 | 18.36–22.48 | 4.12 | BlackBerry's own resource manager: 0 ERROR, 0 WARN. |
-| 6 | 22.48–25.60 | 3.12 | Now the case an earlier version of this tool got wrong. |
-| 7 | 26.36–30.56 | 4.20 | A read-only manager mounted outside /dev/: 0 ERROR, 0 WARN. |
-| 8 | 30.56–33.68 | 3.12 | QNX 8.0 documentation: the path joins the general pathname space.<br>An earlier version of this tool wrongly flagged that case. |
-| 9 | 33.68–36.80 | 3.12 | The rule that the earlier version of the tool misread. |
-| 10 | 36.80–39.92 | 3.12 | A real defect must be reported, not hidden. |
-| 11 | 40.84–45.08 | 4.24 | One access gate removed: the checker reports 1 ERROR. |
-| 12 | 45.08–48.20 | 3.12 | The exit code tells the build system to stop. |
-| 13 | 49.00–52.68 | 3.68 | The exit code is 1, so the checker can gate a CI pipeline. |
-| 14 | 52.68–55.80 | 3.12 | The suite checks both sides: no false positive, real defects caught. |
-| 15 | 56.80–60.60 | 3.80 | 27 tests pass: no false positive, and real defects caught. |
-| 16 | 60.60–63.72 | 3.12 | No QNX SDK, no board, no licence: Python 3 is enough. |
-| 17 | 64.48–68.32 | 3.84 | Only the Python standard library is imported: no QNX SDK, no board. |
-| 18 | 68.32–71.44 | 3.12 | End of the demonstration. The source is in the public repository. |
+| 0 | 0.00–4.00 | 4.00 | A linter for QNX 8.0 resource managers. It runs on the host. |
+| 1 | 4.00–7.20 | 3.20 | Every command in this video is a command of the public repository. |
+| 2 | 7.20–11.32 | 4.12 | The corpus: BlackBerry's own resource manager, under Apache-2.0. |
+| 3 | 11.32–16.32 | 5.00 | BlackBerry's own resource manager: 0 ERROR, 0 WARN. |
+| 4 | 16.32–19.52 | 3.20 | A real defect must be reported, not hidden. |
+| 5 | 19.52–25.68 | 6.16 | One access gate removed: 1 ERROR, and exit code 1 stops the build. |
+| 6 | 25.68–31.16 | 5.48 | The rule is the QNX 8.0 documentation's own sentence. |
+| 7 | 31.16–34.36 | 3.20 | Real QNX programs are split over several files. |
+| 8 | 34.36–39.72 | 5.36 | One file alone: the message loop lives in another file, so a WARN and exit code 1. |
+| 9 | 39.72–46.08 | 6.36 | The three files read together, as one program: 0 ERROR, 0 WARN. |
+| 10 | 46.08–49.28 | 3.20 | The same findings, as alerts in GitHub code scanning. |
+| 11 | 49.28–59.44 | 10.16 | Each alert carries its rule, its level and a link to the rule and its QNX source. |
+| 12 | 59.44–62.64 | 3.20 | Then on code the tool was never written for. |
+| 13 | 62.64–72.68 | 10.04 | 17 public resource managers, each pinned to a commit: one real missing access gate. |
+| 14 | 72.68–75.88 | 3.20 | The suite checks both sides: no false positive, real defects caught. |
+| 15 | 75.88–80.64 | 4.76 | 81 tests pass, from a clean clone. |
+| 16 | 80.64–85.24 | 4.60 | Only the Python standard library: no QNX SDK, no board, no licence. |
+| 17 | 85.24–89.72 | 4.48 | End of the demonstration. The source is in the public repository. |
 
-The whole video is 19 scenes, 1 786 frames, 71.44 s.
+The whole video is 18 scenes, 2 243 frames, 89.72 s.
 
 The table above is not a transcript written after the fact: every sentence was
 **re-rendered independently** from that table and compared with the pixels of
-the published file. The text masks match at an IoU of **0.998** (minimum 0.997
-over the 19 scenes, mean absolute error 1.77 per channel), while a *wrong*
-sentence — the next scene's — scores at most 0.547. The check therefore
-separates the right text from a wrong one: it does prove that the picture
-carries the sentences published here.
+the published file. The text masks match at an IoU of **0.997** (minimum
+**0.995** over the 18 scenes, mean absolute error **2.24** per
+channel), while a *wrong* sentence — the next scene's — scores at most
+**0.554**. The check therefore separates the right text from a wrong
+one: it does prove that the picture carries the sentences published here.
 
 **The jury can replay that proof.** It is a script of this repository:
 
@@ -178,8 +183,8 @@ $ python3 scripts/audit-sous-titres-pixels.py
 
 It needs `ffmpeg` and `pillow` (`pip install pillow`), nothing else — no QNX
 SDK, no board, no licence. It reads the table above, reads the second public
-copy of the same 19 sentences (`video/SCENARIO.md`), checks that they agree,
-extracts the 19 frames from `media/qx-demo-v2.mp4`, re-renders the expected
+copy of the same 18 sentences (`video/SCENARIO.md`), checks that they agree,
+extracts the 18 frames from `media/qx-demo-v3.mp4`, re-renders the expected
 text and compares the pixels; then it runs the contre-épreuve against the
 wrong text and refuses to pass if the two are not clearly separated.
 

@@ -342,9 +342,9 @@ copie du 12/11/2026 : les six sont toujours exactes.
 
 **1. Duree** — « should be less than three (3) minutes ».
 
-*Comment la video le satisfait :* elle dure **71,44 s** (mesuree avec
+*Comment la video le satisfait :* elle dure **89,72 s** (mesuree avec
 `ffprobe` sur le fichier du depot), donc bien en dessous des trois minutes,
-et au-dela de la minute demandee en interne. Une seule scene occupe 3,12 s
+et au-dela de la minute demandee en interne. Une seule scene occupe 3,20 s
 au minimum, chaque sous-titre reste affiche au moins 2,5 s.
 
 **2. L'appareil** — « should include footage that shows the Project functioning
@@ -402,7 +402,7 @@ a l'ecran le sont avec la page officielle qui les porte.
 *Comment la video le satisfait :* chaque commande de la video est une
 commande du depot public, tapee telle quelle, et chaque sortie affichee a
 ete produite a l'enregistrement. Le juge peut les rejouer et obtenir les
-memes resultats : 27 tests au vert, exit code 0 sur le code correct, exit
+memes resultats : 81 tests au vert, exit code 0 sur le code correct, exit
 code 1 sur la fixture abimee.
 
 **6. Instructions de construction et d'execution** — « Include build and run
