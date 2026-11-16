@@ -95,6 +95,12 @@ DOCUMENTS = (
     "RULES.md",
     "docs/RULES.fr.md",
     "docs/AI-ASSISTED-RULES.md",
+    "docs/README.md",
+    "docs/CODELAB.md",
+    "docs/CI.md",
+    "docs/YOUTUBE-VIDEO.md",
+    "docs/BENCHMARK.md",
+    "docs/BENCHMARK.fr.md",
 )
 
 # The kinds of published count this control understands.  Each pattern
@@ -111,6 +117,8 @@ DOCUMENTS = (
 #   "N classes"          the number of test classes
 PATTERNS = (
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+(?:unit\s+)?tests?\b")),
+    #   "N-test suite": the same count written as a compound adjective
+    ("tests", re.compile(r"(?<![\w.])(\d+)-tests?\b")),
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+check\b")),
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+the reading of a resource\b")),
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+the QNX 8\.0 build script\b")),
@@ -191,12 +199,29 @@ EXEMPTIONS = (
     ("docs/SUBMISSION-EN.md", "0.09 s",
      "a timing of one run of the linter, dated, not the duration of the video",
      r"Measured|run on one file"),
+    # The third version: the other published documents.
+    ("docs/BENCHMARK.md", "17 files",
+     "the files of the benchmark corpus, not the files of the repository",
+     None),
+    ("docs/BENCHMARK.fr.md", "17 files",
+     "the files of the benchmark corpus, not the files of the repository",
+     None),
+    ("docs/YOUTUBE-VIDEO.md", "404 633 bytes",
+     "the size of the thumbnail, not the size of the video",
+     r"\| Size \|"),
+    ("docs/YOUTUBE-VIDEO.md", "70.00 s",
+     "the time of the frame used as the thumbnail, not the duration of the video",
+     r"frame"),
+    ("docs/YOUTUBE-VIDEO.md", "3.20 s",
+     "the shortest scene of the video, not its duration",
+     r"on screen"),
 )
 
 # The number written in the counter-proof: one false figure of each kind.
 FALSE_NUMBER = 999
 FALSE_FIGURES = (
     ("tests", "999 tests"),
+    ("tests", "999-test"),
     ("files", "999 files"),
     ("classes", "999 classes"),
     ("quotations", "999 quotations"),

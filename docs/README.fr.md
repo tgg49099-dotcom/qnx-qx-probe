@@ -25,9 +25,15 @@ signale rien d'actionnable (`0 ERROR, 0 WARN`, code de sortie 0).
 
 Rien n'a a etre installe pour utiliser la sonde. Si vous preferez une
 commande a part entiere, `pip install .` lit `pyproject.toml` et vous donne le
-point d'entree `qx-probe` — le meme outil, les memes codes de sortie :
+point d'entree `qx-probe` — le meme outil, les memes codes de sortie. Les
+Python recents de Debian, Ubuntu et Homebrew refusent un `pip install` nu hors
+d'un environnement virtuel (PEP 668, « externally-managed-environment ») :
+creez-en un d'abord (sous Windows : `py -m venv .venv` puis
+`.venv\Scripts\activate`) :
 
 ```console
+$ python3 -m venv .venv
+$ . .venv/bin/activate
 $ pip install .
 $ qx-probe tests/fixtures/qnx80_resmgr_qx004_no_gate.c
 ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing

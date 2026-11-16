@@ -144,8 +144,8 @@ pixels** of the frames, in a band at the bottom of the picture that never
 covers a line of code or of output. One sentence per scene, in English, two
 lines at most, at least 3.20 s on screen (the rules ask for 2.5 s).
 
-| # | from (s) | to (s) | duration (s) | subtitle |
-|---|---|---|---|---|
+| # | from–to (s) | duration (s) | subtitle |
+|---|---|---|---|
 | 0 | 0.00–4.00 | 4.00 | A linter for QNX 8.0 resource managers. It runs on the host. |
 | 1 | 4.00–7.20 | 3.20 | Every command in this video is a command of the public repository. |
 | 2 | 7.20–11.32 | 4.12 | The corpus: BlackBerry's own resource manager, under Apache-2.0. |

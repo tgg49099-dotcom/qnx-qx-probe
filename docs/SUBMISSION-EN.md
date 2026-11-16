@@ -428,7 +428,7 @@ URL of the page.
 ## 14. Five sentences for the repository README
 
 <!-- DEBUT:RESUME5 -->
-QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Seven of its rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 51-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
+QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Seven of its rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 81-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
 <!-- FIN:RESUME5 -->
 
 _Measured: 709 characters._

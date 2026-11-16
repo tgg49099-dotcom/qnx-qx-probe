@@ -19,9 +19,14 @@ RESULT: 6 finding(s), 1 ERROR, 0 WARN
 
 Nothing has to be installed to use it. If you prefer a command of its own,
 `pip install .` reads `pyproject.toml` and gives you the `qx-probe` entry
-point — the same tool, the same exit codes:
+point — the same tool, the same exit codes. Recent Debian, Ubuntu and
+Homebrew Pythons refuse a bare `pip install` outside a virtual environment
+(PEP 668, "externally-managed-environment"), so create one first (on
+Windows: `py -m venv .venv` then `.venv\Scripts\activate`):
 
 ```console
+$ python3 -m venv .venv
+$ . .venv/bin/activate
 $ pip install .
 $ qx-probe tests/fixtures/qnx80_resmgr_qx004_no_gate.c
 ERROR QX004  tests/fixtures/qnx80_resmgr_qx004_no_gate.c:52: qx_read() never calls iofunc_read_verify(): the access gate is missing
