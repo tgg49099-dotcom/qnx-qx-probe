@@ -21,6 +21,15 @@
 #      arrives.  The script compiles the three C examples with
 #      `qcc -Vgcc_ntox86_64`, runs QX-PROBE on them, and writes the real
 #      output (stdout, stderr, exit codes, checksums) under `proofs/`.
+#      It then reads the ELF header of each binary (scripts/check_qnx_elf.py):
+#      an exit code 0 from qcc is not a proof, a QNX 8.0 executable is.
+#      When a QNX 8.0 target is reachable (the QEMU image of the SDP, or a
+#      board), it runs each example there and checks that the resource
+#      manager attached its path (scripts/qnx8-target-run.sh).
+#
+#   The SDP environment is loaded by the script itself when qcc is not on
+#   the PATH: it sources qnxsdp-env.sh from $QNX_SDP, ~/qnx800 or
+#   /opt/qnx800 (the official install folder is typically ~/qnx800).
 #
 # USAGE
 #
@@ -139,6 +148,10 @@ FAKEQCC
     echo "SELF-TEST FAILED: the SDP path returned $rc."
     rc2=1
   fi
+  if [ ! -f "$ROOT/scripts/check_qnx_elf.py" ]; then
+    echo "SELF-TEST FAILED: scripts/check_qnx_elf.py is missing."
+    rc2=1
+  fi
   if [ "$rc2" -eq 0 ]; then
     echo "SELF-TEST OK: the SDP path is ready for the day the licence arrives."
   fi
@@ -159,6 +172,20 @@ if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
   echo "*** SELF-TEST RUN: the compiler used here is a FAKE qcc. ***"
   echo "*** NOTHING BELOW IS A QNX 8.0 COMPILATION. ***"
   echo
+fi
+
+# The SDP 8.0 environment: when qcc is not on the PATH, load it from the
+# official script qnxsdp-env.sh ("source qnxsdp-env.sh", from the SDP
+# install folder, typically ~/qnx800).  Silent when no SDP is installed.
+if ! command -v qcc >/dev/null 2>&1; then
+  for d in "${QNX_SDP:-}" "$HOME/qnx800" /opt/qnx800; do
+    if [ -n "$d" ] && [ -f "$d/qnxsdp-env.sh" ]; then
+      # shellcheck disable=SC1091
+      . "$d/qnxsdp-env.sh" >/dev/null 2>&1
+      SDP_ENV_SOURCED="$d/qnxsdp-env.sh"
+      break
+    fi
+  done
 fi
 
 SDP_CANDIDATES="${QNX_SDP:-} ${QNX_HOST:-} /opt/qnx800"
@@ -188,6 +215,7 @@ fi
 
 echo "qcc        : $QCC_PATH"
 echo "sdp        : $SDP_FOUND"
+[ -n "${SDP_ENV_SOURCED:-}" ] && echo "sdp env    : $SDP_ENV_SOURCED (sourced by this script)"
 echo
 
 # --------------------------------------------------------------------------
@@ -197,7 +225,7 @@ STAMP=$(date -u '+%Y%m%dT%H%M%SZ')
 DIR="$OUT/$TARGET-$STAMP"
 mkdir -p "$DIR" || exit 2
 
-echo "---- 1/4  the qcc variants installed ----"
+echo "---- 1/6  the qcc variants installed ----"
 "$QCC_PATH" -V > "$DIR/01-qcc-variants.txt" 2>&1
 rc=$?
 head -12 "$DIR/01-qcc-variants.txt"
@@ -209,14 +237,14 @@ if ! grep -q "$VARIANT" "$DIR/01-qcc-variants.txt"; then
 fi
 
 echo
-echo "---- 2/4  the compilation of the three C examples ----"
+echo "---- 2/6  the compilation of the three C examples ----"
 bash "$ROOT/scripts/build_qcc.sh" "$TARGET" > "$DIR/02-build-qcc.txt" 2>&1
 rc_build=$?
 cat "$DIR/02-build-qcc.txt"
 echo "exit code of the build: $rc_build"
 
 echo
-echo "---- 3/4  QX-PROBE on the QNX 8.0 examples ----"
+echo "---- 3/6  QX-PROBE on the QNX 8.0 examples ----"
 python3 -I "$ROOT/qx_probe.py" \
   "$ROOT/examples/qnx80_resmgr_minimal.c" \
   "$ROOT/examples/qnx80_resmgr_readonly.c" \
@@ -227,36 +255,43 @@ cat "$DIR/03-linter-exemples.txt"
 echo "exit code of the linter: $rc_lint"
 
 echo
-echo "---- 4/4  the checksums of what was built ----"
+echo "---- 4/6  the checksums of what was built ----"
 {
   echo "# sha256 of the binaries built by qcc -V$VARIANT"
   sha256sum "$ROOT"/build/"$TARGET"/* 2>/dev/null
 } > "$DIR/04-sha256-binaires.txt" 2>&1
 cat "$DIR/04-sha256-binaires.txt"
 
-# The binaries are built for QNX 8.0: running them needs a QNX 8.0 target
-# (a QEMU image or a board).  When there is none, this is said and nothing is
-# invented.
 echo
-echo "---- the QNX 8.0 target ----"
-if [ -n "${QNX_QEMU_IMAGE:-}" ] && [ -f "${QNX_QEMU_IMAGE}" ] && \
-   command -v qemu-system-x86_64 >/dev/null 2>&1; then
-  for b in "$ROOT"/build/*/*; do
-    [ -f "$b" ] || continue
-    echo "running $b on the QNX 8.0 image $QNX_QEMU_IMAGE"
-    qemu-system-x86_64 -kernel "$QNX_QEMU_IMAGE" -append "$(basename "$b")" \
-      -serial stdio -no-reboot -display none \
-      > "$DIR/05-run-$(basename "$b").txt" 2>&1
-    echo "exit code: $?"
-  done
+echo "---- 5/6  are they QNX 8.0 executables? (ELF header read by python3) ----"
+python3 -I -B "$ROOT/scripts/check_qnx_elf.py" --arch "$TARGET" \
+  "$ROOT/build/$TARGET/qxprobe-demo" "$ROOT/build/$TARGET/qxprobe-status" \
+  "$ROOT/build/$TARGET/qxprobe-official" > "$DIR/05-elf.txt" 2>&1
+rc_elf=$?
+cat "$DIR/05-elf.txt"
+if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
+  # The fake compiler writes text files: the ELF check MUST refuse them.
+  # This is its counter-proof; a check that accepts them is broken.
+  if [ "$rc_elf" -eq 1 ] && [ "$(grep -c '^NOT A QNX 8.0 BINARY' "$DIR/05-elf.txt")" -eq 3 ]; then
+    echo "ELF GATE (SELF-TEST): the 3 fake binaries are refused, as they must be."
+    rc_elf=0
+  else
+    echo "ELF GATE (SELF-TEST) BROKEN: a fake binary was not refused."
+    rc_elf=1
+  fi
+fi
+
+echo
+echo "---- 6/6  the run on a QNX 8.0 target ----"
+if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
+  echo "NOT RUN: the binaries of a fake compiler are never sent to a target." | tee "$DIR/06-run-cible.txt"
+  rc_run=3
+elif [ "$rc_build" -ne 0 ] || [ "$rc_elf" -ne 0 ]; then
+  echo "NOT RUN: the build or the ELF check failed." | tee "$DIR/06-run-cible.txt"
+  rc_run=3
 else
-  {
-    echo "NOT MEASURED: the binaries were built but not run."
-    echo "Running a QNX 8.0 binary needs a QNX 8.0 target (a QEMU image or a"
-    echo "board).  None is available on this machine: QNX_QEMU_IMAGE is not"
-    echo "set, or qemu-system-x86_64 is absent.  Nothing was simulated."
-  } > "$DIR/05-run-cible.txt"
-  cat "$DIR/05-run-cible.txt"
+  bash "$ROOT/scripts/qnx8-target-run.sh" --arch "$TARGET" --out "$DIR" 2>&1 | tee "$DIR/06-run-cible.txt"
+  rc_run=${PIPESTATUS[0]}
 fi
 
 {
@@ -268,12 +303,14 @@ fi
   echo "qcc variant     : $VARIANT"
   echo "build exit code : $rc_build"
   echo "linter exit code: $rc_lint"
+  echo "ELF check code  : $rc_elf"
+  echo "target run code : $rc_run (0 ran on QNX 8.0, 1 failed, 3 not measured)"
   echo "files           : $DIR"
 } > "$DIR/SUMMARY.txt"
 
 echo
 echo "======================================================================"
-if [ "$rc_build" -eq 0 ] && [ "$rc_lint" -eq 0 ]; then
+if [ "$rc_build" -eq 0 ] && [ "$rc_lint" -eq 0 ] && [ "$rc_elf" -eq 0 ] && [ "$rc_run" -ne 1 ]; then
   if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
     echo "VERDICT (SELF-TEST, FAKE COMPILER): the SDP path issues the right commands"
     echo "         and the linter runs on them.  THIS IS NOT A QNX 8.0 COMPILATION."
@@ -281,9 +318,15 @@ if [ "$rc_build" -eq 0 ] && [ "$rc_lint" -eq 0 ]; then
     exit 0
   fi
   echo "VERDICT: THE EXAMPLES BUILD FOR QNX 8.0 ($VARIANT) AND THE LINTER RUNS ON THEM"
+  echo "         the 3 binaries are QNX 8.0 $TARGET executables (ELF header checked)"
+  if [ "$rc_run" -eq 0 ]; then
+    echo "         and they RAN ON QNX 8.0: each resource manager attached its path"
+  else
+    echo "         the run on a QNX 8.0 target is NOT MEASURED (see 06-run-cible.txt)"
+  fi
   echo "         the real output is in $DIR"
   exit 0
 fi
-echo "VERDICT: FAILED - the build returned $rc_build, the linter returned $rc_lint"
+echo "VERDICT: FAILED - build $rc_build, linter $rc_lint, ELF check $rc_elf, target run $rc_run"
 echo "         the real output is in $DIR"
 exit 1

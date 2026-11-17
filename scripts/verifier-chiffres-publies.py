@@ -163,9 +163,9 @@ EXEMPTIONS = (
      "the number of output-format tests inside tests/test_qx_probe.py, "
      "a sub-category and not a file of tests",
      r"the format of the output"),
-    ("docs/SUBMISSION-EN.md", "6 files",
+    ("docs/SUBMISSION-EN.md", "7 files",
      "the number of TEST files, not the number of files of the repository",
-     r"\d+ tests in 6 files"),
+     r"\d+ tests in 7 files"),
     ("docs/SUBMISSION-EN.md", "17 files",
      "the files of the benchmark corpus, not the files of the repository",
      None),
@@ -212,6 +212,26 @@ EXEMPTIONS = (
     ("docs/YOUTUBE-VIDEO.md", "70.00 s",
      "the time of the frame used as the thumbnail, not the duration of the video",
      r"frame"),
+    # The fourth version (17/11/2026): the suite grew after the video and
+    # after the dated verify-all run of 14/11; those two stay as recorded.
+    ("README.md", "81 unit tests",
+     "a row of the dated verify-all run of 14 November 2026, printed as it "
+     "was measured",
+     r"verifier-codelab"),
+    ("README.md", "81 test",
+     "the log of the dated verify-all run of 14 November 2026",
+     r"test names"),
+    ("docs/README.fr.md", "81 unit tests",
+     "a row of the dated verify-all run of 14 November 2026, printed as it "
+     "was measured",
+     r"verifier-codelab"),
+    ("docs/YOUTUBE-VIDEO.md", "81-test",
+     "what the recorded video shows: its subtitles are burned into the "
+     "picture",
+     r"suite, green"),
+    ("docs/YOUTUBE-VIDEO.md", "81 tests",
+     "a subtitle burned into the recorded video",
+     r"75\.88"),
     ("docs/YOUTUBE-VIDEO.md", "3.20 s",
      "the shortest scene of the video, not its duration",
      r"on screen"),

@@ -140,6 +140,9 @@ media/qx-demo-v3.mp4                         la video de demonstration (MP4, H.2
 scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies SONT les pixels de la video
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
+scripts/check_qnx_elf.py                     lit l'en-tete ELF : un fichier construit est-il vraiment un executable QNX 8.0 ?
+scripts/qnx8-proof.sh                        la preuve QNX 8.0 en une commande : compilation, controle ELF, sonde, execution sur une cible
+scripts/qnx8-target-run.sh                   lance les exemples sur une cible QNX 8.0 (image QEMU du SDP, ou carte) par ssh
 scripts/run_tests.sh                         lance la suite de tests
 scripts/verifier-chiffres-publies.py         verifie que les chiffres publies sont les chiffres du depot
 scripts/verifier-citations.py                relit les 14 pages QNX 8.0 citees et verifie les 36 citations
@@ -149,6 +152,7 @@ scripts/verify-all.sh                        rejoue toutes les preuves publiees 
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
 tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
+tests/test_qnx_target.py                     16 tests : le controle ELF (un binaire Linux est refuse), l'execution sur cible (faux ssh), l'environnement du SDP charge
 tests/test_multifile.py                      19 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
 video/SCENARIO.md                            le scenario de la demonstration video
 ```
@@ -267,6 +271,18 @@ jamais une sortie de compilateur.
 installé dans l'environnement où ce projet a été écrit et aucune clé de licence
 QNX n'y a été utilisée : les exemples n'ont jamais été compilés pour QNX 8.0,
 et rien dans ce dépôt ne prétend le contraire.
+
+**Le jour où la licence arrive, une seule commande :** `bash scripts/qnx8-proof.sh`.
+Elle charge elle-même l'environnement du SDP (`qnxsdp-env.sh`, en général dans
+`~/qnx800`), compile les trois exemples avec `qcc -Vgcc_ntox86_64 -Werror`, puis
+**lit l'en-tête ELF de chaque binaire** : un exécutable x86_64 64 bits dont
+l'interpréteur est le chargeur QNX, sinon elle échoue (un « qcc » qui produit
+un binaire Linux est démasqué). Quand l'image QEMU du SDP tourne
+(`mkqnximage --run=-h` dans son dossier) et que `QNX_SSH_KEY` désigne la clé
+donnée à `mkqnximage --ssh-ident`, elle copie chaque exemple sur la cible, le
+lance et vérifie que le gestionnaire de ressources a bien attaché son chemin.
+Sans cible, elle écrit **NOT MEASURED** pour l'exécution ; elle ne tape jamais
+de mot de passe et ne simule jamais une exécution.
 
 ## Licence
 

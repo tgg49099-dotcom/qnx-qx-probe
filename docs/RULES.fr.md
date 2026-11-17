@@ -402,7 +402,7 @@ a l'ecran le sont avec la page officielle qui les porte.
 *Comment la video le satisfait :* chaque commande de la video est une
 commande du depot public, tapee telle quelle, et chaque sortie affichee a
 ete produite a l'enregistrement. Le juge peut les rejouer et obtenir les
-memes resultats : 81 tests au vert, exit code 0 sur le code correct, exit
+memes resultats : la suite de tests au vert, exit code 0 sur le code correct, exit
 code 1 sur la fixture abimee.
 
 **6. Instructions de construction et d'execution** — « Include build and run

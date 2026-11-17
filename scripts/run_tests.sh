@@ -63,6 +63,11 @@ python3 -I -B tests/test_published_figures.py
 rc8=$?
 [ "$rc" -eq 0 ] && rc=$rc8
 echo
+echo "--- 9. the day-of-licence path: ELF check of the binaries, run on a QNX 8.0 target (fake ssh), SDP environment loaded ---"
+python3 -I -B tests/test_qnx_target.py
+rc9=$?
+[ "$rc" -eq 0 ] && rc=$rc9
+echo
 if [ "$rc" -eq 0 ]; then
   echo "RESULT: QX-PROBE suite GREEN (RC 0)"
 else

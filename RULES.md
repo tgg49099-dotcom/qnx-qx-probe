@@ -490,7 +490,7 @@ are quoted with the official page that carries them.
 *How the video answers it:* every command in the video is a command of the
 public repository, typed as it is written, and every output on screen was
 produced at recording time. A judge can replay them and get the same
-results: 81 tests green, exit code 0 on correct code, exit code 1 on the
+results: the test suite green, exit code 0 on correct code, exit code 1 on the
 broken fixture.
 
 **6. Build and run instructions** — "Include build and run instructions

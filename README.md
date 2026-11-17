@@ -161,6 +161,9 @@ media/qx-demo-v3.mp4                         the demonstration video itself (MP4
 scripts/audit-sous-titres-pixels.py          proves that the published subtitles ARE the pixels of the video
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
+scripts/check_qnx_elf.py                     reads the ELF header: is a built file really a QNX 8.0 executable?
+scripts/qnx8-proof.sh                        the QNX 8.0 proof in one command: build, ELF check, linter, run on a target
+scripts/qnx8-target-run.sh                   runs the examples on a QNX 8.0 target (QEMU image of the SDP, or a board) over ssh
 scripts/run_tests.sh                         runs the test suite
 scripts/verifier-chiffres-publies.py         checks that the published figures are the figures of this repository
 scripts/verifier-citations.py                re-reads the 14 cited QNX 8.0 pages and checks the 36 quotations
@@ -172,6 +175,7 @@ tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 1
 tests/test_output_formats.py                 14 tests: line numbers, JSON and SARIF output, no QX003 on NULL
 tests/test_build_qcc.py                      4 tests: the qcc variant and target of scripts/build_qcc.sh (fake qcc)
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
+tests/test_qnx_target.py                     16 tests: the ELF check (a Linux binary is refused), the target run (fake ssh), the SDP environment loaded
 tests/test_multifile.py                      19 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
 video/SCENARIO.md                            the video demonstration scenario
 ```
@@ -328,6 +332,24 @@ invents a compiler output.
 **The compilation is NOT MEASURED.** The SDP 8.0 and its non-commercial
 licence do not exist in this environment: the examples have never been
 compiled for QNX 8.0, and nothing in this repository pretends otherwise.
+
+**The day the licence arrives, one command:**
+
+```console
+$ bash scripts/qnx8-proof.sh
+```
+
+It loads the SDP environment itself (`qnxsdp-env.sh`, typically in
+`~/qnx800`), compiles the three examples with `qcc -Vgcc_ntox86_64 -Werror`,
+then **reads the ELF header of each binary** (`scripts/check_qnx_elf.py`): a
+64-bit x86_64 executable whose interpreter is the QNX loader, or it fails --
+a "qcc" that produces a Linux binary is caught.  When the QEMU image of the
+SDP is running (`mkqnximage --run=-h` in its folder) and `QNX_SSH_KEY` names
+the key given to `mkqnximage --ssh-ident`, it copies each example to the
+target, starts it, and checks that the resource manager attached its path
+(`/dev/qxprobe-demo`, `/var/run/qxprobe-status`, `/dev/qxprobe-official`).
+Without a target it says **NOT MEASURED** for the run; it never types a
+password and never simulates a run.
 
 ## Why this tool counts as QNX 8.0 evidence
 
