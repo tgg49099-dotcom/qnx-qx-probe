@@ -116,6 +116,17 @@ _Measured: 1190 characters (DevPost limit: 1 200)._
 ## 6. "Why we built it"
 
 <!-- DEBUT:WHY -->
+This entry is not a variant of our other entry in this hackathon, QX PORTMAP. The
+rules allow one entrant to submit several projects, but "each Submission must be
+unique and substantially different from each of the Entrant's other Submissions".
+QX-PROBE is a source checker: it reads the C source of a QNX 8.0 resource manager
+and reports the access gates and dispatch tables that the QNX 8.0 documentation
+requires (11 rules, RULES.md). QX PORTMAP is a documentation mapper: it reads the
+list of QNX symbols that a C or SDK source tree calls and answers, for each one,
+whether it is still documented in QNX 8.0, with the official page and the exact
+quotation. They read different inputs, produce different outputs, share no code,
+no rule and no document, and each one is a complete submission on its own.
+
 A QNX 8.0 resource manager is the part of a system that owns a device: the automotive ECU, the train controller, the medical ventilator. Its protocol is written in prose, and the mistakes that matter most are invisible to the compiler.
 
 Forget the access gate and a client reads what it must not. Block in the dispatch loop without dispatching and the client waits forever. Return more parts than the IOV holds and the reply is corrupted. In each case the code compiles, links, boots and passes review: iofunc_read_verify() is an ordinary function call that returns an int, so the compiler has nothing to say.
@@ -128,7 +139,7 @@ This is specific to QNX, and it is why QNX is the right place for such a check. 
 
 <!-- FIN:WHY -->
 
-_Measured: 1798 characters._
+_Measured: 2605 characters._
 
 ## 7. "How we built it"
 
