@@ -145,3 +145,31 @@ this host today is the login page itself, which was read again at 17:38 UTC
 (28 680 bytes, the form fields `userlogin`, `password` and the hidden
 `returnaddress`): the account that the download needs is still the only thing
 that is missing.
+
+## 9. Fourth measurement of the same day — 22:25 UTC, no change
+
+The measurement was replayed a fourth time on **17 November 2026 at 22:25 UTC**
+(the three first ones were at 14:41, 14:53 and 16:37 UTC), with the same
+command and from the same host:
+
+```
+bash scripts/mesurer-reseau-qnx.sh
+```
+
+| Host | Expected (16:37 UTC) | Obtained (22:25 UTC) | |
+|---|---|---|---|
+| `www.qnx.com` | HTTP 301 | HTTP 301 | unchanged |
+| `download.qnx.com` | TIMEOUT | TIMEOUT (TCP, 20 s) | unchanged |
+| `my.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `account.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `packages.qnx.com` | HTTP 301 | HTTP 301 | unchanged |
+| `qnx.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `update.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+
+The four extra hosts were measured again as well: `licensing.qnx.com` → 301,
+`support7.qnx.com` → 403, `fusion.qnx.com` → 404, `myqnx.com` → TLS
+certificate error (curl exit 60). The public GitHub API answered HTTP 200.
+
+**Nothing moved between 14:29 and 22:25 UTC.** The state of the network is
+therefore stable across four measurements of the same day, and it is still
+the myQNX account that is missing, not the network.
