@@ -115,6 +115,8 @@ main. Le corpus, la mesure et les cinq defauts de l'outil qu'il a exposes
 .gitignore                                   ce que git ignore (artefacts de build, caches Python)
 LICENSE                                      Apache-2.0, le texte integral
 NOTICE                                       attribution du code de tiers et avis IA
+PROGRESSION-FR.md                            le correspondant francais de PROGRESSION.md, mis a jour avec lui
+PROGRESSION.md                               la carte de ce depot, et le journal date de sa progression
 README.md                                    ce fichier
 RULES.md                                     chaque regle + sa source officielle QNX 8.0
 pyproject.toml                               empaquetage optionnel : `pip install .` donne la commande `qx-probe`
@@ -123,6 +125,8 @@ docs/AI-ASSISTED-RULES.md                    comment les onze regles ont ete ecr
 docs/BENCHMARK.fr.md                         le correspondant francais de docs/BENCHMARK.md, mis a jour avec lui
 docs/BENCHMARK.md                            le benchmark : QX-PROBE sur 17 vrais gestionnaires de ressources QNX
 docs/CODELAB.md                              le tutoriel pratique (30 minutes, aucun SDK requis)
+docs/MESURE-RESEAU-20261117.md               la mesure du reseau du 17 novembre 2026 : ce que repond chaque hote QNX depuis la machine qui construit ce depot
+docs/PREUVE-QNX8.md                          la preuve QNX 8.0, ligne par ligne : l'affirmation, la commande exacte, la sortie reelle, le fichier qui la porte
 docs/README.fr.md                            le correspondant francais de ce fichier, mis a jour avec lui : les parties qui n'ont pas ete retraduites decrivent encore la premiere version de l'outil
 docs/README.md                               ce que sont les fichiers de docs/
 docs/RULES.fr.md                             le correspondant francais de RULES.md, mis a jour avec lui
@@ -141,6 +145,8 @@ scripts/audit-sous-titres-pixels.py          prouve que les sous-titres publies 
 scripts/benchmark-corpus.py                  fait tourner la sonde sur un corpus fige de 17 vrais gestionnaires de ressources QNX
 scripts/build_qcc.sh                         compilation QNX 8.0 (necessite le SDP 8.0)
 scripts/check_qnx_elf.py                     lit l'en-tete ELF : un fichier construit est-il vraiment un executable QNX 8.0 ?
+scripts/install-sdp8.sh                      installe le SDP QNX 8.0 avec les commandes officielles du QNX Software Center, puis le prouve
+scripts/mesurer-reseau-qnx.sh                mesure ce que repond chaque hote QNX depuis cette machine : une ligne par hote, avec la commande exacte
 scripts/qnx8-proof.sh                        la preuve QNX 8.0 en une commande : compilation, controle ELF, sonde, execution sur une cible
 scripts/qnx8-target-run.sh                   lance les exemples sur une cible QNX 8.0 (image QEMU du SDP, ou carte) par ssh
 scripts/run_tests.sh                         lance la suite de tests

@@ -135,6 +135,8 @@ positives in five files — are in
 .gitignore                                   what git ignores (build artefacts, Python caches)
 LICENSE                                      Apache-2.0, the full text
 NOTICE                                       attribution of the third-party code and the AI notice
+PROGRESSION-FR.md                            the French counterpart of PROGRESSION.md, updated with it
+PROGRESSION.md                               the map of this repository, and the dated log of its progress
 README.md                                    this file
 RULES.md                                     each rule + its official QNX 8.0 source
 pyproject.toml                               optional packaging: `pip install .` gives the `qx-probe` command
@@ -144,6 +146,8 @@ docs/BENCHMARK.md                            the benchmark: QX-PROBE on 17 real 
 docs/BENCHMARK.fr.md                         the French counterpart of docs/BENCHMARK.md, updated with it
 docs/CI.md                                   JSON and SARIF output, and a GitHub Actions example
 docs/CODELAB.md                              the hands-on tutorial (30 minutes, no SDK needed)
+docs/MESURE-RESEAU-20261117.md               the network measurement of 17 November 2026: what every QNX host answers from the machine that builds this repository
+docs/PREUVE-QNX8.md                          the QNX 8.0 proof, line by line: the claim, the exact command, the real output, the file that carries it
 docs/README.fr.md                            the French counterpart of this file, updated with it: the parts that were not retranslated still describe the first version of the tool
 docs/README.md                               what the files under docs/ are
 docs/RULES.fr.md                             the French counterpart of RULES.md, updated with it: the same eleven rules, the same official QNX 8.0 sources
@@ -162,6 +166,8 @@ scripts/audit-sous-titres-pixels.py          proves that the published subtitles
 scripts/benchmark-corpus.py                  runs the linter on a pinned corpus of 17 real QNX resource managers
 scripts/build_qcc.sh                         QNX 8.0 build (requires the SDP 8.0)
 scripts/check_qnx_elf.py                     reads the ELF header: is a built file really a QNX 8.0 executable?
+scripts/install-sdp8.sh                      installs the QNX SDP 8.0 with the official QNX Software Center commands, then proves it
+scripts/mesurer-reseau-qnx.sh                measures what every QNX host answers from this host: one line per host, with the exact command
 scripts/qnx8-proof.sh                        the QNX 8.0 proof in one command: build, ELF check, linter, run on a target
 scripts/qnx8-target-run.sh                   runs the examples on a QNX 8.0 target (QEMU image of the SDP, or a board) over ssh
 scripts/run_tests.sh                         runs the test suite
