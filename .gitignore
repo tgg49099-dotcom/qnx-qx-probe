@@ -1,5 +1,6 @@
 # Artefacts de compilation
 build/
+proofs/
 *.o
 *.so
 *.elf
