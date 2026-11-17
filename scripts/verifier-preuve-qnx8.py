@@ -489,19 +489,38 @@ def render_capture(command: str, raw: str, title: str, out_path: pathlib.Path) -
                               % (len(lines) - 40)]
     probe = Image.new("RGB", (10, 10))
     d0 = ImageDraw.Draw(probe)
-    width = d0.textlength("$ " + command, font=font)
-    for line in lines:
-        width = max(width, d0.textlength(line, font=font))
     char_w = d0.textlength("M" * 100, font=font) / 100.0
+    max_px = 1770.0
+    # A line longer than the picture is wrapped, never cut: a judge must read
+    # the whole sentence, and the raw text stays embedded in the PNG.
+    wrapped = []
+    for line in lines:
+        if d0.textlength(line, font=font) <= max_px:
+            wrapped.append(line)
+            continue
+        n = max(40, int(max_px / char_w))
+        first = True
+        while line:
+            chunk, line = line[:n], line[n:]
+            wrapped.append(chunk if first else "     " + chunk)
+            first = False
+    foot = ("real output of the command above, captured by "
+            "scripts/verifier-preuve-qnx8.py --captures on %s"
+            % time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+    sha_line = ("sha256 of the raw output: " +
+                hashlib.sha256(raw.encode("utf-8")).hexdigest())
+    width = d0.textlength("$ " + command, font=font)
+    for line in wrapped + [foot, sha_line]:
+        width = max(width, d0.textlength(line, font=font))
     w = int(min(1800, max(900, width + 40)))
-    h = 70 + 26 * len(lines) + 56
+    h = 70 + 26 * len(wrapped) + 56
     img = Image.new("RGB", (w, h), (24, 26, 32))
     draw = ImageDraw.Draw(img)
     draw.rectangle([0, 0, w, 34], fill=(48, 52, 64))
     draw.text((12, 9), "QX-PROBE  -  " + title, font=bold, fill=(235, 235, 240))
     draw.text((12, 44), "$ " + command, font=bold, fill=(120, 220, 160))
     y = 70
-    for line in lines:
+    for line in wrapped:
         colour = (225, 228, 235)
         if line.startswith(("ERROR", "FAILED", "VERDICT", "RESULT")):
             colour = (255, 150, 120)
@@ -509,13 +528,8 @@ def render_capture(command: str, raw: str, title: str, out_path: pathlib.Path) -
             colour = (245, 215, 120)
         draw.text((12, y), line, font=font, fill=colour)
         y += 26
-    foot = ("real output of the command above, captured by "
-            "scripts/verifier-preuve-qnx8.py --captures on %s"
-            % time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     draw.text((12, y + 8), foot, font=font, fill=(150, 155, 165))
-    draw.text((12, y + 30), "sha256 of the raw output: " +
-              hashlib.sha256(raw.encode("utf-8")).hexdigest(),
-              font=font, fill=(150, 155, 165))
+    draw.text((12, y + 30), sha_line, font=font, fill=(150, 155, 165))
     info = PngInfo()
     info.add_itxt("QX-PROBE", raw, lang="en")
     img.save(out_path, "PNG", pnginfo=info)

@@ -110,9 +110,9 @@ picture shows what the command really prints.
 
 | ID | the image | the command that produced it | the sha256 of the image | what it shows |
 |---|---|---|---|---|
-| C01 | media/qx-proof-1-corpus-reel.png | python3 -I scripts/benchmark-corpus.py | 3fd93903aae8f671bf529d04c2221cd3f387fcccdc4638e503057357730cb54f | the linter on 17 real QNX resource managers, one real defect found |
-| C02 | media/qx-proof-2-exemple-officiel.png | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | aa07c1bc669965a483ce51c569ea0eebdc6c90d946721d31c4b856bca5b386be | the official example of the QNX 8.0 documentation: 0 ERROR, 0 WARN |
-| C03 | media/qx-proof-3-sdp-absent.png | bash scripts/qnx8-proof.sh | bf05cf00e2025316047e263bbf1cd5cd21cfd8a5a61d920b7b5460fcbf30fe71 | the QNX 8.0 proof script: the SDP is absent, and it says so instead of faking it |
+| C01 | media/qx-proof-1-corpus-reel.png | python3 -I scripts/benchmark-corpus.py | 697e70ad1033c3dca9b96b059c1be38fa3cc5b36448821d8e5b80c89de8fb888 | the linter on 17 real QNX resource managers, one real defect found |
+| C02 | media/qx-proof-2-exemple-officiel.png | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | 2ff69e0aaa73cede483a9e360938adc8d7f46df11b74e528c29de7a6ea325320 | the official example of the QNX 8.0 documentation: 0 ERROR, 0 WARN |
+| C03 | media/qx-proof-3-sdp-absent.png | bash scripts/qnx8-proof.sh | 1423540ceeb10a0b9e9eb1852d22bce824f4b54ad584521cb66c57ef942b0fc0 | the QNX 8.0 proof script: the SDP is absent, and it says so instead of faking it |
 
 ## The two sentences the submission form needs
 

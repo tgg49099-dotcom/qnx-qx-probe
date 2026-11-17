@@ -108,6 +108,7 @@ FAKEQCC
   export FAKE_QCC_LOG="$TMP/qcc.log"
   : > "$FAKE_QCC_LOG"
   PATH="$TMP/bin:$PATH" QNX_SDP="$TMP/sdp" SELF_TEST_OUT="$TMP/out" \
+    QX_PROOF_FAKE_COMPILER=1 \
     bash "$ROOT/scripts/qnx8-proof.sh" --out "$TMP/out" --target "$TARGET"
   rc=$?
   echo
@@ -154,6 +155,11 @@ echo "date       : $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 echo "repository : $ROOT"
 echo "target     : $TARGET (qcc variant $VARIANT)"
 echo
+if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
+  echo "*** SELF-TEST RUN: the compiler used here is a FAKE qcc. ***"
+  echo "*** NOTHING BELOW IS A QNX 8.0 COMPILATION. ***"
+  echo
+fi
 
 SDP_CANDIDATES="${QNX_SDP:-} ${QNX_HOST:-} /opt/qnx800"
 QCC_PATH=$(command -v qcc 2>/dev/null || true)
@@ -268,6 +274,12 @@ fi
 echo
 echo "======================================================================"
 if [ "$rc_build" -eq 0 ] && [ "$rc_lint" -eq 0 ]; then
+  if [ "${QX_PROOF_FAKE_COMPILER:-}" = "1" ]; then
+    echo "VERDICT (SELF-TEST, FAKE COMPILER): the SDP path issues the right commands"
+    echo "         and the linter runs on them.  THIS IS NOT A QNX 8.0 COMPILATION."
+    echo "         the output is in $DIR"
+    exit 0
+  fi
   echo "VERDICT: THE EXAMPLES BUILD FOR QNX 8.0 ($VARIANT) AND THE LINTER RUNS ON THEM"
   echo "         the real output is in $DIR"
   exit 0
