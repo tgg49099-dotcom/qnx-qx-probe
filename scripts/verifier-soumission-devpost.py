@@ -17,8 +17,10 @@ Checks:
   C. CODELAB - the codelab URL is present, answers HTTP 200 without
       authentication, and the raw file has the md5 of the local one.
   D. NO FALSE PUBLICATION - the YouTube placeholder is present exactly once,
-      or a YouTube URL is present and answers HTTP 200; the text never claims
-      that the video is already online.
+      or a YouTube URL is present, really exists (the oEmbed endpoint of
+      YouTube answers 404 for a video that does not exist, and 200 with the
+      title for one that does) and is the QX-PROBE video; the text never
+      claims that the video is already online.
   E. NO LEGACY DRAFT - a file named `SOUMISSION-DEVPOST.md` next to the
       repository, if there is one, must announce `docs/SUBMISSION-EN.md`.
 
@@ -35,10 +37,13 @@ Usage:
 from __future__ import annotations
 
 import hashlib
+import json
 import pathlib
 import re
 import sys
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
@@ -72,10 +77,44 @@ def nombre(txt: str) -> int:
 
 
 def http_get(url: str) -> tuple[int, bytes]:
-    """One GET, no retry.  Returns (status, body)."""
+    """One GET, with at most two retries on a transient server error.
+
+    A single HTTP 503 from github.com (measured twice on 17 November 2026,
+    while the same URL answered 200 a minute later) turned a check into
+    "NOT CHECKED" for no reason: the server was busy, not absent.  Only
+    5xx and 429 are retried; a 404 or a 403 is an answer and is never
+    retried.  If the last attempt still fails, the error is raised and the
+    check honestly reports that it could not be performed.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.getcode(), resp.read()
+    last = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return resp.getcode(), resp.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (429, 500, 502, 503, 504) or attempt == 2:
+                raise
+            last = exc
+            time.sleep(2 * (attempt + 1))
+    raise last if last else RuntimeError("unreachable")
+
+
+def http_get_code(url: str) -> tuple[int, bytes]:
+    """One GET, and the status code is returned even for 404.
+
+    The watch page of a video that does not exist answers HTTP 200 (YouTube
+    serves a page saying "Video unavailable"), so HTTP 200 alone cannot
+    prove that a video is really online.  The oEmbed endpoint answers 404
+    for a video that does not exist, and 200 with the title for one that
+    does: that is the endpoint used here.
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return resp.getcode(), resp.read()
+    except urllib.error.HTTPError as exc:
+        return exc.code, exc.read()
 
 
 def main() -> int:
@@ -172,16 +211,47 @@ def main() -> int:
             ok = False
         else:
             print(f"  [OK ] a YouTube URL is written ({len(urls)} found)")
+            oembed = ("https://www.youtube.com/oembed?url=" +
+                      urllib.parse.quote(urls[0], safe="") + "&format=json")
             try:
-                code, _ = http_get(urls[0])
+                code, body = http_get_code(oembed)
             except (urllib.error.URLError, OSError) as exc:
                 not_checked = True
-                print(f"  [NOT CHECKED] {urls[0]} : {exc}")
+                print(f"  [NOT CHECKED] {oembed} : {exc}")
             else:
-                if code != 200:
+                if code in (400, 404):
                     ok = False
-                print(f"  [{'OK ' if code == 200 else 'KO '}] HTTP {code} - "
-                      f"the published video answers")
+                    print(f"  [KO ] HTTP {code} - this video does not exist "
+                          f"on YouTube (the oEmbed endpoint is the one that "
+                          f"says so; the watch page answers 200 even for a "
+                          f"video that does not exist)")
+                elif code in (401, 403):
+                    ok = False
+                    print(f"  [KO ] HTTP {code} - this video is not public "
+                          f"(the oEmbed endpoint refuses it without an "
+                          f"account)")
+                elif code != 200:
+                    not_checked = True
+                    print(f"  [NOT CHECKED] HTTP {code} - the oEmbed endpoint "
+                          f"answered something unexpected")
+                else:
+                    try:
+                        data = json.loads(body.decode("utf-8"))
+                    except (ValueError, UnicodeDecodeError) as exc:
+                        not_checked = True
+                        print(f"  [NOT CHECKED] the oEmbed answer is not JSON : {exc}")
+                    else:
+                        titre = str(data.get("title", ""))
+                        auteur = str(data.get("author_name", ""))
+                        if "QX-PROBE" not in titre:
+                            ok = False
+                            print(f"  [KO ] the video exists but its title is "
+                                  f"'{titre}' - it is not the QX-PROBE video")
+                        else:
+                            print(f"  [OK ] the video exists on YouTube and is "
+                                  f"the QX-PROBE video")
+                            print(f"         title  : {titre}")
+                            print(f"         author : {auteur}")
     else:
         print(f"  [KO ] the YouTube placeholder is present {n_placeholder} "
               f"times (expected 1)")

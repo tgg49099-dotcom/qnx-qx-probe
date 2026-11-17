@@ -6,6 +6,26 @@ holds everything needed to do that: the exact title, the exact description, the
 exact file, the thumbnail, the five gestures, and the two places where the link
 goes. Nothing else is required, and nothing has to be written from scratch.
 
+## 0. Status — the video is online (17 November 2026)
+
+The demonstration video is **published and public**:
+
+```
+https://youtu.be/KV9WrWV5h7k
+```
+
+(the canonical form of that link is `https://www.youtube.com/watch?v=KV9WrWV5h7k`).
+
+Verified on **17 November 2026**, without any account: the watch page answers
+**HTTP 200**, the oEmbed endpoint of YouTube answers **HTTP 200** with the
+exact title of § 1 and the channel **Tgg Labs**, and the thumbnail that
+YouTube serves for that video is the thumbnail of § 4 (the two match on
+91.1 % of the pixels within 24/255 once both are scaled to 480x270).
+
+**Do not upload it a second time.** § 1 to § 5 below are kept as the record
+of what was done; they are not a pending task any more. What remains is to
+paste the URL in the video field of the DevPost form (§ 6).
+
 ## 1. Title — paste exactly this (48 characters)
 
 ```
@@ -91,15 +111,13 @@ window). The page must play the video without asking for an account.
 
 1. **The DevPost form** — the field that asks for the demonstration video
    (the rules: *"a link to the video must be provided on the submission form"*).
-2. **The repository** — `docs/SUBMISSION-EN.md`, block `LIENS`: replace the
-   line
+2. **The repository** — `docs/SUBMISSION-EN.md`, block `LIENS`: the line
 
    ```
-   <YOUTUBE_URL_A_COLLER_apres_le_televersement>
+   https://youtu.be/KV9WrWV5h7k
    ```
 
-   with the YouTube URL. Send me the URL and I will do that commit myself;
-   or paste it in and commit, it is one line.
+   now carries the YouTube URL (it was a placeholder before the upload).
 
 Both links are checked by the verification script: every URL of
 `docs/SUBMISSION-EN.md` must answer HTTP 200, the placeholder excepted.

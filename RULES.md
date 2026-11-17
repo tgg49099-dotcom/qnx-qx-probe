@@ -469,9 +469,12 @@ Website".
 *How the video answers it:* the video is in **English** (the rules require
 English for every submitted material) and has **no audio track at all** — no
 music, no voice-over. The binary file is already in the public repository.
-What remains is **one single action by the owner**: upload it to YouTube as
-a public video, then paste that URL into the video field of the form. No
-account has been created and no video has been published by the automation.
+The video **is** on YouTube: `https://youtu.be/KV9WrWV5h7k`, public, and
+checked in HTTP 200 without any account on **17 November 2026** (the canonical
+form of that link is `https://www.youtube.com/watch?v=KV9WrWV5h7k`). What
+remains for the owner is **one single gesture**: paste that URL into the video
+field of the form. No account has been created by the automation and no video
+has been published by the automation.
 
 **4. Trademarks and copyright** — "must not include third party trademarks, or
 copyrighted music or other material unless the Entrant has permission to use

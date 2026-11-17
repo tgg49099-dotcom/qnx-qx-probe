@@ -384,8 +384,9 @@ Codelab / tutorial (30 minutes, no SDK, no board, no licence):
 Demonstration video (89.72 s, English subtitles burned in, under the
 three-minute limit of the rules):
   - YouTube: the rules require the video to be uploaded there and made
-    publicly visible. PASTE THE URL OF THE UPLOAD HERE:
-    <YOUTUBE_URL_A_COLLER_apres_le_televersement>
+    publicly visible; the public URL of the upload is:
+    https://youtu.be/KV9WrWV5h7k
+    (canonical form: https://www.youtube.com/watch?v=KV9WrWV5h7k)
   - the same file, already in this repository:
     https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/media/qx-demo-v3.mp4
   - direct download:
@@ -398,18 +399,30 @@ Origin of the reference example:
   https://gitlab.com/qnx/projects/shim-demo
 <!-- FIN:LIENS -->
 
-_Measured: 1445 characters._
+_Measured: 1493 characters._
 
 **The video field.** The rules require the demonstration video to be *"uploaded
 to and made publicly visible on YouTube"* with *"a link to the video ... provided
-on the submission form"*. The file is ready and verified — 1 417 251 bytes,
-MP4 / H.264, 1920x1080, 25 fps, **89.72 s** (the limit is three minutes), **no
-audio track at all** and every sentence **burned into the picture** as an
-English subtitle — it is already in the public repository, downloadable from
-the URL above. What remains is to upload it to YouTube as a public video and
-paste that YouTube URL in the video field of the form. The video is **in
-English**, as the rules require, and every command it shows is a command of
-the repository, so the judge can replay them as they are.
+on the submission form"*. It is done: the video is on YouTube at
+**https://youtu.be/KV9WrWV5h7k** (canonical form
+`https://www.youtube.com/watch?v=KV9WrWV5h7k`), the public page answers
+HTTP 200 without any account, and the oEmbed endpoint of YouTube answers
+HTTP 200 with the title *"QX-PROBE: a linter for QNX 8.0 resource managers"*
+and the author *"Tgg Labs"* — both checks are part of
+`scripts/verifier-soumission-devpost.py`, and a video that did not exist
+would be refused by them. The file itself is verified —
+1 417 251 bytes, MP4 / H.264, 1920x1080, 25 fps, **89.72 s** (the limit is
+three minutes), **no audio track at all** and every sentence **burned into the
+picture** as an English subtitle — and it is also in the public repository,
+downloadable from the URL above. What the video shows is the **captured
+version** of the tool: the host tool reading real QNX 8.0 resource managers,
+the unit test suite, the SARIF 2.1.0 output and the benchmark on 17 real
+resource managers, replayed on screen. It does **not** show a compilation made
+with the QNX 8.0 SDP: that compilation is **NOT MEASURED** (the SDP is not
+installed in the container that built this repository), and neither the video
+nor this text pretends otherwise. The video is **in English**, as the rules
+require, and every command it shows is a command of the repository, so the
+judge can replay them as they are.
 
 **The codelab field.** The rules ask, for the "Best Codelab/Tutorial" bonus,
 for *"the URL of a codelab or tutorial authored during the Submission Period
@@ -455,7 +468,7 @@ _Measured: 709 characters._
 | Category | **Developer Tooling & Host Tools** (one category only). |
 | New or existing project? | **New.** The project was created during the submission period (2 November – 15 December 2026). |
 | Try it out (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe` |
-| Demonstration video (URL) | The **YouTube** URL, once uploaded as a public video. The file is already in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4` (89.72 s, MP4 / H.264, 1920x1080, 25 fps, no audio, English subtitles burned in). |
+| Demonstration video (URL) | `https://youtu.be/KV9WrWV5h7k` — the video is on YouTube and the public page answers HTTP 200 (canonical form: `https://www.youtube.com/watch?v=KV9WrWV5h7k`). The same file is also in the repository: `https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/qx-demo-v3.mp4` (89.72 s, MP4 / H.264, 1920x1080, 25 fps, no audio, English subtitles burned in). |
 | Codelab / tutorial (URL) | `https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md` |
 | Licence | Apache-2.0, the full text in `LICENSE` at the root of the repository, visible in the "About" section of the repository page. |
 | Attribution | `examples/blackberry_eventfd_mgr.c` and `examples/sys/eventfd.h` come from BlackBerry Limited's public `shim-demo` repository, under Apache-2.0, *Copyright (c) 2025, BlackBerry Limited*. They are redistributed **without any modification**, with the full licence header kept at the top of each file. The notice is in `NOTICE`. The example is used as the reference corpus: it is resource-manager code published by the vendor itself, and the linter must report it without a false positive. |

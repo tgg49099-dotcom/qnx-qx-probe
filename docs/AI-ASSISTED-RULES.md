@@ -606,17 +606,21 @@ declares in `RULES.md` (each rule has its own "Known limit" section there).
   rule disagreed, **the rule gave way** — seven times — and each correction is
   now covered by a test that failed before it.
 * **The AI did not publish anything.** No account was created, no submission
-  was made, no video was uploaded. The owner decides and does.
+  was made, no video was uploaded by it. The owner decides and does — and on
+  17 November 2026 the owner published the video.
 * **The AI did not write the facts of this file from memory.** Every commit
   name, file name, test name, quotation and figure here was re-read against
   the files of this repository, and the quotations of the official pages were
   re-read against the live pages on **12/11/2026** (`scripts/verifier-citations.py`,
   14 pages read, 36 quotations found, exit code 0).
 
-**What is still open:** the demonstration video has to be uploaded to YouTube
-as a public video by the owner, and the submission form has to be filled in
-under the owner's DevPost account. Those two actions are outside the reach of
-the automation, by the rules of the contest and by the decision of the owner.
+**What is still open:** the demonstration video has been uploaded to YouTube
+as a public video by the owner on **17 November 2026**
+(`https://youtu.be/KV9WrWV5h7k`, the public page answers HTTP 200 without any
+account), and what remains is to paste that URL into the video field of the
+submission form, under the owner's DevPost account. That last action is
+outside the reach of the automation, by the rules of the contest and by the
+decision of the owner.
 
 ---
 

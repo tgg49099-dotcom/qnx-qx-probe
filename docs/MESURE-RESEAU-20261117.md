@@ -115,3 +115,33 @@ connection never starts.
   <https://www.qnx.com/download/group.html?programid=29178>
 * Free non-commercial licence (QNX Everywhere):
   <https://www.qnx.com/products/everywhere/>
+
+## 8. Third measurement of the same day — 16:37 UTC, no change
+
+The measurement was replayed a third time on **17 November 2026 at 16:37 UTC**
+(the two first ones were at 14:41 and 14:53 UTC), with the same command and
+from the same host:
+
+```
+bash scripts/mesurer-reseau-qnx.sh
+```
+
+| Host | Expected (14:29 UTC) | Obtained (16:37 UTC) | |
+|---|---|---|---|
+| `www.qnx.com` | HTTP 301 | HTTP 301 | unchanged |
+| `download.qnx.com` | TIMEOUT | TIMEOUT (TCP, 20 s) | unchanged |
+| `my.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `account.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `packages.qnx.com` | HTTP 301 | HTTP 301 | unchanged |
+| `qnx.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+| `update.qnx.com` | NO DNS NAME | NO DNS NAME | unchanged |
+
+The four extra hosts were measured again as well: `licensing.qnx.com` → 301,
+`support7.qnx.com` → 403, `fusion.qnx.com` → 404, `myqnx.com` → TLS
+certificate error (curl exit 60). The public GitHub API answered HTTP 200.
+
+**Nothing moved between 14:29 and 16:37 UTC.** The only thing that changed on
+this host today is the login page itself, which was read again at 17:38 UTC
+(28 680 bytes, the form fields `userlogin`, `password` and the hidden
+`returnaddress`): the account that the download needs is still the only thing
+that is missing.

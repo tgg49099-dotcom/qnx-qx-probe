@@ -6,64 +6,93 @@
 #
 #   The judge asks for a project that "genuinely builds for or runs on
 #   QNX 8.0".  scripts/qnx8-proof.sh is the command that proves it on the
-#   day the SDP is installed.  This script is the other half: it INSTALLS
-#   the SDP, with the commands of the official QNX Software Center, and it
-#   then calls the proof script and propagates its exit code.
+#   day the SDP is installed.  This script is the other half: it obtains
+#   the QNX Software Center client with a myQNX session, installs the SDP
+#   with the commands of the official QNX Software Center, and then calls
+#   the proof script and propagates its exit code.
 #
-#   It never creates an account, never downloads anything behind an account
-#   it does not have, and never simulates a compilation.  When a piece is
-#   missing, it says which one and stops with a non-zero exit code.
+#   It never creates an account, never simulates a compilation, and never
+#   writes a secret in this repository, in a log, or in a report.  When a
+#   piece is missing, it says which one and stops with a non-zero exit
+#   code, BEFORE any network call.
 #
-# THE OFFICIAL COMMANDS, AND WHERE EACH ONE COMES FROM
+# THE SIX STEPS, IN THIS ORDER
 #
-#   (a) extraction of the QNX Software Center client
-#       ./qnx-setup-<version>-linux.run --tar xvf -C qnx
-#       source: the public procedure "Install QNX SDP 8.0 on WSL",
-#               https://github.com/Maetis/qnx-sdp-projects/blob/main/docs/wsl-install.md
-#               (read on 17 November 2026).  The same page says the file
-#               cannot be fetched with cURL: the download needs a browser
-#               and a myQNX account.
+#   (a) the refusal: if MYQNX_USER or MYQNX_PASSWORD is missing, the
+#       script stops, names the variable, and sends NO request at all.
 #
-#   (b) the licence key
-#       qnxsoftwarecenter_clt -addLicenseKey <key>
-#       source: "Using the QNX Software Center Command Line",
-#               https://www.qnx.com/developers/docs/qsc/com.qnx.doc.qsc.user_guide/topic/commandline_qsc.html
-#               (read on 17 November 2026).
+#   (b) the session: a cookie jar in /dev/shm, a POST to
+#       https://www.qnx.com/account/login.html with "userlogin",
+#       "password" and "returnaddress", then the GET of the installer
+#       with the SAME jar (expect 200 and about 99.85 MB), then the MD5
+#       control.
 #
-#   (c) the mirror of the package metadata
-#       qnxsoftwarecenter_clt -myqnx.user <user> -myqnx.password <pass> -mirrorBaseline qnx800
-#       source: the same official page (option -mirrorBaseline, and the
-#               "-myqnx.user / -myqnx.password are required for any remote
-#               operation" rule), and the same WSL procedure.
+#   (c) the extraction of the client:
+#       ./qnx-setup-2.0.4-202501021438-linux.run --tar xvf -C qnx
 #
-#   (d) the installation of the baseline
-#       qnxsoftwarecenter_clt -myqnx.user <user> -myqnx.password <pass> \
-#           -installBaseline com.qnx.qnx800 -destination <dir> -cleanInstall
-#       source: the same official page (option -installBaseline), and the
-#               same WSL procedure.
+#   (d) the options file (one argument per line) with -myqnx.user and
+#       -myqnx.password, then, all of them with "@<file>":
+#         -syncLicenseKeys   retrieve the licence keys of the account
+#         -activateAll       activate the keys that need it
+#         -mirror            mirror the package metadata (ONCE)
+#         -installBaseline com.qnx.qnx800 -destination <dir> -cleanInstall
 #
-#   (e) the environment, the compiler, and the proof
+#   (e) the environment, the compiler, and the proof:
 #       source <dir>/qnxsdp-env.sh ; qcc -V ; bash scripts/qnx8-proof.sh
-#       source: qnxsdp-env.sh is the environment script of the SDP install
-#               folder (the official install folder is typically ~/qnx800);
-#               scripts/qnx8-proof.sh is the demonstration of this
-#               repository.
 #
-# WHERE THE SECRETS COME FROM
+#   (f) the hygiene: the options file is deleted, the trace of the
+#       password in the log of the QNX Software Center is purged, and the
+#       control "zero occurrence of the password in $HOME and /work" is
+#       printed.  This step runs even when a step above failed.
 #
-#   The licence key and the myQNX password are read from the ENVIRONMENT
-#   and nowhere else.  They are never written in this file, in this
-#   repository, in a log of this script, or in a report.  The script does
-#   not use "set -x", so the commands it runs are never echoed.
+# THE OFFICIAL OPTIONS, AND WHERE EACH ONE COMES FROM
 #
-#   The official page warns that "-myqnx.password" saves the password as
-#   cleartext in the log file of the QNX Software Center.  To keep it out
-#   of that log, the script accepts an options file:
+#   Source of every option below (read on 17 November 2026):
 #
-#       export QNX_QSC_OPTIONS_FILE=/path/to/options.txt
+#     "Using the QNX Software Center Command Line",
+#     https://www.qnx.com/developers/docs/qsc/com.qnx.doc.qsc.user_guide/topic/commandline_qsc.html
 #
-#   one argument per line, as the official page describes, and the script
-#   then passes "@<file>" instead of the password on the command line.
+#   @options_file
+#       "Read command-line arguments from the specified file. The file
+#        must contain one argument per line."
+#
+#   -myqnx.user / -myqnx.password
+#       "Your myQNX username." / "Your myQNX password."
+#       "When you use this option, the QNX Software Center saves your
+#        password as cleartext in its log file."  The same page says to
+#        pass the option "through an options file (see @options_file)
+#        rather than on the command line": that is why step (d) writes
+#        an options file in /dev/shm and deletes it in step (f).
+#
+#   -syncLicenseKeys
+#       "Retrieve registered license keys from the user's myQNX account."
+#
+#   -activateAll
+#       "Activate all license keys that require remote activation."
+#
+#   -mirror
+#       "Mirror package metadata from the remote myQNX server into the
+#        local cache."  The same page: "Use this option at least once
+#        before performing any remote operations such as -list or
+#        -installPackage", and "If you are writing installation scripts,
+#        avoid invoking -mirror multiple times as it can reduce
+#        performance significantly."  This script therefore runs it ONCE.
+#
+#   -installBaseline package_id[/package_version]
+#       "Add a new installation and initialize it with the specified
+#        baseline package or patch set."
+#   -destination path
+#       "Perform operations on the installation located in the specified
+#        path".
+#   -cleanInstall
+#       "Remove the active baseline installation, if one exists."
+#
+#   NOT used, and why: "-mirrorBaseline" has no entry of its own in the
+#   options list of that page; it appears only inside the example of the
+#   option -unmanaged.  The command of the mirror of the metadata is
+#   "-mirror".  An earlier version of this script used "-mirrorBaseline
+#   qnx800" as if it were "-mirror"; it was wrong, and it was removed on
+#   17 November 2026.
 #
 # THE FILE TO DOWNLOAD
 #
@@ -74,22 +103,45 @@
 #   Page:  https://www.qnx.com/download/group.html?programid=29178
 #   Link:  https://www.qnx.com/download/download/79441/qnx-setup-2.0.4-202501021438-linux.run
 #
-#   The download needs a myQNX account: the link answers 302 and lands on
-#   www.qnx.com/account/login.html.  This script never tries to log in.
+#   Measured on 17 November 2026, from the container that built this
+#   repository (4 redirections, no session):
+#
+#     https://www.qnx.com/download/download/79441/qnx-setup-2.0.4-202501021438-linux.run
+#       302 -> https://support7.qnx.com/download/download/79441/qnx-setup-2.0.4-202501021438-linux.run
+#       302 -> https://www.qnx.com/account/authenticate.html?id=79441&redirect=https://support7.qnx.com%2Fdownload%2Fdownload%2F79441%2Fqnx-setup-2.0.4-202501021438-linux.run
+#       301 -> https://www.qnx.com/account/login.html?returnaddress=...
+#       200 -> the login page (28 680 bytes)
+#
+#   So the real host of the binary is support7.qnx.com, and the download
+#   needs a myQNX session.  The official MD5 of the file, published by
+#   the Direction on 17 November 2026, is
+#   bca161a97ab3e14189cf8e7c8227fb7d: if the MD5 of the downloaded file
+#   is different, this script STOPS, decompresses nothing, and says so.
+#
+# WHERE THE SECRETS COME FROM
+#
+#   The myQNX password is read from the ENVIRONMENT and nowhere else.
+#   It is never written in this file, in this repository, in a log of this
+#   script, or in a report.  The script does not use "set -x", the
+#   password is never put on a command line (it is read from a file of
+#   /dev/shm by curl, and from the options file by the client), and the
+#   options file, the cookie jar and that file are deleted at the end.
 #
 # ENVIRONMENT VARIABLES
 #
 #   MYQNX_USER        myQNX account name (the official documentation asks
-#                     for it in lower case).
-#   MYQNX_PASSWORD   myQNX account password.
-#   QNX_LICENSE_KEY  the free non-commercial SDP 8.0 licence key.
-#   QNX_SDP_RUN      path to qnx-setup-<version>-linux.run.
-#                     Default: ./qnx-setup-2.0.4-202501021438-linux.run
-#   QNX_WORKDIR      where the client is unpacked.        Default: $HOME/qnx
-#   SDP_DEST         where the SDP is installed.          Default: $HOME/qnx800
+#                     for it in lower case).        REQUIRED.
+#   MYQNX_PASSWORD    myQNX account password.        REQUIRED.
+#   QNX_LICENSE_KEY   the free non-commercial SDP 8.0 licence key.
+#                     OPTIONAL: without it, the licence keys are taken
+#                     from the myQNX account (-syncLicenseKeys).
+#   QNX_SDP_RUN       path of the installer.  Default: the file in the
+#                     current directory, then ./qnx-setup-2.0.4-202501021438-linux.run
+#                     If the file is absent, step (b) downloads it.
+#   QNX_WORKDIR       where the client is unpacked.     Default: $HOME/qnx
+#   SDP_DEST          where the SDP is installed.       Default: $HOME/qnx800
 #                     (scripts/qnx8-proof.sh looks for the SDP in $QNX_SDP,
 #                     $HOME/qnx800 and /opt/qnx800)
-#   QNX_QSC_OPTIONS_FILE  optional options file for the Software Center.
 #
 # USAGE
 #
@@ -103,24 +155,40 @@
 #   1  the proof ran and really failed.
 #   2  the proof ran and the SDP is still absent or incomplete (this is the
 #      exit code of scripts/qnx8-proof.sh, propagated as it is).
-#   3  a piece is missing (a variable, the installer file, the disk space):
-#      NOTHING WAS INSTALLED, and the script says which piece.
+#   3  a piece is missing (a variable, the disk space): NOTHING WAS
+#      INSTALLED, NO REQUEST WAS SENT, and the script says which piece.
 #   4  a command of the QNX Software Center failed: the installation did
 #      not complete.
 #   5  the network is not usable: the myQNX server does not answer.
+#   6  the hygiene control failed: the password is still somewhere in
+#      $HOME or in /work.
 set -u
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 3
 cd "$ROOT" || exit 3
 
-QNX_SDP_RUN="${QNX_SDP_RUN:-$ROOT/qnx-setup-2.0.4-202501021438-linux.run}"
+QNX_SDP_VERSION="2.0.4-202501021438"
+QNX_SDP_RUN_NAME="qnx-setup-${QNX_SDP_VERSION}-linux.run"
 QNX_WORKDIR="${QNX_WORKDIR:-$HOME/qnx}"
 SDP_DEST="${SDP_DEST:-$HOME/qnx800}"
-QSC="$QNX_WORKDIR/qnxsoftwarecenter/qnxsoftwarecenter_clt"
-QNX_SDP_VERSION="2.0.4-202501021438"
 MIN_FREE_MB=8192   # the SDP is about 4-5 GB; we ask for 8 GB to be safe
 
+# The official MD5 of the installer, published by the Direction on
+# 17 November 2026 (99.85 MB).
+MD5_OFFICIAL="bca161a97ab3e14189cf8e7c8227fb7d"
+TAILLE_ATTENDUE=104_674_000    # 99.85 MB, with a margin of a few %
+
+# The official download chain, measured on 17 November 2026.
+RUN_URL_QNX="https://www.qnx.com/download/download/79441/${QNX_SDP_RUN_NAME}"
+RUN_URL_SUPPORT7="https://support7.qnx.com/download/download/79441/${QNX_SDP_RUN_NAME}"
+LOGIN_URL="https://www.qnx.com/account/login.html"
+
 CHECK_ONLY=0
+REQUESTS=0            # how many HTTP requests this script sent
+SECRET_LEAK=0         # set by the hygiene control
+JAR=""                # cookie jar, in /dev/shm
+OPTFILE=""            # options file, in /dev/shm
+PWFILE=""             # file holding the password for curl, in /dev/shm
 
 say() { printf '%s\n' "$*"; }
 hdr() { printf '\n== %s\n' "$*"; }
@@ -139,15 +207,108 @@ while [ $# -gt 0 ]; do
 done
 
 # --------------------------------------------------------------------------
-# 1. The pieces that must be present BEFORE anything is done.
+# 0. The hygiene control, run whatever happens (trap EXIT).
+# --------------------------------------------------------------------------
+#
+# Step (f): the options file is deleted, the trace of the password in the
+# log of the QNX Software Center is purged, and the control "the password
+# appears zero times in $HOME and in /work" is printed.
+
+purger_trace() {
+    # The password is read from the environment by python3, never from the
+    # command line (it would be visible in ps).
+    QNX_WORKDIR="$QNX_WORKDIR" python3 -I - <<'PY' 2>/dev/null
+import os, pathlib, sys
+pw = os.environ.get("MYQNX_PASSWORD", "")
+if not pw:
+    sys.exit(0)
+racines = [pathlib.Path.home() / ".qnx",
+           pathlib.Path.home() / ".config" / "QNX",
+           pathlib.Path(os.environ.get("QNX_WORKDIR", str(pathlib.Path.home() / "qnx")))]
+n = 0
+for racine in racines:
+    if not racine.exists():
+        continue
+    for p in racine.rglob("*"):
+        if not p.is_file() or p.stat().st_size > 64 * 1024 * 1024:
+            continue
+        try:
+            data = p.read_bytes()
+        except OSError:
+            continue
+        if pw.encode() in data:
+            p.write_bytes(data.replace(pw.encode(), b"***REDACTED***"))
+            n += 1
+print("fichiers purges : %d" % n)
+PY
+}
+
+controle_occurrence() {
+    # The final control of the instructions: the password must appear
+    # ZERO time in the home directory and in /work.
+    #
+    # A password shorter than 6 characters cannot be searched globally:
+    # it would match almost every text file.  In that case only the
+    # targeted control (the places this script writes to) is done, and it
+    # is said so.
+    lon=${#MYQNX_PASSWORD}
+    if [ "$lon" -lt 6 ]; then
+        say ""
+        say "CONTROLE CIBLE (le mot de passe fait $lon caracteres : une recherche"
+        say "globale donnerait un resultat sans signification) :"
+        cibles="$HOME/.qnx $QNX_WORKDIR $SDP_DEST /dev/shm"
+        fichiers=$(grep -RIl -F -- "$MYQNX_PASSWORD" $cibles 2>/dev/null)
+        if [ -n "$fichiers" ]; then
+            say "  ECHEC - occurrences dans :"
+            printf '%s\n' "$fichiers" | sed 's/^/      /'
+            SECRET_LEAK=1
+        else
+            say "  aucune occurrence dans $cibles"
+        fi
+        return 0
+    fi
+    fichiers=$(grep -RIl -F -- "$MYQNX_PASSWORD" "$HOME" /work 2>/dev/null)
+    if [ -n "$fichiers" ]; then
+        say ""
+        say "CONTROLE FINAL : ECHEC - le mot de passe apparait encore dans :"
+        printf '%s\n' "$fichiers" | sed 's/^/    /'
+        SECRET_LEAK=1
+    else
+        say "CONTROLE FINAL : le mot de passe apparait 0 fois dans $HOME et dans /work."
+    fi
+    return 0
+}
+
+cleanup() {
+    rc=$?
+    [ -n "$OPTFILE" ] && rm -f "$OPTFILE"
+    [ -n "$PWFILE" ] && rm -f "$PWFILE"
+    [ -n "$JAR" ] && rm -f "$JAR"
+    if [ -n "${MYQNX_PASSWORD:-}" ]; then
+        hdr "(f) hygiene: the trace of the password is purged, the files are deleted"
+        purger_trace
+        controle_occurrence
+    fi
+    if [ "$SECRET_LEAK" -eq 1 ]; then
+        exit 6
+    fi
+    exit "$rc"
+}
+trap cleanup EXIT
+
+# --------------------------------------------------------------------------
+# 1. (a) The pieces that must be present BEFORE anything is done.
 # --------------------------------------------------------------------------
 
-hdr "1. the pieces that are needed"
+hdr "1. (a) the pieces that are needed"
 
 MISSING=""
+REQUESTS=0
 
-# 1a. The three secrets, read from the environment only.
-for v in MYQNX_USER MYQNX_PASSWORD QNX_LICENSE_KEY; do
+# 1a. The two secrets, read from the environment only.  This is the
+# refusal of step (a): the script stops HERE, without sending a single
+# request, when one of them is missing.
+for v in MYQNX_USER MYQNX_PASSWORD; do
     eval "val=\${$v:-}"
     if [ -z "$val" ]; then
         MISSING="$MISSING
@@ -155,20 +316,7 @@ for v in MYQNX_USER MYQNX_PASSWORD QNX_LICENSE_KEY; do
     fi
 done
 
-# 1b. The installer of the QNX Software Center.
-if [ ! -f "$QNX_SDP_RUN" ]; then
-    MISSING="$MISSING
-  - the QNX Software Center installer is absent: $QNX_SDP_RUN
-      official name : qnx-setup-$QNX_SDP_VERSION-linux.run  (99.85 MB)
-      official page : https://www.qnx.com/download/group.html?programid=29178
-      direct link   : https://www.qnx.com/download/download/79441/qnx-setup-$QNX_SDP_VERSION-linux.run
-      the link answers 302 and lands on www.qnx.com/account/login.html:
-      the download needs a browser and a myQNX account (QNX Everywhere,
-      https://www.qnx.com/products/everywhere/).  Put the file where this
-      script expects it, or set QNX_SDP_RUN to its path."
-fi
-
-# 1c. The disk space of the destination.
+# 1b. The disk space of the destination.
 free_mb=$(df -Pm "$HOME" 2>/dev/null | awk 'NR==2 {print $4}')
 if [ -z "${free_mb:-}" ]; then
     MISSING="$MISSING
@@ -180,18 +328,24 @@ elif [ "$free_mb" -lt "$MIN_FREE_MB" ]; then
 fi
 
 if [ -n "$MISSING" ]; then
-    say "NOTHING WAS INSTALLED.  These pieces are missing:"
+    say "NOTHING WAS INSTALLED.  NO REQUEST WAS SENT.  These pieces are missing:"
     printf '%s\n' "$MISSING"
+    say ""
+    say "requests sent by this run : $REQUESTS"
     say ""
     say "Read the header of this script for the official sources, the exact"
     say "name of the file to download, and the meaning of every exit code."
     exit 3
 fi
 
-say "myQNX user       : $MYQNX_USER"
-say "licence key      : present (not printed)"
-say "myQNX password   : present (not printed)"
-say "installer        : $QNX_SDP_RUN"
+say "myQNX user       : $MYQNX_USER (the value is never printed by the commands below)"
+say "myQNX password   : present (never printed)"
+if [ -n "${QNX_LICENSE_KEY:-}" ]; then
+    say "licence key      : present (never printed)"
+else
+    say "licence key      : absent, and not needed: the keys are taken from the myQNX"
+    say "                   account by -syncLicenseKeys"
+fi
 say "unpacked in      : $QNX_WORKDIR"
 say "SDP installed in : $SDP_DEST"
 say "free space       : ${free_mb} MB"
@@ -200,42 +354,45 @@ say "free space       : ${free_mb} MB"
 # 2. The network, measured before the installation (never assumed).
 # --------------------------------------------------------------------------
 #
-# The official technote "About These Technotes" says the QNX Software Center
-# talks to the myQNX server and to the QNX licence server, both hosted on
-# www.qnx.com, and that "the actual package download occurs via content
-# management server(s)" whose name is only known at runtime.  So we check
-# www.qnx.com, and we report the state of download.qnx.com without
-# pretending it is the host that would serve the packages.
+# The official technote "About These Technotes" says the QNX Software
+# Center talks to the myQNX server and to the QNX licence server, both
+# hosted on www.qnx.com, and that "the actual package download occurs
+# via content management server(s)" whose name is only known at runtime.
 
 hdr "2. the network, measured"
 
-probe() {  # host -> prints "code" or "timeout"
-    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$1/" 2>/dev/null)
+# Every request of this script goes through this function, which counts
+# them: it is the proof that the refusal of step (a) sends nothing.
+# The counter is only exact if the call is made in THIS shell: a call
+# inside $(...) would run in a subshell and the count would be lost.
+http() {
+    REQUESTS=$((REQUESTS + 1))
+    curl "$@"
+}
+
+# The probe writes its result in PROBE_RESULT instead of printing it, so
+# that it is not run in a subshell and the counter stays exact.
+probe() {  # $1 = host
+    REQUESTS=$((REQUESTS + 1))
+    out=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://$1/" 2>/dev/null)
     rc=$?
-    if [ "$rc" -eq 28 ]; then printf 'timeout'
-    elif [ "$rc" -ne 0 ]; then printf 'curl-%s' "$rc"
-    else printf '%s' "$code"; fi
+    if [ "$rc" -eq 28 ]; then PROBE_RESULT='timeout'
+    elif [ "$rc" -ne 0 ]; then PROBE_RESULT="curl-$rc"
+    else PROBE_RESULT="$out"; fi
 }
 
 if command -v curl >/dev/null 2>&1; then
-    qnx_code=$(probe www.qnx.com)
-    dl_code=$(probe download.qnx.com)
-    say "https://www.qnx.com/        -> $qnx_code   (the myQNX server and the licence server are hosted here)"
-    say "https://download.qnx.com/    -> $dl_code   (measured on 17 November 2026: TCP timeout from the container that built this repository)"
+    probe www.qnx.com
+    qnx_code=$PROBE_RESULT
+    probe support7.qnx.com
+    support7_code=$PROBE_RESULT
+    say "https://www.qnx.com/     -> $qnx_code   (the myQNX server and the licence server are hosted here)"
+    say "https://support7.qnx.com/ -> $support7_code   (the host that really serves the installer)"
     if [ "$qnx_code" = "timeout" ] || [ "$qnx_code" = "curl-6" ]; then
         say ""
         say "The myQNX server does not answer from this host: the installation"
         say "cannot even authenticate.  Nothing was installed."
         exit 5
-    fi
-    if [ "$dl_code" = "timeout" ]; then
-        say ""
-        say "WARNING: download.qnx.com does not answer from this host."
-        say "The packages themselves are served by content management server(s)"
-        say "whose name is only known at runtime (official technote).  If the"
-        say "installation stops while downloading, this is the first thing to"
-        say "check, and the log of the QNX Software Center names the server"
-        say "that failed: ~/.qnx/swupdate/.metadata/.log"
     fi
 else
     say "curl is absent: the network was NOT measured.  The installation is attempted anyway."
@@ -243,123 +400,325 @@ fi
 
 if [ "$CHECK_ONLY" -eq 1 ]; then
     say ""
-    say "--check: the pre-flight is over.  Nothing was installed."
+    say "--check: the pre-flight is over.  Nothing was installed, no session was opened."
+    say "requests sent by this run : $REQUESTS"
     exit 0
 fi
 
 # --------------------------------------------------------------------------
-# 3. (a) Unpack the QNX Software Center.
+# 3. (b) The session: the installer, downloaded with a myQNX session.
 # --------------------------------------------------------------------------
 
-hdr "3. (a) unpack the QNX Software Center"
+hdr "3. (b) the session, and the installer"
+
+# The installer is looked for first: if the file is already here with the
+# official MD5, no download is needed.
+QNX_SDP_RUN="${QNX_SDP_RUN:-$ROOT/$QNX_SDP_RUN_NAME}"
+if [ ! -f "$QNX_SDP_RUN" ]; then
+    QNX_SDP_RUN="$ROOT/$QNX_SDP_RUN_NAME"
+fi
+
+if [ -f "$QNX_SDP_RUN" ]; then
+    md5_local=$(md5sum "$QNX_SDP_RUN" | awk '{print $1}')
+    say "the installer is already here : $QNX_SDP_RUN"
+    say "its MD5                       : $md5_local"
+    say "the official MD5              : $MD5_OFFICIAL"
+    if [ "$md5_local" != "$MD5_OFFICIAL" ]; then
+        say ""
+        say "STOP: the MD5 of the local file is not the official one."
+        say "Nothing was decompressed and nothing was installed."
+        say "Official source of the MD5: the Direction, 17 November 2026."
+        exit 4
+    fi
+    say "the file is the official one: no download is needed."
+else
+    say "the installer is not here yet: it is downloaded with a myQNX session."
+
+    # The cookie jar and the password file live in /dev/shm, never in the
+    # repository and never in $HOME.
+    JAR=$(mktemp /dev/shm/qnx-cookie.XXXXXX) || { say "cannot create the cookie jar in /dev/shm"; exit 3; }
+    chmod 600 "$JAR"
+    PWFILE=$(mktemp /dev/shm/qnx-pw.XXXXXX) || { say "cannot create the password file in /dev/shm"; exit 3; }
+    chmod 600 "$PWFILE"
+    printf '%s' "$MYQNX_PASSWORD" > "$PWFILE"
+
+    # 3b.1 The server redirects the link of the installer to the login
+    # page, and the login page carries the hidden field "returnaddress".
+    # We take THAT value (the one the server itself built), so the session
+    # comes back to the installer.
+    say ""
+    say "-- command: the login page, to read the hidden field returnaddress"
+    urlfile=$(mktemp /dev/shm/qnx-url.XXXXXX)
+    http -sS -L --max-time 60 -o /dev/null -w '%{url_effective}' "$RUN_URL_QNX" > "$urlfile" 2>/dev/null
+    say "   exit code: $?"
+    returnaddress=$(cat "$urlfile")
+    rm -f "$urlfile"
+    say "   final URL : $returnaddress"
+
+    pagefile=$(mktemp /dev/shm/qnx-page.XXXXXX)
+    http -sS -L --max-time 60 -o "$pagefile" "$LOGIN_URL" 2>/dev/null
+    say "-- command: GET $LOGIN_URL"
+    say "   exit code: $?"
+    ret=$(grep -o 'name="returnaddress" value="[^"]*"' "$pagefile" | head -1 | sed 's/.*value="//; s/"$//')
+    say "   size of the page: $(wc -c < "$pagefile") bytes"
+    rm -f "$pagefile"
+    if [ -z "$ret" ]; then
+        say ""
+        say "STOP: the login page does not carry the hidden field returnaddress."
+        say "The form was expected to answer as described in the official"
+        say "QNX pages.  Nothing was downloaded, nothing was installed."
+        exit 4
+    fi
+    say "   hidden field returnaddress found (the value is the path the server built"
+    say "   for the installer: /account/authenticate.html?id=79441&redirect=<support7 url>)"
+
+    # 3b.2 The POST of the form.  The password is read from a file by
+    # curl, so it never appears on a command line.
+    say ""
+    say "-- command: POST $LOGIN_URL  (userlogin, password, returnaddress)"
+    http -sS -o /dev/null -D "$JAR.headers" --max-time 60 \
+        -c "$JAR" -b "$JAR" \
+        --data-urlencode "userlogin=$MYQNX_USER" \
+        --data-urlencode "password@$PWFILE" \
+        --data-urlencode "returnaddress=$ret" \
+        "$LOGIN_URL"
+    login_rc=$?
+    say "   exit code: $login_rc"
+    if [ "$login_rc" -ne 0 ]; then
+        say ""
+        say "STOP: the POST of the login form failed (exit code $login_rc)."
+        say "Nothing was downloaded, nothing was installed."
+        exit 4
+    fi
+    grep -iE '^(HTTP/|location:|set-cookie:)' "$JAR.headers" 2>/dev/null | sed 's/^/   /'
+    rm -f "$JAR.headers"
+
+    # 3b.3 The GET of the installer with the SAME jar.
+    say ""
+    say "-- command: GET $RUN_URL_SUPPORT7  (with the same cookie jar)"
+    http -sS -L --max-time 1800 -c "$JAR" -b "$JAR" \
+        -o "$QNX_SDP_RUN.part" -w '   http code %{http_code}, %{size_download} bytes\n' \
+        "$RUN_URL_SUPPORT7"
+    get_rc=$?
+    say "   exit code: $get_rc"
+    if [ "$get_rc" -ne 0 ]; then
+        say ""
+        say "STOP: the download of the installer failed (exit code $get_rc)."
+        say "The file that was being written is removed."
+        rm -f "$QNX_SDP_RUN.part"
+        exit 4
+    fi
+    taille=$(wc -c < "$QNX_SDP_RUN.part")
+    say "   size of the body: $taille bytes (99.85 MB are expected)"
+    mv -f "$QNX_SDP_RUN.part" "$QNX_SDP_RUN"
+fi
+
+# 3b.4 The MD5 control.  If it is not the official one, nothing is
+# decompressed and the script stops.
+md5_local=$(md5sum "$QNX_SDP_RUN" | awk '{print $1}')
+say ""
+say "-- MD5 control"
+say "   file   : $QNX_SDP_RUN"
+say "   size   : $(wc -c < "$QNX_SDP_RUN") bytes"
+say "   MD5    : $md5_local"
+say "   official: $MD5_OFFICIAL"
+if [ "$md5_local" != "$MD5_OFFICIAL" ]; then
+    say ""
+    say "STOP: the MD5 of the downloaded file is not the official one."
+    say "Nothing is decompressed, nothing is installed."
+    say "The official MD5 was published by the Direction on 17 November 2026."
+    exit 4
+fi
+say "   the MD5 is the official one."
+
+# --------------------------------------------------------------------------
+# 4. (c) The extraction of the QNX Software Center.
+# --------------------------------------------------------------------------
+
+hdr "4. (c) unpack the QNX Software Center"
 
 mkdir -p "$QNX_WORKDIR" || { say "cannot create $QNX_WORKDIR"; exit 4; }
 # Official public procedure (Maetis/qnx-sdp-projects, docs/wsl-install.md):
 #     ./qnx-setup-<version>-linux.run --tar xvf -C qnx
-if ! "$QNX_SDP_RUN" --tar xvf -C "$QNX_WORKDIR"; then
-    say "the extraction of the client failed."
+say "-- command: $QNX_SDP_RUN --tar xvf -C $QNX_WORKDIR"
+"$QNX_SDP_RUN" --tar xvf -C "$QNX_WORKDIR" > "$QNX_WORKDIR/.extraction.log" 2>&1
+extract_rc=$?
+say "   exit code: $extract_rc"
+if [ "$extract_rc" -ne 0 ]; then
+    say "the extraction of the client failed; the log of the extraction is here:"
+    tail -20 "$QNX_WORKDIR/.extraction.log" 2>/dev/null | sed 's/^/    /'
     say "The options of this installer are not documented on the public web:"
     say "run '$QNX_SDP_RUN --help' and read the output before trying again."
     exit 4
 fi
 
-if [ ! -x "$QSC" ]; then
-    say "the client was unpacked, but $QSC is absent or not executable."
+QSC=$(find "$QNX_WORKDIR" -maxdepth 4 -type f -name 'qnxsoftwarecenter_clt' 2>/dev/null | head -1)
+if [ -z "$QSC" ]; then
+    say "the client was unpacked, but qnxsoftwarecenter_clt was not found."
     say "the tree that was unpacked is here:"
-    ls -1 "$QNX_WORKDIR" 2>/dev/null | sed 's/^/    /'
+    find "$QNX_WORKDIR" -maxdepth 3 2>/dev/null | sed 's/^/    /'
     exit 4
 fi
+chmod +x "$QSC" 2>/dev/null
 say "the client is here: $QSC"
 
 say ""
-say "-- version of the client:"
+say "-- command: $QSC -version"
 "$QSC" -version 2>&1 | sed 's/^/   /'
+say "   exit code: ${PIPESTATUS[0]}"
 
 # --------------------------------------------------------------------------
-# 4. (b) The licence key.
+# 5. (d) The options file, and the four commands of the QNX Software Center.
 # --------------------------------------------------------------------------
 
-hdr "4. (b) add the licence key"
+hdr "5. (d) the options file and the commands of the client"
 
-# The key is never printed.  The command line of this script is never echoed.
-if ! "$QSC" -addLicenseKey "$QNX_LICENSE_KEY"; then
-    say "the QNX Software Center refused the licence key (exit code above)."
-    say "Check that the key is the free non-commercial SDP 8.0 key of your"
-    say "myQNX account, and that it is still valid."
+# One argument per line, as the official page describes.  The file lives
+# in /dev/shm, with the rights of its owner only, and is deleted in
+# step (f).
+OPTFILE=$(mktemp /dev/shm/qnx-options.XXXXXX) || { say "cannot create the options file in /dev/shm"; exit 3; }
+chmod 600 "$OPTFILE"
+{
+    printf '%s\n' '-myqnx.user'
+    printf '%s\n' "$MYQNX_USER"
+    printf '%s\n' '-myqnx.password'
+    printf '%s\n' "$MYQNX_PASSWORD"
+} > "$OPTFILE"
+say "the options file is here : $OPTFILE (one argument per line, mode 600)"
+say "it holds the user and the password: it is deleted in step (f), and the"
+say "password is never printed."
+
+MIRROR_DONE=0
+
+# 5a. -syncLicenseKeys
+say ""
+say "-- command: qnxsoftwarecenter_clt @$OPTFILE -syncLicenseKeys"
+"$QSC" "@$OPTFILE" -syncLicenseKeys 2>&1 | sed 's/^/   /'
+sync_rc=${PIPESTATUS[0]}
+say "   exit code: $sync_rc"
+if [ "$sync_rc" -ne 0 ]; then
+    # The official page says "-mirror" must be used at least once before
+    # any remote operation.  If the keys cannot be retrieved, the mirror
+    # is done now, ONCE, and the command is tried again.
+    say "   the keys could not be retrieved."
+    say "   The official page says: \"Use this option at least once before"
+    say "   performing any remote operations\".  The mirror is therefore done"
+    say "   now, once, and the command is tried again."
+    say ""
+    say "-- command: qnxsoftwarecenter_clt @$OPTFILE -mirror"
+    "$QSC" "@$OPTFILE" -mirror 2>&1 | sed 's/^/   /'
+    mirror_rc=${PIPESTATUS[0]}
+    say "   exit code: $mirror_rc"
+    MIRROR_DONE=1
+    if [ "$mirror_rc" -ne 0 ]; then
+        say "the mirror of the package metadata failed (exit code above)."
+        say "The log of the QNX Software Center names the host that failed:"
+        say "    ~/.qnx/swupdate/.metadata/.log"
+        exit 4
+    fi
+    say ""
+    say "-- command: qnxsoftwarecenter_clt @$OPTFILE -syncLicenseKeys  (again)"
+    "$QSC" "@$OPTFILE" -syncLicenseKeys 2>&1 | sed 's/^/   /'
+    sync_rc=${PIPESTATUS[0]}
+    say "   exit code: $sync_rc"
+    if [ "$sync_rc" -ne 0 ]; then
+        say "the licence keys of the myQNX account could not be retrieved."
+        say "Check the user name (lower case) and the password."
+        exit 4
+    fi
+fi
+say "the licence keys of the account are retrieved."
+
+# 5b. -activateAll
+say ""
+say "-- command: qnxsoftwarecenter_clt @$OPTFILE -activateAll"
+"$QSC" "@$OPTFILE" -activateAll 2>&1 | sed 's/^/   /'
+activate_rc=${PIPESTATUS[0]}
+say "   exit code: $activate_rc"
+if [ "$activate_rc" -ne 0 ]; then
+    say "the activation of the licence keys failed (exit code above)."
     exit 4
 fi
-say "the licence key was accepted."
+say "the licence keys are activated."
 
-# --------------------------------------------------------------------------
-# 5. (c) The mirror of the package metadata, and (d) the installation.
-# --------------------------------------------------------------------------
-
-hdr "5. (c) mirror the package metadata"
-
-# The password is given on the command line, as the official procedure does.
-# When QNX_QSC_OPTIONS_FILE is set, the options file is used instead, because
-# the official page warns that the password is saved as cleartext in the log
-# file of the QNX Software Center.
-if [ -n "${QNX_QSC_OPTIONS_FILE:-}" ] && [ -f "${QNX_QSC_OPTIONS_FILE:-}" ]; then
-    say "options file in use: $QNX_QSC_OPTIONS_FILE"
-    OPTFILE="@$QNX_QSC_OPTIONS_FILE"
-    MIRROR=("$QSC" "$OPTFILE" -mirrorBaseline qnx800)
-    INSTALL=("$QSC" "$OPTFILE" -installBaseline com.qnx.qnx800 -destination "$SDP_DEST" -cleanInstall)
+# 5c. -mirror (once: the official page warns against repeating it)
+if [ "$MIRROR_DONE" -eq 0 ]; then
+    say ""
+    say "-- command: qnxsoftwarecenter_clt @$OPTFILE -mirror"
+    "$QSC" "@$OPTFILE" -mirror 2>&1 | sed 's/^/   /'
+    mirror_rc=${PIPESTATUS[0]}
+    say "   exit code: $mirror_rc"
+    if [ "$mirror_rc" -ne 0 ]; then
+        say "the mirror of the package metadata failed (exit code above)."
+        say "The log of the QNX Software Center names the host that failed:"
+        say "    ~/.qnx/swupdate/.metadata/.log"
+        exit 4
+    fi
 else
-    MIRROR=("$QSC" -myqnx.user "$MYQNX_USER" -myqnx.password "$MYQNX_PASSWORD" -mirrorBaseline qnx800)
-    INSTALL=("$QSC" -myqnx.user "$MYQNX_USER" -myqnx.password "$MYQNX_PASSWORD" -installBaseline com.qnx.qnx800 -destination "$SDP_DEST" -cleanInstall)
-fi
-
-if ! "${MIRROR[@]}"; then
-    say "the mirror of the package metadata failed (exit code above)."
-    say "The myQNX server answers (it answered in step 2), so the usual"
-    say "causes are: wrong credentials, or a network that cannot reach the"
-    say "content management server(s) that carry the packages."
-    say "The log of the QNX Software Center names the host that failed:"
-    say "    ~/.qnx/swupdate/.metadata/.log"
-    exit 4
+    say ""
+    say "-mirror has already been used in this run: it is not repeated (official"
+    say "page: \"avoid invoking -mirror multiple times as it can reduce"
+    say "performance significantly\")."
 fi
 say "the package metadata is mirrored."
 
-hdr "6. (d) install the baseline com.qnx.qnx800"
-
-if ! "${INSTALL[@]}"; then
+# 5d. -installBaseline
+say ""
+say "-- command: qnxsoftwarecenter_clt @$OPTFILE -installBaseline com.qnx.qnx800 -destination $SDP_DEST -cleanInstall"
+"$QSC" "@$OPTFILE" -installBaseline com.qnx.qnx800 \
+    -destination "$SDP_DEST" -cleanInstall 2>&1 | sed 's/^/   /'
+install_rc=${PIPESTATUS[0]}
+say "   exit code: $install_rc"
+if [ "$install_rc" -ne 0 ]; then
     say "the installation of the baseline failed (exit code above)."
     say "Nothing is simulated: the SDP is NOT installed."
     exit 4
 fi
 say "the baseline is installed in $SDP_DEST"
 
+# The options file is deleted right after the last command that used it
+# (the trap of step (f) deletes it too, if a step failed).
+rm -f "$OPTFILE"
+say "the options file is deleted: $OPTFILE"
+OPTFILE=""
+
 # The official verification of the installation: exit code 4 when the
 # installation is incomplete or modified, 0 otherwise.
-hdr "7. the official verification of the installation"
-
+say ""
+say "-- command: qnxsoftwarecenter_clt -destination $SDP_DEST -verifyInstallation"
 "$QSC" -destination "$SDP_DEST" -verifyInstallation 2>&1 | sed 's/^/   /'
 verify_rc=${PIPESTATUS[0]}
-say "exit code of -verifyInstallation: $verify_rc (0 = the installation is complete, 4 = it is not)"
+say "   exit code: $verify_rc (0 = the installation is complete, 4 = it is not)"
 
 # --------------------------------------------------------------------------
-# 8. (e) The environment, the compiler, and the proof.
+# 6. (e) The environment, the compiler, and the proof.
 # --------------------------------------------------------------------------
 
-hdr "8. (e) the environment, the compiler, and the proof"
+hdr "6. (e) the environment, the compiler, and the proof"
 
 if [ ! -f "$SDP_DEST/qnxsdp-env.sh" ]; then
     say "$SDP_DEST/qnxsdp-env.sh is absent: the SDP environment cannot be loaded."
     exit 4
 fi
+say "-- command: source $SDP_DEST/qnxsdp-env.sh"
 # shellcheck disable=SC1091
-. "$SDP_DEST/qnxsdp-env.sh" || { say "the SDP environment script failed"; exit 4; }
+. "$SDP_DEST/qnxsdp-env.sh" 2>&1 | sed 's/^/   /'
+env_rc=${PIPESTATUS[0]}
+say "   exit code: $env_rc"
+if [ "$env_rc" -ne 0 ]; then
+    say "the SDP environment script failed."
+    exit 4
+fi
 say "the environment of the SDP is loaded."
 
 say ""
-say "-- qcc -V:"
+say "-- command: qcc -V"
 qcc -V 2>&1 | sed 's/^/   /'
 qcc_rc=${PIPESTATUS[0]}
-say "exit code of qcc -V: $qcc_rc"
+say "   exit code: $qcc_rc"
 
 say ""
-say "-- scripts/qnx8-proof.sh (the demonstration of this repository):"
+say "-- command: bash scripts/qnx8-proof.sh  (the demonstration of this repository)"
 bash "$ROOT/scripts/qnx8-proof.sh"
 proof_rc=$?
 
@@ -370,4 +729,6 @@ case "$proof_rc" in
     2) say "RESULT: the SDP is still absent or incomplete.  Nothing was simulated." ;;
     *) say "RESULT: the demonstration really failed.  Read the output above." ;;
 esac
+say ""
+say "requests sent by this run : $REQUESTS"
 exit "$proof_rc"
