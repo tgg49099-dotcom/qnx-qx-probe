@@ -116,13 +116,16 @@ picture shows what the command really prints.
 
 ## The two sentences the submission form needs
 
-**Substantially different from QX PORTMAP.**  QX-PROBE is a *static* checker:
+**Substantially different from QX PORTMAP.**  QX-PROBE is a *source* checker:
 it reads the C source of a resource manager and reports the access gates and
-dispatch tables that the QNX 8.0 documentation requires; QX PORTMAP is a
-*runtime* tool: it watches the live QNX 8.0 system and reports which process
-holds which pathname.  The first one needs no target and no licence, the
-second one needs a running QNX 8.0 system; they share no code, no rule and no
-document, and each one is a complete submission on its own.
+dispatch tables that the QNX 8.0 documentation requires (11 rules, `RULES.md`);
+QX PORTMAP is a *documentation* mapper: it reads the list of QNX symbols that
+a source tree calls and answers, for each one, whether it is still documented
+in QNX 8.0, with the official page and the exact quotation.  The first one
+audits resource-manager code, the second one guides a port of existing code
+to QNX 8.0; they read different inputs, produce different outputs, share no
+code, no rule and no document, and each one is a complete submission on its
+own.
 
 **The codelab.**  The hands-on tutorial of this project is
 `docs/CODELAB.md`, published at
