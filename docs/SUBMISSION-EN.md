@@ -190,7 +190,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 89 files, about 2.9 MB (measured on 17 November 2026).
+   The published tree is 94 files, about 3.1 MB (measured on 17 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
@@ -430,6 +430,35 @@ that teaches the reader how to perform a task on or for QNX 8.0"*. The URL to
 paste is the one above; it is a file of the public repository, so it is public
 by construction. It teaches one task on QNX 8.0 — auditing the dispatch table
 of a resource manager — in about thirty minutes, with nothing but Python 3.
+
+## 12 bis. Thumbnail and image gallery
+
+DevPost asks for a **thumbnail** in step 2 ("Project overview") and offers an
+**image gallery** in step 3 ("Project details"). Its help page (article 126,
+"Know your submission steps", read on 17 November 2026) says of the
+thumbnail: *"This should be a JPG, PNG or GIF format, 5 MB max file size. For
+best results, use a 3:2 ratio."* The captures of `media/` are 16:9 or wider
+than 2:1, so DevPost would crop them; the images below are the same real
+captures, pasted unscaled and uncropped on a 3:2 canvas with a one-sentence headline
+that repeats a fact printed in the capture. They are rebuilt by
+`python3 -I scripts/make-devpost-gallery.py` and checked by
+`python3 -I scripts/verifier-galerie-devpost.py` (format, 5 MB, exact 3:2,
+nothing listed here is missing, nothing in `media/devpost/` is forgotten).
+
+Download each file from the repository page (or from the raw URL) and upload
+it in this order:
+
+| Order | Field | File | Raw URL | Caption, if the form offers one |
+|---|---|---|---|---|
+| 1 | Thumbnail (step 2) | `media/devpost/thumbnail-3x2.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/thumbnail-3x2.png | — |
+| 2 | Image gallery (step 3) | `media/devpost/gallery-1-real-corpus.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-1-real-corpus.png | QX-PROBE on 17 public QNX resource managers, each pinned to a commit: one real missing access gate (QX004). |
+| 3 | Image gallery (step 3) | `media/devpost/gallery-2-official-example.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-2-official-example.png | The official example of the QNX 8.0 documentation: no ERROR, no WARN. |
+
+**The real QNX 8.0 build is not in the gallery yet.** It is not measured
+(see section 11). As soon as `scripts/qnx8-proof.sh` has run with the real
+SDP 8.0, add a capture of that run as image 4 (list `GALLERY` of
+`scripts/make-devpost-gallery.py`) and add its row to this table: it is the
+image a judge most needs to see.
 
 ## 13. The eleven rules, one sentence each
 

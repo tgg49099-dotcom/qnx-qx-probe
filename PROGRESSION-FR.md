@@ -32,7 +32,7 @@ exterieure).
 | Chiffre | Ou il est publie | La commande qui le mesure |
 |---|---|---|
 | 97 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
-| 89 fichiers dans l'arbre publie | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
+| 94 fichiers dans l'arbre publie | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
 | 17 vrais gestionnaires de ressources analyses | `docs/BENCHMARK.md` | `python3 -I scripts/benchmark-corpus.py` |
 | 36 citations de 14 pages officielles | `RULES.md` | `python3 -I scripts/verifier-citations.py` |
 | 89,72 s de video | `docs/YOUTUBE-VIDEO.md` | `ffprobe` |

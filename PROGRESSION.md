@@ -32,7 +32,7 @@ arrives).
 | Figure | Where it is published | The command that measures it |
 |---|---|---|
 | 97 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
-| 89 files in the published tree | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
+| 94 files in the published tree | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
 | 17 real resource managers analysed | `docs/BENCHMARK.md` | `python3 -I scripts/benchmark-corpus.py` |
 | 36 quotations of 14 official pages | `RULES.md` | `python3 -I scripts/verifier-citations.py` |
 | 89.72 s of video | `docs/YOUTUBE-VIDEO.md` | `ffprobe` |
