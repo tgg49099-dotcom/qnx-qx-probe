@@ -65,6 +65,11 @@ CODELAB_URL = ("https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/"
 CODELAB_RAW = ("https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/"
                "main/docs/CODELAB.md")
 UA = "QX-PROBE-submission-check/1.0"
+# Limits published by Devpost itself, independent of what this file writes.
+# A limit written in SUBMISSION-EN.md can be wrong (the tagline was declared
+# "300" while Devpost help, article 145, says "Submission tagline
+# (140 characters)*", read 15/11/2026): the official limit always wins.
+OFFICIAL_LIMITS = {"TAGLINE": 140}
 
 
 def md5_bytes(data: bytes) -> str:
@@ -140,6 +145,12 @@ def main() -> int:
         m = MEASURED_RE.search(tail)
         claimed = nombre(m.group(1)) if m else None
         limit = nombre(m.group(2)) if (m and m.group(2)) else None
+        official = OFFICIAL_LIMITS.get(name)
+        if official is not None and (limit is None or limit > official):
+            ok = False
+            print(f"  [KO ] {name:12s} : written limit {limit} is above the "
+                  f"official Devpost limit {official}")
+            limit = official
         good = claimed == n
         if not good or (limit is not None and n > limit):
             ok = False

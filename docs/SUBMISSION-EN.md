@@ -23,7 +23,7 @@ Three rules this file obeys:
 | § | Block | Field of the submission form | Limit |
 |---|---|---|---|
 | 1 | `TITRE` | Project title | 60 characters |
-| 2 | `TAGLINE` | Short description / tagline | 300 characters |
+| 2 | `TAGLINE` | Submission tagline | 140 characters (Devpost help, article 145) |
 | 3 | `CATEGORIE` | Category — **one** choice | — |
 | 4 | `BUILTWITH` | Built with + tags | — |
 | 5 | `WHATITDOES` | "About the project" / "What it does" | 1 200 characters |
@@ -55,12 +55,15 @@ _Measured: 48 characters (DevPost limit: 60)._
 ## 2. Tagline
 
 <!-- DEBUT:TAGLINE -->
-QX-PROBE reads your QNX 8.0 resource-manager C code and reports the protocol
-mistakes the compiler cannot see. Zero dependencies, no QNX SDK, no hardware.
-Every rule cites the official QNX 8.0 page it comes from.
+A linter for QNX 8.0 resource managers: finds the protocol bugs the compiler cannot see. Every rule cites its official QNX 8.0 page.
 <!-- FIN:TAGLINE -->
 
-_Measured: 212 characters (DevPost limit: 300)._
+_Measured: 132 characters (DevPost limit: 140)._
+
+> The 140-character limit is Devpost's own: help article 145 lists
+> "Submission tagline (140 characters)*" (read on 15/11/2026 for the QX PORTMAP
+> kit). The previous tagline was 212 characters and would have been cut by the
+> form; `scripts/verifier-soumission-devpost.py` now refuses any tagline over 140.
 
 ## 3. Category
 
