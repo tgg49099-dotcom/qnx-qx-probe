@@ -18,8 +18,10 @@
 #
 # THE SIX STEPS, IN THIS ORDER
 #
-#   (a) the refusal: if MYQNX_USER or MYQNX_PASSWORD is missing, the
-#       script stops, names the variable, and sends NO request at all.
+#   (a) the refusal: the script ASKS FOR the myQNX user name and the
+#       myQNX password on the keyboard.  Without a terminal, or with an
+#       empty answer, it stops, says which one is missing, and sends NO
+#       request at all.
 #
 #   (b) the session: a cookie jar in /dev/shm, a POST to
 #       https://www.qnx.com/account/login.html with "userlogin",
@@ -120,18 +122,34 @@
 #
 # WHERE THE SECRETS COME FROM
 #
-#   The myQNX password is read from the ENVIRONMENT and nowhere else.
-#   It is never written in this file, in this repository, in a log of this
-#   script, or in a report.  The script does not use "set -x", the
-#   password is never put on a command line (it is read from a file of
-#   /dev/shm by curl, and from the options file by the client), and the
-#   options file, the cookie jar and that file are deleted at the end.
+#   The myQNX user name and the myQNX password are ASKED FOR ON THE
+#   KEYBOARD, once, by this script.  They are never given on a command
+#   line, never read from an environment variable, never written in this
+#   file, in this repository, in a log of this script, or in a report.
+#   The script does not use "set -x", the password is never echoed, the
+#   history of the shell is disabled while it runs, and both values are
+#   unset before the script exits.
 #
-# ENVIRONMENT VARIABLES
+#   The only temporary copy of the password is the options file of
+#   /dev/shm, which is a RAM disk and never a disk.  The official
+#   documentation asks for that file for a reason: "-myqnx.password" has
+#   to be passed as an argument, and a command line would show the
+#   password to every other user of the machine (ps).  That file, the
+#   cookie jar and the file that holds the password for curl are deleted
+#   at the end; the trace that the QNX Software Center itself writes in
+#   its own log is purged; and the script prints the control "the
+#   password appears ZERO time in $HOME and in /work".
 #
-#   MYQNX_USER        myQNX account name (the official documentation asks
-#                     for it in lower case).        REQUIRED.
-#   MYQNX_PASSWORD    myQNX account password.        REQUIRED.
+# THE TWO SECRETS ARE ASKED FOR, NOT READ FROM THE ENVIRONMENT
+#
+#   myQNX user name  : asked on the keyboard (the official documentation
+#                      asks for it in lower case).
+#   myQNX password   : asked on the keyboard, never echoed.
+#   The script needs a terminal.  Without one (a pipe, a cron job, a CI)
+#   it stops with the exit code 3 and sends NO request.
+#
+# ENVIRONMENT VARIABLES (none of them holds a secret)
+#
 #   QNX_LICENSE_KEY   the free non-commercial SDP 8.0 licence key.
 #                     OPTIONAL: without it, the licence keys are taken
 #                     from the myQNX account (-syncLicenseKeys).
@@ -146,6 +164,10 @@
 # USAGE
 #
 #   bash scripts/install-sdp8.sh              install, then prove
+#                                           (the myQNX user name and the
+#                                           password are asked on the
+#                                           keyboard: a terminal is
+#                                           needed)
 #   bash scripts/install-sdp8.sh --check      only the pre-flight, change nothing
 #   bash scripts/install-sdp8.sh --help       this text
 #
@@ -164,6 +186,11 @@
 #      $HOME or in /work.
 set -u
 
+# Nothing typed by this script may reach the history of the shell: the
+# history is disabled, and the two values are unset before it exits.
+unset HISTFILE 2>/dev/null || true
+set +o history 2>/dev/null || true
+
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd) || exit 3
 cd "$ROOT" || exit 3
 
@@ -172,6 +199,19 @@ QNX_SDP_RUN_NAME="qnx-setup-${QNX_SDP_VERSION}-linux.run"
 QNX_WORKDIR="${QNX_WORKDIR:-$HOME/qnx}"
 SDP_DEST="${SDP_DEST:-$HOME/qnx800}"
 MIN_FREE_MB=8192   # the SDP is about 4-5 GB; we ask for 8 GB to be safe
+
+# The result of the run, written in a file OUTSIDE this repository (the
+# tree stays clean): the date, the path of the SDP, the version of the
+# compiler, the output of scripts/qnx8-proof.sh and the exit code.
+# Never a secret: the two values typed by the user are not written here.
+RESULT_FILE="${QNX_RESULT_FILE:-$ROOT/../RESULTAT-SDP8-$(date -u +%Y%m%dT%H%M%SZ).txt}"
+: > "$RESULT_FILE" 2>/dev/null || true
+
+# result() appends one line to that file.  It never fails the script.
+result() {
+    [ -n "${RESULT_FILE:-}" ] || return 0
+    printf '%s\n' "$*" >> "$RESULT_FILE" 2>/dev/null || true
+}
 
 # The official MD5 of the installer, published by the Direction on
 # 17 November 2026 (99.85 MB).
@@ -215,11 +255,13 @@ done
 # appears zero times in $HOME and in /work" is printed.
 
 purger_trace() {
-    # The password is read from the environment by python3, never from the
-    # command line (it would be visible in ps).
-    QNX_WORKDIR="$QNX_WORKDIR" python3 -I - <<'PY' 2>/dev/null
+    # The password is read from a PIPE by python3 (file descriptor 3),
+    # never from the command line (it would be visible in ps) and never
+    # from the environment of a child process.  A pipe is a memory, not a
+    # file.
+    printf '%s' "$MYQNX_PASSWORD" | QNX_WORKDIR="$QNX_WORKDIR" python3 -I - 3<&0 <<'PY' 2>/dev/null
 import os, pathlib, sys
-pw = os.environ.get("MYQNX_PASSWORD", "")
+pw = os.fdopen(3).read()
 if not pw:
     sys.exit(0)
 racines = [pathlib.Path.home() / ".qnx",
@@ -289,6 +331,14 @@ cleanup() {
         purger_trace
         controle_occurrence
     fi
+    # The two values typed by the user leave the memory of this shell.
+    unset MYQNX_USER MYQNX_PASSWORD
+    if [ -n "${RESULT_FILE:-}" ]; then
+        result ""
+        result "== end of the run =="
+        result "exit code : $rc"
+        result "the myQNX password was never written in this file"
+    fi
     if [ "$SECRET_LEAK" -eq 1 ]; then
         exit 6
     fi
@@ -305,16 +355,37 @@ hdr "1. (a) the pieces that are needed"
 MISSING=""
 REQUESTS=0
 
-# 1a. The two secrets, read from the environment only.  This is the
-# refusal of step (a): the script stops HERE, without sending a single
-# request, when one of them is missing.
-for v in MYQNX_USER MYQNX_PASSWORD; do
-    eval "val=\${$v:-}"
-    if [ -z "$val" ]; then
+# 1a. The two secrets, ASKED FOR ON THE KEYBOARD.  Nothing is read from
+# the environment any more: the script stops HERE, without sending a
+# single request, when the standard input is not a terminal, or when an
+# answer is empty.  The password is asked with "read -s" (it is not
+# echoed), it is never put on a command line, and it is unset before the
+# script exits.
+if [ ! -t 0 ]; then
+    MISSING="$MISSING
+  - this script needs a terminal: it asks for the myQNX user name and the
+      myQNX password on the keyboard, and the standard input here is not a
+      terminal"
+else
+    printf 'myQNX user name (lower case): ' >&2
+    IFS= read -r MYQNX_USER || MYQNX_USER=""
+    printf 'myQNX password (never echoed) : ' >&2
+    IFS= read -r -s MYQNX_PASSWORD || MYQNX_PASSWORD=""
+    printf '\n' >&2
+    if [ -z "${MYQNX_USER:-}" ]; then
         MISSING="$MISSING
-  - the environment variable $v is not set (it is read from the environment, never from this script)"
+  - the myQNX user name was not typed"
     fi
-done
+    if [ -z "${MYQNX_PASSWORD:-}" ]; then
+        MISSING="$MISSING
+  - the myQNX password was not typed"
+    fi
+    result "date (UTC) : $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    result "script     : $0"
+    result "SDP path   : $SDP_DEST"
+    result "result file: $RESULT_FILE"
+    result "the myQNX user name and password were asked on the keyboard"
+fi
 
 # 1b. The disk space of the destination.
 free_mb=$(df -Pm "$HOME" 2>/dev/null | awk 'NR==2 {print $4}')
@@ -330,6 +401,8 @@ fi
 if [ -n "$MISSING" ]; then
     say "NOTHING WAS INSTALLED.  NO REQUEST WAS SENT.  These pieces are missing:"
     printf '%s\n' "$MISSING"
+    printf '%s\n' "$MISSING" >> "$RESULT_FILE" 2>/dev/null || true
+    result "requests sent by this run : $REQUESTS"
     say ""
     say "requests sent by this run : $REQUESTS"
     say ""
@@ -713,14 +786,20 @@ say "the environment of the SDP is loaded."
 
 say ""
 say "-- command: qcc -V"
-qcc -V 2>&1 | sed 's/^/   /'
-qcc_rc=${PIPESTATUS[0]}
+QCC_OUT=$(qcc -V 2>&1)
+qcc_rc=$?
+printf '%s\n' "$QCC_OUT" | sed 's/^/   /'
 say "   exit code: $qcc_rc"
+result "qcc -V (exit code $qcc_rc):"
+printf '%s\n' "$QCC_OUT" | sed 's/^/   /' >> "$RESULT_FILE" 2>/dev/null || true
 
 say ""
 say "-- command: bash scripts/qnx8-proof.sh  (the demonstration of this repository)"
-bash "$ROOT/scripts/qnx8-proof.sh"
+PROOF_OUT=$(bash "$ROOT/scripts/qnx8-proof.sh" 2>&1)
 proof_rc=$?
+printf '%s\n' "$PROOF_OUT"
+result "scripts/qnx8-proof.sh (exit code $proof_rc):"
+printf '%s\n' "$PROOF_OUT" >> "$RESULT_FILE" 2>/dev/null || true
 
 say ""
 say "the exit code of scripts/qnx8-proof.sh is $proof_rc (it is propagated as it is)."

@@ -21,7 +21,7 @@ arrives).
 | The test suite (`tests/`) | 97 tests over 22 classes: the two-sided contract, plus the day-of-licence path | done | `bash scripts/run_tests.sh` |
 | The codelab (`docs/CODELAB.md`) | 30 minutes, Python 3 only | done | `python3 -I scripts/verifier-codelab.py` |
 | The proof of QNX 8.0 (`scripts/qnx8-proof.sh`) | Builds the examples with `qcc`, reads the ELF header, runs them on a target | waiting | exits 2 while the SDP is absent — that is the counter-proof, not a failure |
-| The installation of the SDP (`scripts/install-sdp8.sh`) | Installs the SDP 8.0 with the official QNX Software Center commands, then calls the proof | done | `bash scripts/install-sdp8.sh --check` (the pre-flight), and it exits 3 with the list of the missing pieces when the secrets are not in the environment |
+| The installation of the SDP (`scripts/install-sdp8.sh`) | Installs the SDP 8.0 with the official QNX Software Center commands, then calls the proof | done | `bash scripts/install-sdp8.sh --check` (the pre-flight), it asks for the myQNX user name and password **on the keyboard** (never from the environment, never in a file), and it exits 3 with the list of the missing pieces when there is no terminal |
 | The network measurement (`scripts/mesurer-reseau-qnx.sh`) | One line per QNX host: the exact command and what it answered | done | `bash scripts/mesurer-reseau-qnx.sh` |
 | The published video (`media/qx-demo-v3.mp4`) | 89.72 s, 18 scenes, every figure re-measured | done | `python3 -I scripts/audit-sous-titres-pixels.py` (the subtitles ARE the pixels) |
 | The submission text (`docs/SUBMISSION-EN.md`) | Field by field, everything to paste into DevPost | done | `python3 -I scripts/verifier-soumission-devpost.py` |
@@ -42,7 +42,38 @@ in a copy of the published documents must be reported as stale.  The
 counter-proof runs at every normal run, so a control cannot silently lose
 its teeth.
 
-## 3. Progress of this cycle — 17 November 2026, 15:21 (the installation of the SDP 8.0, measured)
+## 3. Progress of 18 November 2026, 21:40 (the SDP installation asks for the myQNX credentials on the keyboard)
+
+- **The question of the cycle**: the installation of the SDP 8.0 could not
+  start, because the myQNX credentials must not travel in the environment of
+  a container, nor in a file, nor in a key request.  The script therefore
+  asks for them **on the keyboard**, once, and writes them nowhere.
+- **What the script does now**: `read -r` for the user name (in lower case,
+  as the official documentation asks) and `read -r -s` for the password,
+  which is therefore never displayed.  Without a terminal it stops with the
+  exit code 3, saying why, **without sending a single request**.  The
+  password never leaves the memory of the shell: it is not exported into
+  the environment of the child processes (the purge of the QNX trace reads
+  it from a pipe, not from a variable), and it is unset before the script
+  exits.
+- **What stays in memory, and why**: the options file of `/dev/shm` (a RAM
+  disk, never a disk) which carries `-myqnx.password`.  The official
+  documentation requires that option to be passed as an argument, and a
+  command line would show the password to every process of the machine
+  (`ps`).  That file, the cookie jar and the password file are deleted at
+  the end, the trace that the QNX Software Center writes in its own log is
+  purged, and the script prints the final control: "the password appears 0
+  times in $HOME and in /work".
+- **The result of the run is written in a file outside this repository**
+  (`RESULTAT-SDP8-<date>.txt`): the date, the path of the SDP, the version
+  of `qcc`, the output of `scripts/qnx8-proof.sh` and the exit code.  Never
+  a secret.
+- **The three tests of 18/11/2026**: no terminal -> exit code 3 and 0
+  request sent; empty answers -> exit code 3 and 0 request sent; answers
+  typed -> the final control shows 0 occurrence of the password in `$HOME`
+  and in `/work`.
+
+## 4. Progress of 17 November 2026, 15:21 (the installation of the SDP 8.0, measured)
 
 - **The question of the cycle**: make the *real* installation of the QNX SDP
   8.0 executable in the container that builds this repository, and prove by
@@ -74,7 +105,9 @@ its teeth.
   The exact file is `qnx-setup-2.0.4-202501021438-linux.run` (99.85 MB).
 - **What is still missing, exactly**: (1) the file
   `qnx-setup-2.0.4-202501021438-linux.run`, (2) the three environment
-  variables `MYQNX_USER`, `MYQNX_PASSWORD`, `QNX_LICENSE_KEY`, (3) a
+  the myQNX account: the script asks for the user name and the password **on
+  the keyboard**; it reads no environment variable any more and writes the
+  password in no file, (3) a
   network that can reach the content management server(s) that carry the
   packages — the official technote says their name is only known at
   runtime, and the log of the QNX Software Center
@@ -83,11 +116,12 @@ its teeth.
   absent) and `scripts/qnx8-proof.sh` still exits 2 ("SDP absent"): the
   published documents keep saying **NOT MEASURED**, and that is the truth.
 
-## 4. The earlier cycles (summary)
+## 5. The earlier cycles (summary)
 
 | Cycle | What it did |
 |---|---|
 | 197 | The path of the judge: a PEP 668-safe installation, a stale "51-test" found and fixed |
 | 198 | The tool that applies the URL of the video, and the watch that detects it |
 | 199-200 | The proof of QNX 8.0 written, published and proved from the outside; a factual error about QX PORTMAP corrected |
-| 201 (this one) | The installation of the SDP 8.0 made executable and measured; the network measured host by host |
+| 201 (on 17/11) | The installation of the SDP 8.0 made executable and measured; the network measured host by host |
+| 202 (this one) | The installation of the SDP asks for the myQNX credentials on the keyboard: no environment variable, no file that carries the password, the result of the run written outside the repository |

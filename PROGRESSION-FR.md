@@ -21,7 +21,7 @@ exterieure).
 | La suite de tests (`tests/`) | 97 tests en 22 classes : le contrat a double sens, plus le chemin du jour de la licence | done | `bash scripts/run_tests.sh` |
 | Le codelab (`docs/CODELAB.md`) | 30 minutes, Python 3 seul | done | `python3 -I scripts/verifier-codelab.py` |
 | La preuve QNX 8.0 (`scripts/qnx8-proof.sh`) | Compile les exemples avec `qcc`, lit l'en-tete ELF, les execute sur une cible | waiting | sort 2 tant que le SDP est absent : c'est la contre-epreuve, pas un echec |
-| L'installation du SDP (`scripts/install-sdp8.sh`) | Installe le SDP 8.0 avec les commandes officielles du QNX Software Center, puis appelle la preuve | done | `bash scripts/install-sdp8.sh --check` (le controle avant installation) ; sans les secrets dans l'environnement, il sort 3 en listant les pieces manquantes |
+| L'installation du SDP (`scripts/install-sdp8.sh`) | Installe le SDP 8.0 avec les commandes officielles du QNX Software Center, puis appelle la preuve | done | `bash scripts/install-sdp8.sh --check` (le controle avant installation) ; il demande le nom d'utilisateur et le mot de passe myQNX **au clavier** (jamais dans l'environnement, jamais dans un fichier), et sans terminal il sort 3 en listant ce qui manque |
 | La mesure du reseau (`scripts/mesurer-reseau-qnx.sh`) | Une ligne par hote QNX : la commande exacte et sa reponse | done | `bash scripts/mesurer-reseau-qnx.sh` |
 | La video publiee (`media/qx-demo-v3.mp4`) | 89,72 s, 18 scenes, chaque chiffre remesure | done | `python3 -I scripts/audit-sous-titres-pixels.py` (les sous-titres SONT les pixels) |
 | Le texte de soumission (`docs/SUBMISSION-EN.md`) | Champ par champ, tout ce qui se colle dans DevPost | done | `python3 -I scripts/verifier-soumission-devpost.py` |
@@ -42,7 +42,40 @@ une copie des documents publies doit etre signale comme perime. La
 contre-epreuve tourne a chaque execution normale, donc un controle ne peut
 pas perdre ses dents en silence.
 
-## 3. Progression de ce cycle — 17 novembre 2026, 15:21 (l'installation du SDP 8.0, mesuree)
+## 3. Progression du 18 novembre 2026, 21:40 (l'installation du SDP demande les identifiants myQNX au clavier)
+
+- **La question du cycle** : l'installation du SDP 8.0 ne pouvait pas
+  demarrer, parce que les identifiants myQNX ne doivent ni voyager dans
+  l'environnement d'un conteneur, ni dans un fichier, ni dans une demande
+  de cle. Le script les demande donc **au clavier**, une seule fois, et ne
+  les ecrit nulle part.
+- **Ce que le script fait maintenant** : `read -r` pour le nom d'utilisateur
+  (en minuscules, comme le demande la documentation officielle) et
+  `read -r -s` pour le mot de passe, qui n'est donc jamais affiche. Sans
+  terminal, il s'arrete avec le code 3 en disant pourquoi, **sans envoyer
+  une seule requete**. Le mot de passe ne quitte pas la memoire du shell :
+  il n'est pas exporte dans l'environnement des processus enfants (la purge
+  de la trace QNX le recoit par un tube, pas par une variable), et il est
+  efface (`unset`) avant la sortie.
+- **Ce qui reste en memoire, et pourquoi** : l'options file de `/dev/shm`
+  (une memoire, jamais un disque) qui porte `-myqnx.password`. La
+  documentation officielle impose de passer cette option en argument, et
+  une ligne de commande afficherait le mot de passe a tous les processus de
+  la machine (`ps`). Ce fichier, le jar de cookies et le fichier du mot de
+  passe sont supprimes a la fin, la trace que le QNX Software Center
+  ecrit dans son propre journal est purgee, et le script affiche le
+  controle final : « le mot de passe apparait 0 fois dans $HOME et dans
+  /work ».
+- **Le resultat du run est ecrit dans un fichier hors de ce depot**
+  (`RESULTAT-SDP8-<date>.txt`) : la date, le chemin du SDP, la version de
+  `qcc`, la sortie de `scripts/qnx8-proof.sh` et le code de sortie. Jamais
+  un secret.
+- **Les trois tests du 18/11/2026** : sans terminal -> code 3 et 0 requete
+  envoyee ; reponses vides -> code 3 et 0 requete envoyee ; reponses saisies
+  -> le controle final affiche 0 occurrence du mot de passe dans `$HOME` et
+  dans `/work`.
+
+## 4. Progression du 17 novembre 2026, 15:21 (l'installation du SDP 8.0, mesuree)
 
 - **La question du cycle** : rendre l'installation *reelle* du SDP QNX 8.0
   executable dans le conteneur qui construit ce depot, et prouver par la
@@ -75,7 +108,9 @@ pas perdre ses dents en silence.
   exact est `qnx-setup-2.0.4-202501021438-linux.run` (99,85 Mo).
 - **Ce qui manque encore, exactement** : (1) le fichier
   `qnx-setup-2.0.4-202501021438-linux.run`, (2) les trois variables
-  d'environnement `MYQNX_USER`, `MYQNX_PASSWORD`, `QNX_LICENSE_KEY`,
+  myQNX : le script demande le nom d'utilisateur et le mot de passe **au
+  clavier**, il ne lit plus aucune variable d'environnement et n'ecrit le
+  mot de passe dans aucun fichier,
   (3) un reseau qui atteint les serveurs de gestion de contenu qui portent
   les paquets — la note technique officielle dit que leur nom n'est connu
   qu'a l'execution, et le journal du QNX Software Center
@@ -84,11 +119,12 @@ pas perdre ses dents en silence.
   absent) et `scripts/qnx8-proof.sh` sort toujours 2 (« SDP absent ») : les
   documents publies continuent de dire **NOT MEASURED**, et c'est la verite.
 
-## 4. Les cycles precedents (resume)
+## 5. Les cycles precedents (resume)
 
 | Cycle | Ce qu'il a fait |
 |---|---|
 | 197 | Le chemin du juge : une installation compatible PEP 668, un « 51-test » perime trouve et corrige |
 | 198 | L'outil qui pose l'URL de la video, et la veille qui la detecte |
 | 199-200 | La preuve QNX 8.0 ecrite, publiee et prouvee depuis l'exterieur ; une erreur factuelle sur QX PORTMAP corrigee |
-| 201 (celui-ci) | L'installation du SDP 8.0 rendue executable et mesuree ; le reseau mesure hote par hote |
+| 201 (le 17/11) | L'installation du SDP 8.0 rendue executable et mesuree ; le reseau mesure hote par hote |
+| 202 (celui-ci) | L'installation du SDP demande les identifiants myQNX au clavier : aucune variable d'environnement, aucun fichier qui porte le mot de passe, resultat du run ecrit hors du depot |
