@@ -229,6 +229,7 @@ SECRET_LEAK=0         # set by the hygiene control
 JAR=""                # cookie jar, in /dev/shm
 OPTFILE=""            # options file, in /dev/shm
 PWFILE=""             # file holding the password for curl, in /dev/shm
+HDRFILE=""            # headers of the login answer (cookies), in /dev/shm
 
 say() { printf '%s\n' "$*"; }
 hdr() { printf '\n== %s\n' "$*"; }
@@ -285,6 +286,14 @@ print("fichiers purges : %d" % n)
 PY
 }
 
+grep_secret() {
+    # The pattern is given to grep on a file descriptor (-f /dev/fd/3), fed
+    # by the builtin printf: the password is never an argument of grep, so
+    # it never appears in ps or in /proc/<pid>/cmdline, even while this
+    # search runs for minutes over $HOME (the SDP is several GB).
+    grep -RIl -F -f /dev/fd/3 -- "$@" 3< <(printf '%s\n' "$MYQNX_PASSWORD") 2>/dev/null
+}
+
 controle_occurrence() {
     # The final control of the instructions: the password must appear
     # ZERO time in the home directory and in /work.
@@ -299,7 +308,7 @@ controle_occurrence() {
         say "CONTROLE CIBLE (le mot de passe fait $lon caracteres : une recherche"
         say "globale donnerait un resultat sans signification) :"
         cibles="$HOME/.qnx $QNX_WORKDIR $SDP_DEST /dev/shm"
-        fichiers=$(grep -RIl -F -- "$MYQNX_PASSWORD" $cibles 2>/dev/null)
+        fichiers=$(grep_secret $cibles)
         if [ -n "$fichiers" ]; then
             say "  ECHEC - occurrences dans :"
             printf '%s\n' "$fichiers" | sed 's/^/      /'
@@ -309,7 +318,7 @@ controle_occurrence() {
         fi
         return 0
     fi
-    fichiers=$(grep -RIl -F -- "$MYQNX_PASSWORD" "$HOME" /work 2>/dev/null)
+    fichiers=$(grep_secret "$HOME" /work)
     if [ -n "$fichiers" ]; then
         say ""
         say "CONTROLE FINAL : ECHEC - le mot de passe apparait encore dans :"
@@ -326,6 +335,7 @@ cleanup() {
     [ -n "$OPTFILE" ] && rm -f "$OPTFILE"
     [ -n "$PWFILE" ] && rm -f "$PWFILE"
     [ -n "$JAR" ] && rm -f "$JAR"
+    [ -n "$HDRFILE" ] && rm -f "$HDRFILE"
     if [ -n "${MYQNX_PASSWORD:-}" ]; then
         hdr "(f) hygiene: the trace of the password is purged, the files are deleted"
         purger_trace
@@ -345,6 +355,11 @@ cleanup() {
     exit "$rc"
 }
 trap cleanup EXIT
+# Ctrl-C, a closed terminal or a kill: the hygiene still runs (EXIT), and
+# the result file says how the run ended instead of "exit code 0".
+trap 'exit 130' INT
+trap 'exit 129' HUP
+trap 'exit 143' TERM
 
 # --------------------------------------------------------------------------
 # 1. (a) The pieces that must be present BEFORE anything is done.
@@ -549,7 +564,9 @@ else
     # curl, so it never appears on a command line.
     say ""
     say "-- command: POST $LOGIN_URL  (userlogin, password, returnaddress)"
-    http -sS -o /dev/null -D "$JAR.headers" --max-time 60 \
+    HDRFILE=$(mktemp /dev/shm/qnx-headers.XXXXXX) || { say "cannot create the headers file in /dev/shm"; exit 3; }
+    chmod 600 "$HDRFILE"
+    http -sS -o /dev/null -D "$HDRFILE" --max-time 60 \
         -c "$JAR" -b "$JAR" \
         --data-urlencode "userlogin=$MYQNX_USER" \
         --data-urlencode "password@$PWFILE" \
@@ -563,8 +580,14 @@ else
         say "Nothing was downloaded, nothing was installed."
         exit 4
     fi
-    grep -iE '^(HTTP/|location:|set-cookie:)' "$JAR.headers" 2>/dev/null | sed 's/^/   /'
-    rm -f "$JAR.headers"
+    # The headers are shown WITHOUT any value that opens the session: the
+    # value of every cookie is replaced, and the query string of a
+    # redirection is cut (it may carry a ticket).  The terminal of this
+    # run is read by a person and may be copied into a report.
+    grep -iE '^(HTTP/|location:|set-cookie:)' "$HDRFILE" 2>/dev/null \
+        | sed -E 's/^([Ss][Ee][Tt]-[Cc][Oo][Oo][Kk][Ii][Ee]:[[:space:]]*[^=;[:space:]]+)=[^;]*/\1=<hidden>/; s/^([Ll][Oo][Cc][Aa][Tt][Ii][Oo][Nn]:[[:space:]]*[^?[:space:]]*)\?[^[:space:]]*/\1?<hidden>/' \
+        | sed 's/^/   /'
+    rm -f "$HDRFILE"
 
     # 3b.3 The GET of the installer with the SAME jar.
     say ""
