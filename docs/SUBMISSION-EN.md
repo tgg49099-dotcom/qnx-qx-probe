@@ -193,7 +193,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 94 files, about 3.1 MB (measured on 17 November 2026).
+   The published tree is 95 files, about 3.1 MB (measured on 18 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
