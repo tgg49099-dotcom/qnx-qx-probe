@@ -13,3 +13,12 @@ __pycache__/
 # Fichiers temporaires
 *.tmp
 *.log
+
+# The QNX installer and the QNX SDP are downloaded by
+# scripts/install-sdp8.sh with the myQNX session of the owner, at the root
+# of this repository: proprietary QNX software, not ours to redistribute.
+# They must NEVER be committed or published.
+qnx-setup-*.run
+qnx-setup-*.run.part
+/qnx800/
+/qnx/
