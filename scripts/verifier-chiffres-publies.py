@@ -101,7 +101,12 @@ DOCUMENTS = (
     "docs/YOUTUBE-VIDEO.md",
     "docs/BENCHMARK.md",
     "docs/BENCHMARK.fr.md",
+    "PROGRESSION.md",
+    "PROGRESSION-FR.md",
+    "docs/PREUVE-QNX8.md",
 )
+# Not read: docs/SCENARIO.fr.md (archived unmodified, see docs/README.md) and
+# docs/MESURE-RESEAU-20261117.md (a dated measurement, kept as measured).
 
 # The kinds of published count this control understands.  Each pattern
 # captures the announced number in group 1.  The patterns are deliberately
@@ -124,11 +129,16 @@ PATTERNS = (
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+the QNX 8\.0 build script\b")),
     ("tests", re.compile(r"(?<![\w.])(\d+)\s+the robustness of the rules\b")),
     ("files", re.compile(r"(?<![\w.])(\d+)\s+(?:test\s+)?files\b")),
+    #   "N fichiers dans l'arbre": the same count in the French documents
+    ("files", re.compile(r"(?<![\w.])(\d+)\s+fichiers\s+dans\s+l'arbre\b")),
     ("classes", re.compile(r"(?<![\w.])(\d+)\s+classes\b")),
     # The second version: everything else the documents count.
     #   "N quotations", "N re-read quotations", "N citations" (French)
     ("quotations", re.compile(r"(?<![\w./])(\d+)\s+(?:re-read\s+)?quotations?\b")),
     ("quotations", re.compile(r"(?<![\w./])(\d+)\s+citations\b")),
+    #   "N quoted sentences", "N phrases citees" (French): the same count
+    ("quotations", re.compile(r"(?<![\w./])(\d+)\s+quoted\s+sentences?\b")),
+    ("quotations", re.compile(r"(?<![\w./])(\d+)\s+phrases\s+cit[ée]es\b")),
     #   "N pages", "N cited pages", "N official pages"
     ("pages", re.compile(r"(?<![\w./])(\d+)\s+(?:cited\s+|official\s+)?pages?\b")),
     #   "N blocks", "N console blocks", "N blocs" (French)
@@ -235,6 +245,21 @@ EXEMPTIONS = (
     ("docs/YOUTUBE-VIDEO.md", "3.20 s",
      "the shortest scene of the video, not its duration",
      r"on screen"),
+    # The fifth version (19/11/2026): PROGRESSION and the QNX 8.0 proof are
+    # read too, and "N quoted sentences" is a quotation count (a "35 quoted
+    # sentences" next to "36 quotations" had gone unnoticed in the text
+    # pasted into Devpost).
+    ("PROGRESSION.md", "51-test",
+     "the stale figure that cycle 197 found and fixed, quoted in the dated "
+     "log of the cycles",
+     r"\| 197 \|"),
+    ("PROGRESSION-FR.md", "51-test",
+     "the stale figure that cycle 197 found and fixed, quoted in the dated "
+     "log of the cycles",
+     r"\| 197 \|"),
+    ("docs/PREUVE-QNX8.md", "17 files",
+     "the files of the benchmark corpus, not the files of the repository",
+     r"resource managers"),
 )
 
 # The number written in the counter-proof: one false figure of each kind.
@@ -243,8 +268,10 @@ FALSE_FIGURES = (
     ("tests", "999 tests"),
     ("tests", "999-test"),
     ("files", "999 files"),
+    ("files", "999 fichiers dans l'arbre"),
     ("classes", "999 classes"),
     ("quotations", "999 quotations"),
+    ("quotations", "999 quoted sentences"),
     ("pages", "999 pages"),
     ("blocks", "999 blocks"),
     ("rules", "999 rules"),
