@@ -445,12 +445,13 @@ on the device for which it was built".
 code, it does not run on a QNX board and does not need one. "The device for
 which it was built" is therefore **the host machine** that runs the tool —
 which the rules confirm in the definition of the category we ticked: "a
-host-based tool (Windows, macOS, or Linux) that builds, tests, analyzes, or
-otherwise supports software targeting QNX 8.0". The video shows **the real
-tool** running on **the real public files of the repository** — the resource
-manager published by BlackBerry, a read-only example, a deliberately broken
-fixture — with the real output and the real exit code on screen. Nothing is
-mocked, no compiler output is simulated, no documentation page is captured.
+host-based tool running on Windows, macOS, or Linux that builds, tests,
+analyzes, or otherwise supports software targeting QNX 8.0". The video shows
+**the real tool** running on **the real public files of the repository** —
+the resource manager published by BlackBerry, a read-only example, a
+deliberately broken fixture — with the real output and the real exit code on
+screen. Nothing is mocked, no compiler output is simulated, no documentation
+page is captured.
 
 *If a judge reads this requirement as "the QNX board":* that reading is
 defensible, and the two options it implies both have a cost. (a) Running the

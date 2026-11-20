@@ -491,7 +491,9 @@ one" is not a promise: it is a measurement, and it can be replayed.
 (`tests/test_qx_probe.py`, unchanged since commit `9706199`) was run against
 the *previous* code (`git show 9706199^:qx_probe.py`, md5
 `44c72bf729913a010632f9e8ad6994f5`), the current code being md5
-`bdc705b7636bea56d849a127e7c341a0`:
+`bdc705b7636bea56d849a127e7c341a0` (the test suite of that day,
+`tests/test_qx_probe.py`, unchanged between 05/11/2026 and 11/11/2026, commit
+`9706199`):
 
 ```
 Ran 27 tests in 0.075s
@@ -551,6 +553,10 @@ Ran 13 tests in 0.626s
 FAILED (failures=12)
 ```
 
+The whole-program test file has grown since (19 tests on 14/11/2026, commits
+`1deee46` and `56d45b3`); replaying the same counter-proof today gives 15
+failures out of 19.
+
 The **twelve** failures are the twelve assertions the revision of 14 November
 brings: a handler file alone is not a program without a dispatch table
 (QX001), a loop or a gate helper in another file of the same program counts
@@ -581,6 +587,10 @@ is why the table of § 3 names, for each corrected rule, the test that
 **failed** on the previous code — and why `test_qx011_table_automatique_non_initialisee`
 is described above as a test that passes on both: it guards the case the rule
 must keep catching, not a correction.
+
+The test file has changed since (11/11/2026, commit `6efe400`): replaying the
+same counter-proof today gives 13 failures out of 27, not 11. The 11 above is
+the measurement of 07/11/2026, with the test file of that day.
 
 ---
 

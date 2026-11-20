@@ -136,9 +136,10 @@ scene.
   platform the tool is built for: QX-PROBE is a host tool (it reads C source
   code and needs neither the SDK nor a board). The rules define the
   eligible category "Developer Tooling & Host Tools" as "a host-based tool
-  (Windows, macOS, or Linux) that builds, tests, analyzes, or otherwise
-  supports software targeting QNX 8.0". The argument is written out in
-  [`../RULES.md`](../RULES.md) and in [`../docs/RULES.fr.md`](../docs/RULES.fr.md).
+  running on Windows, macOS, or Linux that builds, tests, analyzes, or
+  otherwise supports software targeting QNX 8.0". The argument is written out
+  in [`../RULES.md`](../RULES.md) and in
+  [`../docs/RULES.fr.md`](../docs/RULES.fr.md).
 * Everything else was filmed for real: no screen capture, no simulated
   compiler output, no fabricated terminal, no filler image.
 

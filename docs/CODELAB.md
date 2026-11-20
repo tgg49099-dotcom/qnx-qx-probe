@@ -253,7 +253,7 @@ has no message loop, so it says exactly what it can prove: *no loop **in
 this file*** — and it tells you where to look (`pool_attr.block_func`). The
 same rule, applied to real code, is what taught it that lesson: on
 `devu-uvc`, a QNX resource manager published on GitHub, the loop is in
-`main.c` and the handlers are in `uvc_rm.c` — see
+`uvc_driver.c` and the handlers are in `uvc_rm.c` — see
 [`docs/BENCHMARK.md`](BENCHMARK.md) §6.
 
 ### 3.4 The reply returns more parts than the IOV holds (QX009)
@@ -336,7 +336,9 @@ RESULT: 11 finding(s), 0 ERROR, 0 WARN
 ```
 
 The read-only resource manager is **not** condemned for having no `write`
-handler: every slot of the table has a documented POSIX default.
+handler: `write` has a documented POSIX default (`iofunc_write_default()`),
+and the slots that have none (`notify`, `notify64`, `msg`, `space`, …) are
+reported as `INFO`, never as an actionable finding.
 
 ---
 
@@ -400,10 +402,11 @@ tutorial that drifts from the tool is caught by a single command.
    assignments, and pass `NULL` to `resmgr_attach()`. Expected: **two
    `ERROR QX001`**, one for each table (`connect_funcs` and `io_funcs`).
    *And observe:* deleting **only** the `iofunc_func_init()` call produces
-   **no** finding — the table is still declared, and a static table is
-   zero-initialised by C, which is a deliberate choice (see QX011). This is
-   a limit of a static checker, and it is documented in
-   [RULES.md](../RULES.md) (QX011).
+   **no actionable finding** — the three `INFO QX008` remain, because
+   `devctl`, `unblock` and `notify` are then unwired. The table is still
+   declared, and a static table is zero-initialised by C, which is a
+   deliberate choice (see QX011). This is a limit of a static checker, and
+   it is documented in [RULES.md](../RULES.md) (QX011).
 2. **Make the tool report a NULL dispatch table (QX001, second case).**
    Keep the tables, but pass `NULL` instead of `&connect_funcs` and
    `&io_funcs` to `resmgr_attach()`. The documentation allows `NULL` for
@@ -420,9 +423,10 @@ tutorial that drifts from the tool is caught by a single command.
    known limit below before you apply that to a real project).
 4. **Make the tool report an uninitialised automatic table (QX011).**
    Declare the two dispatch tables inside `main()` (on the stack) instead of
-   at file scope, and do not initialise them. Expected: **two `WARN QX011`**,
-   one per table. A *static* table is zero-initialised by C, so it is
-   **not** reported.
+   at file scope, **and delete the `iofunc_func_init()` call** — an
+   automatic table that is never initialised is the only case the rule
+   reports. Expected: **two `WARN QX011`**, one per table. A *static* table
+   is zero-initialised by C, so it is **not** reported.
 5. **Make the tool report an overflow of `iofunc_func_init()` (QX002).**
    The signature is `iofunc_func_init(nconnect, connect_funcs, nio,
    io_funcs)` — the **connect** table comes first. Ask for 40 entries of the
@@ -523,8 +527,10 @@ RESULT: 5 finding(s), 0 ERROR, 0 WARN
 ```
 
 Given alone, `lab/delegue.c` still gets ERROR QX004: the checker cannot see
-a file it is not given. The **known limits of each of the eleven rules** are
-in **[RULES.md](../RULES.md)**.
+a file it is not given. The **known limits of the rules that have one** —
+seven of the eleven (QX001, QX002, QX003, QX004, QX006, QX007, QX011) — are
+in **[RULES.md](../RULES.md)**; the four others (QX005, QX008, QX009, QX010)
+state their limits in the same sections, in prose.
 
 ---
 

@@ -248,7 +248,9 @@ the examples of the repository could not produce them.
 linter of **08/11/2026** (md5 `bdc705b7636bea56d849a127e7c341a0`):
 
 ```console
-$ git show eeb99e4:qx_probe.py > qx_probe.py && python3 -I scripts/benchmark-corpus.py
+$ git show 6efe400:scripts/benchmark-corpus.py > scripts/benchmark-corpus-old.py
+$ git show eeb99e4:qx_probe.py > qx_probe.py
+$ python3 -I scripts/benchmark-corpus-old.py
 ...
 bsp_raspberrypi-bcm2712-rpi5/.../fan/resmgr.c    7 finding(s), 0 ERROR, 2 WARN (exit 1)
     WARN QX011 ...: the dispatch table 'connect_funcs' is an automatic variable that is never initialised: ...
@@ -267,6 +269,9 @@ devu-uvc/uvc_rm.c                                3 finding(s), 1 ERROR, 0 WARN (
 
 17/17 files analysed, 3 ERROR in total
 ```
+
+(the script of 11/11/2026 is used because the current one calls `Finding.loc()`,
+added to the linter on 13/11/2026)
 
 **Nine false positives in five files**, one of them at ERROR level. The
 "after" measurement of § 4 — the same corpus, the same commits, the current

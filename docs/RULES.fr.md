@@ -354,8 +354,9 @@ on the device for which it was built ».
 code source C, il ne s'execute pas sur une carte QNX et n'a pas besoin d'en
 avoir une. « the device for which it was built » est donc **la machine hote**
 qui fait tourner l'outil — ce que le reglement confirme dans la definition
-de la categorie retenue : « a host-based tool (Windows, macOS, or Linux) that
-builds, tests, analyzes, or otherwise supports software targeting QNX 8.0 ».
+de la categorie retenue : « a host-based tool running on Windows, macOS, or
+Linux that builds, tests, analyzes, or otherwise supports software targeting
+QNX 8.0 ».
 La video montre **le vrai outil** qui s'execute sur **les vrais fichiers
 publics du depot** — le gestionnaire de ressources publie par BlackBerry, un
 exemple en lecture seule, une fixture volontairement abimee — avec la sortie

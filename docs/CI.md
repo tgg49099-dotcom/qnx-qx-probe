@@ -18,9 +18,11 @@ to it.
 
 SARIF is the OASIS standard read by GitHub code scanning, GitLab, Azure
 DevOps and the SARIF viewers of VS Code and Visual Studio. The output is
-validated in this repository against the official OASIS SARIF 2.1.0 JSON
-schema (35 results on `examples/*.c` and the test fixture: valid; the same
-document with `"version": "2.0"` is rejected).
+validated against the official OASIS SARIF 2.1.0 JSON schema (35 results on
+`examples/*.c` and the test fixture: valid; the same document with
+`"version": "2.0"` is rejected). The check is run with `jsonschema` outside
+this repository, which keeps the tool itself dependency-free; what runs here
+is the structural check of `tests/test_output_formats.py`.
 
 Each rule of the SARIF document carries its **title** (the heading of
 [RULES.md](../RULES.md), e.g. `QX004: the iofunc_*_verify() access gate is

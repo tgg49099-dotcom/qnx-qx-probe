@@ -183,6 +183,7 @@ tests/test_build_qcc.py                      4 tests: the qcc variant and target
 tests/test_robustness.py                     8 tests: 20 variants of the official example in ordinary C styles (#if 0, '}' literal, gate two helpers deep, = &handler, table pointer, set-up function, gate macro, delegation to iofunc_*_default())
 tests/test_qnx_target.py                     16 tests: the ELF check (a Linux binary is refused), the target run (fake ssh), the SDP environment loaded
 tests/test_multifile.py                      19 tests: a resource manager split over several files read as one program, the command line (--help, unknown option, missing file) without a traceback
+tests/test_published_figures.py             9 tests: the controls that compare the published figures and the published benchmark with the real ones, each with its counter-proof
 video/SCENARIO.md                            the video demonstration scenario
 ```
 
@@ -256,7 +257,7 @@ table: one line per verification, its result and its exit code.
 Before that table, the command prints the full log of every check — the 81
 test names, the 12 replayed codelab blocks, the 36 re-read quotations and the
 17 benchmark files: **454 lines** in all for the run below.  The two blocks
-that follow are the **end of the real output**, measured on 14 November 2026
+that follow are the **end of the real output**, measured on 15 November 2026
 on the build server of this revision.  That server has no `ffmpeg`, so the
 pixel audit of the video is named in the table, it is **never** reported as
 OK, and the command says what is missing:
