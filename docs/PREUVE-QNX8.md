@@ -47,16 +47,16 @@ is incomplete, and the control says so instead of passing.
 | A05 | the build script names the qcc variant of the x86_64 target | grep -n 'gcc_ntox86_64' scripts/build_qcc.sh | VARIANT="gcc_ntox86_64" | scripts/build_qcc.sh:25 |
 | A06 | the one-command proof script detects the absence of the SDP 8.0 and fails cleanly, without simulating anything | bash scripts/qnx8-proof.sh | ERROR: the QNX SDP 8.0 is not installed on this machine. | scripts/qnx8-proof.sh:199 |
 | A07 | the SDP path of that script is exercised with a FAKE compiler: the flags it uses are the real ones | bash scripts/qnx8-proof.sh --self-test | qcc -Vgcc_ntox86_64 -Werror -o build/x86_64/qxprobe-demo examples/qnx80_resmgr_minimal.c | scripts/build_qcc.sh:66 |
-| A08 | the linter runs on the official example of the QNX 8.0 documentation and reports no error and no warning | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | RESULT: 6 finding(s), 0 ERROR, 0 WARN | examples/qnx80_resmgr_official_example.c:1 |
-| A09 | the linter runs on 17 real QNX resource managers written by other people, and finds one real defect | python3 -I scripts/benchmark-corpus.py | 17/17 files analysed, 1 ERROR in total | scripts/benchmark-corpus.py:1 |
-| A10 | the defect it finds is a missing access gate in third-party code | python3 -I scripts/benchmark-corpus.py | ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify() | scripts/benchmark-corpus.py:1 |
-| A11 | every rule is backed by a page of the official documentation, and the 36 quotations are found again in those pages | python3 -I scripts/verifier-citations.py | VERDICT: ALL CITATIONS VERIFIED | scripts/verifier-citations.py:1 |
+| A08 | the linter runs on the official example of the QNX 8.0 documentation and reports no error and no warning | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | RESULT: 6 finding(s), 0 ERROR, 0 WARN | examples/qnx80_resmgr_official_example.c:20 |
+| A09 | the linter runs on 17 real QNX resource managers written by other people, and finds one real defect | python3 -I scripts/benchmark-corpus.py | 17/17 files analysed, 1 ERROR in total | scripts/benchmark-corpus.py:280 |
+| A10 | the defect it finds is a missing access gate in third-party code | python3 -I scripts/benchmark-corpus.py | ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify() | qx_probe.py:843 |
+| A11 | every rule is backed by a page of the official documentation, and the 36 quotations are found again in those pages | python3 -I scripts/verifier-citations.py | VERDICT: ALL CITATIONS VERIFIED | scripts/verifier-citations.py:356 |
 | A12 | the rule QX004 is backed by the official access gate iofunc_read_verify() | sed -n '141p' RULES.md | iofunc_read_verify() | RULES.md:141 |
 | A13 | the codelab of the submission answers in public | curl -sS -L -o /dev/null -w '%{http_code}' https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md | 200 | docs/CODELAB.md:1 |
 | A14 | the public repository has a main branch | git ls-remote https://github.com/tgg49099-dotcom/qnx-qx-probe.git refs/heads/main | refs/heads/main | git |
 | A15 | this proof is published in the public repository | curl -sS -L -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/docs/PREUVE-QNX8.md | 200 | docs/PREUVE-QNX8.md:1 |
-| A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:1 |
-| A17 | the test suite of the tool is green | bash scripts/run_tests.sh | RESULT: QX-PROBE suite GREEN | scripts/run_tests.sh:1 |
+| A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:344 |
+| A17 | the test suite of the tool is green | bash scripts/run_tests.sh | RESULT: QX-PROBE suite GREEN | scripts/run_tests.sh:72 |
 
 ## The fourteen official pages
 

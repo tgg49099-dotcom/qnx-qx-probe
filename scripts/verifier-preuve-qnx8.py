@@ -15,6 +15,10 @@ WHAT IT CHECKS
      the command again, right now, and the output must still contain what
      the proof says.  An assertion with NO COMMAND, or with NO REAL OUTPUT,
      is a FAILED line: the proof is incomplete, and the control says so.
+     The SOURCE of the assertion is checked too: the file must be in this
+     repository, the line must exist, and that line must really carry the
+     claim - an empty line, or a line that says nothing about the claim, is
+     a FAILED line.  A pointer that only exists is not a proof.
   2. THE FOURTEEN OFFICIAL PAGES - each URL is fetched again; it must
      answer HTTP 200, its SHA-256 is compared with the one written in the
      proof, and the page must be one of the pages the rules really cite.
@@ -51,9 +55,11 @@ EXIT CODES
 THE COUNTER-PROOF
 
   A control that has never met a false line is not known to catch one.
-  `--contre-epreuve` adds two deliberately false lines to the table - one
-  with no command, one whose output the command cannot produce - and checks
-  that both are reported as FAILED.  A line that goes unnoticed fails the
+  `--contre-epreuve` adds four deliberately false lines to the table - one
+  with no command, one whose output the command cannot produce, one whose
+  source points at an EMPTY line, and one whose source points at a line
+  that says nothing about the claim - and checks that all of them are
+  reported as FAILED.  A line that goes unnoticed fails the
   counter-proof.
 
 USAGE
@@ -253,8 +259,44 @@ class Row:
         self.detail = detail
 
 
-def check_source(source: str) -> str:
-    """The file (and the line) the proof points at must exist."""
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9_]{2,}")
+
+# The words of an English sentence that carry no fact.  They are not used to
+# decide whether a cited line carries the claim.
+STOPWORDS = set("""
+the and for with that this from not are was has have had been being will
+would shall should could may might must can cannot do does did done you
+your our their there here then than when what where which while who whom
+whose how why where all any both each every few more most other others
+same such only very much many own just also into over under again further
+once one two three four five six seven eight nine ten
+une des les pour avec que qui dans sur est pas plus son ses ce au aux
+une des le la les du de en et ou ne pas plus son ses que qui dont
+""".split())
+
+
+def key_words(text: str) -> set[str]:
+    """The words of a text that carry a fact: at least four letters, and
+    not a word of the grammar."""
+    out = set()
+    for word in WORD.findall(text or ""):
+        word = word.lower()
+        if len(word) < 4 or word in STOPWORDS:
+            continue
+        out.add(word)
+    return out
+
+
+def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
+    """The file (and the line) the proof points at must exist, and the line
+    must really carry the claim.
+
+    A pointer that only exists proves nothing: until now this control
+    accepted `README.md:2` - an empty line - for any assertion.  The line
+    cited must now be a line that really says something about the claim:
+    it must not be empty, and it must carry at least one of the words of
+    the assertion or of the expected output.
+    """
     if not source:
         return "no source"
     path = source.split(":")[0].strip().strip("`")
@@ -266,9 +308,20 @@ def check_source(source: str) -> str:
     if not p.is_file():
         return "the file %s is not in this repository" % path
     if line is not None:
-        total = len(p.read_text(encoding="utf-8", errors="replace").splitlines())
-        if line > total:
-            return "%s has %d lines: the line %d does not exist" % (path, total, line)
+        lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+        if line > len(lines):
+            return "%s has %d lines: the line %d does not exist" % (
+                path, len(lines), line)
+        cited = lines[line - 1].strip()
+        if not cited:
+            return ("%s line %d is empty: it carries no claim"
+                    % (path, line))
+        wanted = key_words(affirmation) | key_words(sortie)
+        if wanted:
+            low = cited.lower()
+            if not any(word in low for word in wanted):
+                return ("%s line %d carries no word of the claim: it reads %r"
+                        % (path, line, cited[:70]))
     return ""
 
 
@@ -299,7 +352,7 @@ def check_main(rows: list[dict]) -> list[Row]:
                            "assertion verifiable"))
             continue
         if source not in ("-", "git", "network"):
-            problem = check_source(source)
+            problem = check_source(source, affirmation, sortie)
             if problem:
                 out.append(Row(ident, affirmation, commande, source, "FAILED",
                                problem))
@@ -564,18 +617,29 @@ FAKE_ROWS = [
      "cells": ["FAKE1", "a claim with no command at all", "",
                "this line must never be published", "README.md:1"]},
     {"id": "FAKE2", "malformed": False,
-     "cells": ["FAKE2", "a claim whose output the command cannot produce",
+     "cells": ["FAKE2", "the QNX 8.0 resource-manager protocol is checked "
+               "by this tool",
                "echo hello", "a line that no command of this repository prints",
                "README.md:1"]},
+    # The command works and the output is the expected one: the ONLY thing
+    # wrong with this line is the pointer.  README.md line 2 is empty.
+    {"id": "FAKE3", "malformed": False,
+     "cells": ["FAKE3", "the pointer of this line is an empty line",
+               "echo hello", "hello", "README.md:2"]},
+    # The pointer exists, the line is not empty, but it says nothing about
+    # the claim: the first line of a shell script is not a proof.
+    {"id": "FAKE4", "malformed": False,
+     "cells": ["FAKE4", "the eleven rules are documented in RULES.md",
+               "echo hello", "hello", "scripts/run_tests.sh:1"]},
 ]
 
 
 def counter_proof(text: str) -> int:
-    """Two false lines are added to the table: both must be caught."""
+    """Four false lines are added to the table: all of them must be caught."""
     rows = [r for r in rows_of(text) if r["id"].startswith("A")] + FAKE_ROWS
     results = check_main(rows)
     print("======================================================================")
-    print("COUNTER-PROOF - two deliberately false lines are added to the table")
+    print("COUNTER-PROOF - four deliberately false lines are added to the table")
     print("======================================================================")
     caught = 0
     for r in results:

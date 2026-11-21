@@ -16,13 +16,15 @@ cede — jamais le code canonique de QNX.
 ## QX001 — aucune table de dispatch cablee
 
 * **Niveau :** ERROR
-* **Source :** `resmgr_attach()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
+* **Sources :**
+  * `resmgr_attach()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_attach.html>
+  * `resmgr_io_funcs_t()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
+  * `iofunc_func_init()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
 * **Ce que dit la doc :** `resmgr_attach()` prend `connect_funcs` et `io_funcs`,
   « a pointer to the `resmgr_connect_funcs_t` structure that defines the
   POSIX-level connect functions » ; sans ces tables, le gestionnaire n'a rien a
   executer pour le client.
-* **Etat actuel (v9, 14/11/2026) :** les quatre facons documentees de cabler
+* **Etat actuel (v10, 14/11/2026) :** les quatre facons documentees de cabler
   une table sont reconnues (declaration, initialiseur C99, `iofunc_func_init()`,
   table passee a `resmgr_attach()`), avec les deux orthographes des membres
   (`.read` et `.io_read`). Un fichier qui ne declare aucune table et n'appelle
@@ -38,19 +40,46 @@ cede — jamais le code canonique de QNX.
   exemple officiel du guide « Writing a Resource Manager ») peut passer une
   table d'E/S NULL ; la table de connexion reste exigee.
 
-## QX002 — plus de slots cables que `iofunc_func_init()` n'en remplit
+## QX002 — `iofunc_func_init()` demande de remplir plus d'entrees que la table n'en contient
 
 * **Niveau :** ERROR
-* **Source :** `iofunc_func_init()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
-* **Ce que dit la doc :** « The `nconnect` and `nio` arguments indicate how many
-  entries this function should fill. This is in place to support forward
-  compatibility. » — `nio` designe un **nombre d'entrees a remplir**, pas une
-  borne de tableau.
-* **Limite connue :** la regle compte les slots cables, pas les slots
-  *positionnes* dans la structure. Ce defaut a ete corrige dans cette version
-  (voir la section « Ce qui a ete corrige dans cette version, et comment c'est
-  prouve » de ce fichier).
+* **Sources :**
+  * `iofunc_func_init()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+  * `resmgr_io_funcs_t()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
+  * `resmgr_connect_funcs_t()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_connect_funcs_t.html>
+* **Ce que dit la doc :**
+  > `nio` — "The number of entries in the io table that you want to fill.
+  > Typically, you pass `_RESMGR_IO_NFUNCS` for this argument."
+  >
+  > `nconnect` — "The number of entries in the connect table that you want to
+  > fill."
+  >
+  > "The `nconnect` and `nio` arguments indicate how many entries this
+  > function should fill. This is in place to support forward compatibility."
+  >
+  > "The `resmgr_connect_funcs_t` structure is a table of the POSIX-level
+  > connect functions that are used by a resource manager."
+* **Ce que verifie la regle :** le seul debordement honnete est un compte
+  **plus grand que la table** : plus de **34** entrees pour la table d'E/S
+  (la structure `resmgr_io_funcs_t` declare 34 membres de fonctions, plus
+  `nfuncs`), plus de **8** entrees pour la table de connexion
+  (`resmgr_connect_funcs_t` declare 8 membres de fonctions, plus `nfuncs`).
+  Dans ce cas, la bibliotheque ecrit au-dela de la fin de la structure.
+* **Ce qui a change dans cette version :** la regle comparait le nombre de
+  **slots cables** au nombre d'**entrees remplies**. C'etait un faux
+  positif : l'exemple officiel remplit les valeurs par defaut, puis en
+  remplace certaines (« At this point, the defaults have been filled in. You
+  may now override some of the default functions with functions that you have
+  written »), donc cabler plus de slots que `nio` est legitime. Pire : le
+  vrai debordement n'etait jamais detecte. La regle signale maintenant le
+  debordement, et rien d'autre.
+* **Limite connue :** seul un compte **litteral** est verifie : un compte
+  contenu dans une variable n'est pas verifie du tout (le cas de la macro est
+  signale par `QX010`, en INFO). Le compte est compare a la taille des
+  **tables standard** de QNX 8.0 — 34 membres de fonctions pour
+  `resmgr_io_funcs_t` et 8 pour `resmgr_connect_funcs_t` — donc un programme
+  qui passe a `iofunc_func_init()` une structure de son propre est mesure sur
+  ces tailles.
 
 ## QX003 — un slot pointe vers une fonction non definie
 
@@ -231,8 +260,9 @@ cede — jamais le code canonique de QNX.
 ## QX011 — aucune table n'est initialisee par `iofunc_func_init()`
 
 * **Niveau :** WARN
-* **Source :** `iofunc_func_init()`
-  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+* **Sources :**
+  * `iofunc_func_init()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html>
+  * `resmgr_io_funcs_t()` <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html>
 * **Ce que dit la doc :** c'est cette fonction qui remplit les tables avec les
   valeurs par defaut POSIX. Sans elle, les pointeurs restent a leur valeur
   initiale.
@@ -280,6 +310,8 @@ maintenant couverte par un test qui **echoue sur le code precedent** et
 | QX004 | une verification deleguee etait ratee ; une porte citee dans une chaine comptait | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
 | QX006 | une boucle deleguee a un pool de threads (`pool_attr.block_func = &resmgr_block`) n'etait pas reconnue ; un gestionnaire reparti sur plusieurs fichiers etait condamne en ERROR | `test_api_resmgr_block_et_resmgr_handler` (le cas delegue est verifie dans le meme test), `test_qx006_boucle_de_messages_absente` |
 | QX007 | la meme limite que QX006 : le handler peut vivre dans une autre unite de compilation | `test_api_resmgr_block_et_resmgr_handler`, `test_qx007_dispatch_absent` |
+| QX001 (v9) | `resmgr_attach()` avec un chemin NULL (preparation du cadre seule, aucune table liee) etait signale deux fois dans procnto | `tests/test_multifile.py`, classe `FrameworkOnlyAttach` (4 tests, 1 rouge sur v8) |
+| QX001 (v10) | l'enregistrement pour les seules demandes de montage du guide officiel (`_FTYPE_MOUNT`, `_RESMGR_FLAG_FTYPEONLY`, aucune table d'E/S) etait signale | la meme classe, deux tests de plus (rouges sur v9) |
 | QX001, QX004, QX005, QX006, QX007, QX011 (v8) | mesure sur 9 gestionnaires de sources QNX 6.4 publiees : 21 fausses ERROR et 10 faux WARN sur du code correct (la seule ERROR restante est vraie) (fichiers de handlers, boucle ou auxiliaire de porte dans un autre fichier, chemin racine `""`, table `extern` dans une fonction, OCB propre) | `tests/test_multifile.py` (19 tests, 15 rouges sur la v7) |
 | QX011 | une table statique (mise a zero) etait avertee a tort ; une table membre d'une structure etait dite « automatique » ; seul le premier appel a `iofunc_func_init()` etait lu | `test_qx011_table_mise_a_zero_statique` (il couvre aussi le cas membre et le deuxieme appel), `test_qx011_table_automatique_non_initialisee` |
 
