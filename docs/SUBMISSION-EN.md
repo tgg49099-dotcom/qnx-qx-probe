@@ -427,6 +427,11 @@ nor this text pretends otherwise. The video is **in English**, as the rules
 require, and every command it shows is a command of the repository, so the
 judge can replay them as they are.
 
+The video was recorded on 15 November 2026, when the suite had 81 tests; the
+suite has had 97 tests since 17 November 2026 (the 16 added that day check the
+QNX 8.0 target path). The video therefore shows the older count on screen; the
+number to read today is 97, and `bash scripts/run_tests.sh` prints it.
+
 **The codelab field.** The rules ask, for the "Best Codelab/Tutorial" bonus,
 for *"the URL of a codelab or tutorial authored during the Submission Period
 that teaches the reader how to perform a task on or for QNX 8.0"*. The URL to

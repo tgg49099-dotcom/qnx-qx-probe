@@ -124,6 +124,7 @@ qx_probe.py                                  la sonde (un seul fichier, sans dep
 docs/AI-ASSISTED-RULES.md                    comment les onze regles ont ete ecrites, et comment chacune a ete prouvee
 docs/BENCHMARK.fr.md                         le correspondant francais de docs/BENCHMARK.md, mis a jour avec lui
 docs/BENCHMARK.md                            le benchmark : QX-PROBE sur 17 vrais gestionnaires de ressources QNX
+docs/CI.md                                   la sortie JSON et SARIF, et un exemple de GitHub Actions
 docs/CODELAB.md                              le tutoriel pratique (30 minutes, aucun SDK requis)
 docs/MESURE-RESEAU-20261117.md               la mesure du reseau du 17 novembre 2026 : ce que repond chaque hote QNX depuis la machine qui construit ce depot
 docs/PREUVE-QNX8.md                          la preuve QNX 8.0, ligne par ligne : l'affirmation, la commande exacte, la sortie reelle, le fichier qui la porte
@@ -157,6 +158,8 @@ scripts/verifier-soumission-devpost.py       verifie le texte de soumission : lo
 scripts/verify-all.sh                        rejoue toutes les preuves publiees en une commande
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  le fichier sabote utilise par les tests et la video
 tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15 detection, 2 format de sortie
+tests/test_output_formats.py                 14 tests : numeros de ligne, sortie JSON et SARIF, pas de QX003 sur NULL
+tests/test_build_qcc.py                      4 tests : la variante qcc et la cible de scripts/build_qcc.sh (faux qcc)
 tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
 tests/test_qnx_target.py                     16 tests : le controle ELF (un binaire Linux est refuse), l'execution sur cible (faux ssh), l'environnement du SDP charge
 tests/test_multifile.py                      19 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback

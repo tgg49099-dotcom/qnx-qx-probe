@@ -260,6 +260,14 @@ EXEMPTIONS = (
     ("docs/PREUVE-QNX8.md", "17 files",
      "the files of the benchmark corpus, not the files of the repository",
      r"resource managers"),
+    # The sixth version (21/11/2026): the submission text reconciles the test
+    # count burned into the recorded video (81, on the day it was recorded)
+    # with the count of the suite today (97).  The older count is a dated
+    # historical measurement, not a stale figure.
+    ("docs/SUBMISSION-EN.md", "81 tests",
+     "the number of tests when the video was recorded (15 November 2026), "
+     "not the number of the suite today",
+     r"15 November 2026"),
 )
 
 # The number written in the counter-proof: one false figure of each kind.
