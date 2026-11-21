@@ -262,10 +262,12 @@ EXIT CODES
   2 = malformed call
   INFO findings never change the exit code.
 
-The whole procedure takes less than three seconds on a modern laptop.
+The three commands of steps 1 to 3 take a few seconds - 8.15 to 8.56 s measured
+on the build machine on 21 November 2026 for the test suite and the tool -
+plus the time of the clone, which depends on the network.
 <!-- FIN:TESTING -->
 
-_Measured: 3508 characters._
+_Measured: 3651 characters._
 
 > The three commands of steps 1 to 3 are the ones a judge has to type;
 > step 4 is optional and needs the network. Everything else in the
@@ -520,7 +522,7 @@ This is the mapping, so that nothing is left to chance.
 | **Technological Implementation** | § 7: a real analyser, 1123 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 97 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntox86_64 -Werror`) that is labelled NOT MEASURED rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
-| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 measured on 07/11/2026 against the code before commit `9706199`, 4 failures measured on 11/11/2026 after the benchmark, and 12 failures out of 13 measured on 14/11/2026 against commit `ef17d75` - these three are in `docs/AI-ASSISTED-RULES.md`; a fourth one, 4 failures out of 8 measured on 14/11/2026 against commit `268f157` on the robustness file, is replayed by `git show 268f157:qx_probe.py > qx_probe.py && python3 -I tests/test_robustness.py`) and passes on the current one; `scripts/verifier-citations.py` re-reads the 14 cited pages and checks that the 36 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
+| **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The rules were drafted with an AI agent; each one was kept only if an official QNX 8.0 page justified it, and the removals are human decisions. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 measured on 07/11/2026 against the code before commit `9706199`, 4 failures measured on 11/11/2026 after the benchmark, and 12 failures out of 13 measured on 14/11/2026 against commit `ef17d75` - these three are in `docs/AI-ASSISTED-RULES.md`; a fourth one, 4 failures out of 8 measured on 14/11/2026 against commit `268f157` on the robustness file, is replayed by `git show 268f157:qx_probe.py > qx_probe.py && python3 -I tests/test_robustness.py`) and passes on the current one; `scripts/verifier-citations.py` re-reads the 14 cited pages and checks that the 36 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
 
 ## 17. Where every figure comes from
 

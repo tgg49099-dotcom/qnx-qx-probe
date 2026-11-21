@@ -268,6 +268,14 @@ EXEMPTIONS = (
      "the number of tests when the video was recorded (15 November 2026), "
      "not the number of the suite today",
      r"15 November 2026"),
+    # The seventh version (21/11/2026): the testing instructions publish the
+    # duration of the commands measured on the build machine of that day
+    # (8.15 to 8.56 s for the test suite and one run of the tool).  It is
+    # a dated timing of the commands, not the duration of the video.
+    ("docs/SUBMISSION-EN.md", "8.56 s",
+     "the duration of the test suite and of one run of the tool, measured on "
+     "21 November 2026 on the build machine, not the duration of the video",
+     r"build machine|21 November 2026"),
 )
 
 # The number written in the counter-proof: one false figure of each kind.
