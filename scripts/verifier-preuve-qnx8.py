@@ -55,12 +55,13 @@ EXIT CODES
 THE COUNTER-PROOF
 
   A control that has never met a false line is not known to catch one.
-  `--contre-epreuve` adds four deliberately false lines to the table - one
+  `--contre-epreuve` adds six deliberately false lines to the table - one
   with no command, one whose output the command cannot produce, one whose
-  source points at an EMPTY line, and one whose source points at a line
-  that says nothing about the claim - and checks that all of them are
-  reported as FAILED.  A line that goes unnoticed fails the
-  counter-proof.
+  source points at an EMPTY line, one whose source points at a line
+  that says nothing about the claim, one whose source points OUTSIDE the
+  file, and one whose source is the line 0 (the lines are counted from 1) -
+  and checks that all of them are reported as FAILED.  A line that goes
+  unnoticed fails the counter-proof.
 
 USAGE
 
@@ -287,6 +288,14 @@ def key_words(text: str) -> set[str]:
     return out
 
 
+def normalise(text: str) -> str:
+    """The text as it can be compared: lowercase, without the markdown
+    marks, without the quotes, and with a single space between the words."""
+    text = re.sub(r"[`*_]", "", (text or "").lower())
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
     """The file (and the line) the proof points at must exist, and the line
     must really carry the claim.
@@ -294,8 +303,16 @@ def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
     A pointer that only exists proves nothing: until now this control
     accepted `README.md:2` - an empty line - for any assertion.  The line
     cited must now be a line that really says something about the claim:
-    it must not be empty, and it must carry at least one of the words of
-    the assertion or of the expected output.
+
+      1. it must not be empty;
+      2. it must carry the expected text itself (the output the proof
+         records), the spaces and the markdown marks apart;
+      3. when the expected text cannot be in the line - it is a shell
+         variable, or an HTTP status code - the line must at least carry
+         one of the significant words of the assertion or of the expected
+         output.
+
+    A line that carries neither is a FAILED line: it is not a proof.
     """
     if not source:
         return "no source"
@@ -309,6 +326,9 @@ def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
         return "the file %s is not in this repository" % path
     if line is not None:
         lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+        if line < 1:
+            return "%s: the line %d does not exist (the lines are counted " \
+                   "from 1)" % (path, line)
         if line > len(lines):
             return "%s has %d lines: the line %d does not exist" % (
                 path, len(lines), line)
@@ -316,10 +336,15 @@ def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
         if not cited:
             return ("%s line %d is empty: it carries no claim"
                     % (path, line))
+        low = normalise(cited)
+        raw = cited.lower()
+        for alt in [a.strip() for a in sortie.split(ALT) if a.strip()]:
+            expected = normalise(alt)
+            if expected and expected in low:
+                return ""
         wanted = key_words(affirmation) | key_words(sortie)
         if wanted:
-            low = cited.lower()
-            if not any(word in low for word in wanted):
+            if not any(word in raw for word in wanted):
                 return ("%s line %d carries no word of the claim: it reads %r"
                         % (path, line, cited[:70]))
     return ""
@@ -631,15 +656,25 @@ FAKE_ROWS = [
     {"id": "FAKE4", "malformed": False,
      "cells": ["FAKE4", "the eleven rules are documented in RULES.md",
                "echo hello", "hello", "scripts/run_tests.sh:1"]},
+    # The pointer points OUTSIDE the file: the line does not exist.
+    {"id": "FAKE5", "malformed": False,
+     "cells": ["FAKE5", "the pointer of this line is outside the file",
+               "echo hello", "hello", "README.md:9999"]},
+    # The pointer is the line 0: the lines are counted from 1, so this line
+    # does not exist either (without the guard, it would have pointed at the
+    # LAST line of the file).
+    {"id": "FAKE6", "malformed": False,
+     "cells": ["FAKE6", "the pointer of this line is the line 0",
+               "echo hello", "hello", "README.md:0"]},
 ]
 
 
 def counter_proof(text: str) -> int:
-    """Four false lines are added to the table: all of them must be caught."""
+    """Six false lines are added to the table: all of them must be caught."""
     rows = [r for r in rows_of(text) if r["id"].startswith("A")] + FAKE_ROWS
     results = check_main(rows)
     print("======================================================================")
-    print("COUNTER-PROOF - four deliberately false lines are added to the table")
+    print("COUNTER-PROOF - six deliberately false lines are added to the table")
     print("======================================================================")
     caught = 0
     for r in results:
@@ -662,7 +697,7 @@ def counter_proof(text: str) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--contre-epreuve", action="store_true",
-                    help="add two false lines and check that they are caught")
+                    help="add six false lines and check that they are caught")
     ap.add_argument("--captures", action="store_true",
                     help="rebuild the pictures of the proof from their commands")
     ap.add_argument("--preuve", default=str(PROOF),

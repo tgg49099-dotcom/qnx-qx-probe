@@ -37,8 +37,9 @@ cede — jamais le code canonique de QNX.
   sur procnto, `proc/message.c` : 2 fausses ERROR avant v9, 0 apres). Detail
   et preuves : [RULES.md](../RULES.md). Depuis v10, un enregistrement pour
   les seules demandes de montage (`_FTYPE_MOUNT` + `_RESMGR_FLAG_FTYPEONLY`,
-  exemple officiel du guide « Writing a Resource Manager ») peut passer une
-  table d'E/S NULL ; la table de connexion reste exigee.
+  guide QNX 8.0 « Writing a Resource Manager », page « Mount resmgr »,
+  <https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.resmgr/topic/messages_Mount_resmgr.html>)
+  peut passer une table d'E/S NULL ; la table de connexion reste exigee.
 
 ## QX002 — `iofunc_func_init()` demande de remplir plus d'entrees que la table n'en contient
 
@@ -305,7 +306,7 @@ maintenant couverte par un test qui **echoue sur le code precedent** et
 | Regle | Defaut corrige | Test qui le prouve |
 |---|---|---|
 | QX001 | l'exemple officiel de la documentation etait signale ; les initialiseurs de structure C99 etaient invisibles | `test_qx001_exemple_officiel_de_la_documentation`, `test_qx001_initialiseur_de_structure_c99`, `test_qx001_table_nulle_a_l_attach` |
-| QX002 | « slots cables » etait compare a « entrees remplies » ; le vrai debordement n'etait jamais detecte | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` |
+| QX002 | le nombre de slots cables etait compare au nombre d'entrees remplies ; le vrai debordement n'etait jamais detecte | `test_qx002_slots_cables_au_dela_des_entrees_remplies`, `test_qx002_debordement_du_tableau` |
 | QX003 | un handler defini dans une autre unite de compilation etait condamne | `test_qx003_handler_dans_une_autre_unite_de_compilation`, `test_qx003_handler_non_defini` |
 | QX004 | une verification deleguee etait ratee ; une porte citee dans une chaine comptait | `test_qx004_porte_deleguee_a_un_helper`, `test_qx004_porte_citee_dans_une_chaine` |
 | QX006 | une boucle deleguee a un pool de threads (`pool_attr.block_func = &resmgr_block`) n'etait pas reconnue ; un gestionnaire reparti sur plusieurs fichiers etait condamne en ERROR | `test_api_resmgr_block_et_resmgr_handler` (le cas delegue est verifie dans le meme test), `test_qx006_boucle_de_messages_absente` |
@@ -395,7 +396,7 @@ exemple en lecture seule, une fixture volontairement abimee — avec la sortie
 reelle et le code de retour reel a l'ecran. Ce n'est ni une maquette, ni une
 sortie simulee, ni une capture de documentation.
 
-*Si le jury lit cette exigence comme « la carte QNX » :* cette lecture est
+*Si le jury lit cette exigence comme la carte QNX :* cette lecture est
 defendable, et les deux options qu'elle impose ont un cout. (a) Executer les
 exemples C sur la cible demande le kit **QNX SDP 8.0** sous licence
 non commerciale **QNX Everywhere** (compte myQNX) — gratuit en argent, mais
