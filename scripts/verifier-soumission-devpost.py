@@ -15,7 +15,10 @@ Checks:
   B. ENGLISH - no block contains a French accented letter and no French
       narrow no-break space (the contest rules require English).
   C. CODELAB - the codelab URL is present, answers HTTP 200 without
-      authentication, and the raw file has the md5 of the local one.
+      authentication, and the local copy of docs/CODELAB.md is compared with
+      the file at the commit this repository is checked out at.  The drift of
+      the branch "main" is then only an information, never an error: a
+      "main" that has moved must never turn a correct copy red.
   D. NO FALSE PUBLICATION - the YouTube placeholder is present exactly once,
       or a YouTube URL is present, really exists (the oEmbed endpoint of
       YouTube answers 404 for a video that does not exist, and 200 with the
@@ -28,7 +31,8 @@ Exit code:
 
   0  everything is verified
   1  at least one discrepancy
-  2  a check could not be performed (no network) - never a silent success
+  2  a check could not be performed (no network, or no local git commit to
+     compare the copy with) - never a silent success
 
 Usage:
 
@@ -40,6 +44,7 @@ import hashlib
 import json
 import pathlib
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -64,6 +69,48 @@ CODELAB_URL = ("https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/"
                "docs/CODELAB.md")
 CODELAB_RAW = ("https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/"
                "main/docs/CODELAB.md")
+
+
+def _raw_at(commit: str) -> str:
+    """The raw file of docs/CODELAB.md at a given commit."""
+    return ("https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/"
+            + commit + "/docs/CODELAB.md")
+
+
+# The local copy of docs/CODELAB.md is the one of the commit this repository
+# is checked out at.  Comparing it with the file that the branch "main" serves
+# today is a FALSE RED as soon as "main" moves: the comparison must be made
+# on the commit the local copy comes from, and the drift of "main" is then
+# reported as information, never as an error.
+def _frozen_commit() -> str:
+    """The commit of the local copy of the repository (git rev-parse HEAD).
+
+    "" when this copy has no commit of its own: an archive, a zip, or a
+    directory that only happens to be inside another repository.  The caller
+    then says so; it never pretends that a commit is known.
+    """
+    try:
+        top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=str(REPO),
+                             capture_output=True, text=True, timeout=20)
+        if top.returncode != 0:
+            return ""
+        if pathlib.Path(top.stdout.strip()).resolve() != REPO.resolve():
+            return ""
+        out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(REPO),
+                             capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    commit = out.stdout.strip()
+    return commit if len(commit) == 40 else ""
+
+
+FROZEN_COMMIT = _frozen_commit()
+CODELAB_RAW_FROZEN = _raw_at(FROZEN_COMMIT) if FROZEN_COMMIT else ""
+# The exact wording used when the local copy has no git commit: the comparison
+# with the frozen commit is impossible, and the reader must be told it.
+NO_FROZEN_COMMIT_MESSAGE = (
+    "[NOT CHECKED] no local git commit (this copy of the repository has no "
+    ".git directory): comparison with the branch 'main' only")
 UA = "QX-PROBE-submission-check/1.0"
 # Limits published by Devpost itself, independent of what this file writes.
 # A limit written in SUBMISSION-EN.md can be wrong (the tagline was declared
@@ -105,6 +152,108 @@ def http_get(url: str) -> tuple[int, bytes]:
     raise last if last else RuntimeError("unreachable")
 
 
+def _fetch(url: str, http_getter):
+    """(code, data) of one URL.
+
+    None as the code means "the network did not answer"; an HTTP error code
+    is returned as it is (404, 403...) instead of being raised, so that the
+    caller can tell "the file is not there" from "the network is down".
+    """
+    try:
+        return http_getter(url)
+    except urllib.error.HTTPError as exc:
+        return exc.code, b""
+    except (urllib.error.URLError, OSError):
+        return None, b""
+
+
+def check_codelab_copy(local: bytes, http_getter=None,
+                       frozen_commit: str | None = None
+                       ) -> tuple[bool, bool, list[str]]:
+    """Compare the local copy of docs/CODELAB.md with the file that the branch
+    "main" serves today, and with the file at the commit the local copy comes
+    from.
+
+    Returns (ok, not_checked, lines).  The drift of "main" is reported as
+    information, never as an error: it is not a discrepancy of the copy.  When
+    the local copy has no git commit (an archive without .git), the comparison
+    with the frozen commit is impossible: it is reported as NOT CHECKED, with
+    the exact wording, and never as a comparison with an empty commit.
+    """
+    if http_getter is None:
+        http_getter = http_get
+    if frozen_commit is None:
+        frozen_commit = FROZEN_COMMIT
+    ok = True
+    not_checked = False
+    lines = []
+
+    # 1. the page of the codelab answers without an account
+    code, _ = _fetch(CODELAB_URL, http_getter)
+    if code is None:
+        not_checked = True
+        lines.append(f"  [NOT CHECKED] {CODELAB_URL} : the network did not answer")
+    elif code != 200:
+        ok = False
+        lines.append(f"  [KO ] HTTP {code} without authentication")
+    else:
+        lines.append("  [OK ] HTTP 200 without authentication")
+
+    # 2. the file served by the branch "main"
+    code_main, data_main = _fetch(CODELAB_RAW, http_getter)
+    if code_main is None:
+        not_checked = True
+        lines.append(f"  [NOT CHECKED] {CODELAB_RAW} : the network did not answer")
+        return ok, not_checked, lines
+    if code_main != 200:
+        ok = False
+        lines.append(f"  [KO ] HTTP {code_main} - raw file (branch 'main')")
+    else:
+        lines.append("  [OK ] HTTP 200 - raw file (branch 'main')")
+    main_matches = (code_main == 200 and md5_bytes(data_main) == md5_bytes(local))
+
+    # 3. the file at the commit the local copy comes from
+    if frozen_commit:
+        raw_frozen = _raw_at(frozen_commit)
+        code_f, data_f = _fetch(raw_frozen, http_getter)
+        if code_f is None:
+            not_checked = True
+            lines.append(f"  [NOT CHECKED] {raw_frozen} : the network did not answer")
+        elif code_f == 404:
+            not_checked = True
+            lines.append(f"  [NOT CHECKED] the frozen commit {frozen_commit[:7]} is "
+                         f"not published on GitHub (HTTP 404): comparison with the "
+                         f"branch 'main' only")
+            if code_main == 200:
+                lines.append(f"  [{'OK ' if main_matches else 'INFO'}] md5 downloaded "
+                             f"from the branch 'main' ({md5_bytes(data_main)}) "
+                             f"{'==' if main_matches else '!='} md5 local "
+                             f"({md5_bytes(local)})")
+        else:
+            same = md5_bytes(data_f) == md5_bytes(local)
+            if code_f != 200 or not same:
+                ok = False
+            lines.append(f"  [{'OK ' if code_f == 200 else 'KO '}] HTTP {code_f} - raw "
+                         f"file at the frozen commit {frozen_commit[:7]}")
+            lines.append(f"  [{'OK ' if same else 'KO '}] md5 downloaded at the frozen "
+                         f"commit ({md5_bytes(data_f)}) == md5 local "
+                         f"({md5_bytes(local)})")
+    else:
+        not_checked = True
+        lines.append("  " + NO_FROZEN_COMMIT_MESSAGE)
+        if code_main == 200:
+            lines.append(f"  [{'OK ' if main_matches else 'INFO'}] md5 downloaded from "
+                         f"the branch 'main' ({md5_bytes(data_main)}) "
+                         f"{'==' if main_matches else '!='} md5 local "
+                         f"({md5_bytes(local)})")
+
+    # 4. the drift of "main" is an information, never an error
+    if code_main == 200 and not main_matches:
+        lines.append(f"  [INFO] the branch 'main' has moved since the local copy "
+                     f"(md5 {md5_bytes(data_main)} != {md5_bytes(local)}): not an error")
+    return ok, not_checked, lines
+
+
 def http_get_code(url: str) -> tuple[int, bytes]:
     """One GET, and the status code is returned even for 404.
 
@@ -130,6 +279,15 @@ def main() -> int:
     print("QX-PROBE - check of the DevPost submission text")
     print("=" * 78)
     print(f"file : {SUB}")
+    print()
+
+    # ------------------------------------------------------------- 0
+    print("0. SELF-TESTS OF THIS SCRIPT (no network)")
+    rc_st, n_ok_st, n_st = _self_test(verbose=False)
+    if rc_st != 0:
+        print(f"  [KO ] the self-tests of this script failed ({n_ok_st}/{n_st})")
+        return 1
+    print(f"  [OK ] the self-tests of this script ({n_ok_st}/{n_st})")
     print()
 
     # ------------------------------------------------------------- A
@@ -183,28 +341,11 @@ def main() -> int:
     else:
         print(f"  [OK ] the codelab URL is written: {CODELAB_URL}")
         local = (REPO / "docs" / "CODELAB.md").read_bytes()
-        try:
-            code, _ = http_get(CODELAB_URL)
-        except (urllib.error.URLError, OSError) as exc:
-            not_checked = True
-            print(f"  [NOT CHECKED] {CODELAB_URL} : {exc}")
-        else:
-            if code != 200:
-                ok = False
-            print(f"  [{'OK ' if code == 200 else 'KO '}] HTTP {code} without "
-                  f"authentication")
-        try:
-            code, data = http_get(CODELAB_RAW)
-        except (urllib.error.URLError, OSError) as exc:
-            not_checked = True
-            print(f"  [NOT CHECKED] {CODELAB_RAW} : {exc}")
-        else:
-            same = md5_bytes(data) == md5_bytes(local)
-            if code != 200 or not same:
-                ok = False
-            print(f"  [{'OK ' if code == 200 else 'KO '}] HTTP {code} - raw file")
-            print(f"  [{'OK ' if same else 'KO '}] md5 downloaded "
-                  f"({md5_bytes(data)}) == md5 local ({md5_bytes(local)})")
+        c_ok, c_not_checked, c_lines = check_codelab_copy(local)
+        ok = ok and c_ok
+        not_checked = not_checked or c_not_checked
+        for ligne in c_lines:
+            print(ligne)
 
     # ------------------------------------------------------------- D
     print()
@@ -294,8 +435,8 @@ def main() -> int:
     print()
     print("=" * 78)
     if not ok and not_checked:
-        print("VERDICT: NOT CHECKED - a link could not be read (no network) "
-              "and a discrepancy was found (RC 1)")
+        print("VERDICT: NOT CHECKED - a check could not be performed (see the "
+              "[NOT CHECKED] lines above) and a discrepancy was found (RC 1)")
         print("=" * 78)
         return 1
     if not ok:
@@ -303,8 +444,8 @@ def main() -> int:
         print("=" * 78)
         return 1
     if not_checked:
-        print("VERDICT: NOT CHECKED - a link could not be read (no network), "
-              "the text itself is consistent (RC 2)")
+        print("VERDICT: NOT CHECKED - a check could not be performed (see the "
+              "[NOT CHECKED] lines above), the text itself is consistent (RC 2)")
         print("=" * 78)
         return 2
     print("VERDICT: EVERYTHING VERIFIED - the submission text is consistent "
@@ -313,5 +454,107 @@ def main() -> int:
     return 0
 
 
+def _self_test(verbose: bool = True) -> tuple[int, int, int]:
+    """The tests of this file, without any network.
+
+        python3 -I scripts/verifier-soumission-devpost.py --self-test
+
+    They cover what a hostile review found: a copy of the repository without
+    a .git directory (an archive, a zip) must never be compared with an EMPTY
+    commit, and the drift of the branch "main" must never be an error.
+
+    Returns (rc, ok_count, total_count).
+    """
+    import importlib.util
+    import shutil
+    import tempfile
+
+    verdicts = []
+
+    def verifie(cond, message):
+        verdicts.append((bool(cond), message))
+
+    racine = pathlib.Path(tempfile.mkdtemp(prefix="qx-probe-selftest-"))
+    try:
+        scripts = racine / "scripts"
+        scripts.mkdir(parents=True, exist_ok=True)
+        copie = scripts / pathlib.Path(__file__).name
+        shutil.copyfile(__file__, str(copie))
+        spec = importlib.util.spec_from_file_location("verifier_soumission_copie",
+                                                      str(copie))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        # --- une copie SANS .git : le commit local est inconnu
+        verifie(mod.FROZEN_COMMIT == "",
+                "sans .git, le commit local est vide (aucun SHA a moitie)")
+        verifie(mod.CODELAB_RAW_FROZEN == "",
+                "sans .git, aucune URL de commit fige n'est fabriquee")
+        verifie("NOT CHECKED" in mod.NO_FROZEN_COMMIT_MESSAGE,
+                "sans .git, le message dit NOT CHECKED")
+        verifie("no local git commit" in mod.NO_FROZEN_COMMIT_MESSAGE,
+                "sans .git, le message dit pourquoi")
+        verifie("at the frozen commit" not in mod.NO_FROZEN_COMMIT_MESSAGE,
+                "sans .git, le message ne parle pas d'un commit fige inexistant")
+
+        def faux_get(url):
+            if "/main/" in url:
+                return 200, b"le fichier de main a bouge"
+            return 200, b"la copie locale"
+
+        # --- le drift de main n'est JAMAIS une erreur
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get,
+                                                frozen_commit="a" * 40)
+        verifie(ok, "le drift de main ne donne pas de KO")
+        verifie(any("[INFO]" in l for l in lignes),
+                "le drift de main est dit [INFO]")
+        verifie(not any("[KO " in l for l in lignes),
+                "aucun KO quand le commit fige est bon")
+        verifie(any("at the frozen commit aaaaaaa" in l for l in lignes),
+                "le commit fige est nomme dans l'affichage")
+
+        # --- sans commit local : NOT CHECKED explicite, jamais d'erreur
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get,
+                                                frozen_commit="")
+        verifie(ok, "sans commit local, la copie n'est pas declaree fausse")
+        verifie(nc, "sans commit local, le controle est NOT CHECKED")
+        verifie(any(mod.NO_FROZEN_COMMIT_MESSAGE in l for l in lignes),
+                "sans commit local, le message explicite est affiche")
+        verifie(not any("at the frozen commit" in l for l in lignes),
+                "sans commit local, aucune ligne ne parle du commit fige")
+        verifie(not any("[KO " in l for l in lignes),
+                "sans commit local, aucun KO n'est affiche")
+
+        # --- un commit fige non publie (HTTP 404) : NOT CHECKED, jamais un KO
+        def faux_get_404(url):
+            if "b" * 40 in url:
+                raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+            return faux_get(url)
+
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get_404,
+                                                frozen_commit="b" * 40)
+        verifie(ok, "un commit fige non publie ne donne pas de KO")
+        verifie(nc, "un commit fige non publie est NOT CHECKED")
+        verifie(not any("[KO " in l for l in lignes),
+                "un commit fige non publie n'affiche aucun KO")
+    finally:
+        shutil.rmtree(str(racine), ignore_errors=True)
+
+    ko = [m for ok_, m in verdicts if not ok_]
+    if verbose:
+        for ok_, m in verdicts:
+            print(f"  [{'OK ' if ok_ else 'KO '}] {m}")
+        print(f"SELF-TEST: {len(verdicts) - len(ko)}/{len(verdicts)}")
+    else:
+        for ok_, m in verdicts:
+            if not ok_:
+                print(f"  [KO ] self-test : {m}")
+    return (0 if not ko else 1), len(verdicts) - len(ko), len(verdicts)
+
+
 if __name__ == "__main__":
+    if "--self-test" in sys.argv[1:]:
+        raise SystemExit(_self_test()[0])
     raise SystemExit(main())
