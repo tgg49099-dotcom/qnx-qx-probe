@@ -18,7 +18,9 @@ WHAT IT CHECKS
      The SOURCE of the assertion is checked too: the file must be in this
      repository, the line must exist, and that line must really carry the
      claim - an empty line, or a line that says nothing about the claim, is
-     a FAILED line.  A pointer that only exists is not a proof.
+     a FAILED line.  A pointer that only exists is not a proof: the cited
+     line must carry the expected text itself, or at least TWO of the
+     significant words of the claim.  One word is not a proof.
   2. THE FOURTEEN OFFICIAL PAGES - each URL is fetched again; it must
      answer HTTP 200, its SHA-256 is compared with the one written in the
      proof, and the page must be one of the pages the rules really cite.
@@ -55,11 +57,12 @@ EXIT CODES
 THE COUNTER-PROOF
 
   A control that has never met a false line is not known to catch one.
-  `--contre-epreuve` adds six deliberately false lines to the table - one
+  `--contre-epreuve` adds eight deliberately false lines to the table - one
   with no command, one whose output the command cannot produce, one whose
   source points at an EMPTY line, one whose source points at a line
   that says nothing about the claim, one whose source points OUTSIDE the
-  file, and one whose source is the line 0 (the lines are counted from 1) -
+  file, one whose source is the line 0 (the lines are counted from 1), and
+  two whose source points at a line that carries only ONE word of the claim -
   and checks that all of them are reported as FAILED.  A line that goes
   unnoticed fails the counter-proof.
 
@@ -273,16 +276,28 @@ same such only very much many own just also into over under again further
 once one two three four five six seven eight nine ten
 une des les pour avec que qui dans sur est pas plus son ses ce au aux
 une des le la les du de en et ou ne pas plus son ses que qui dont
+out off per use set new now get let put say see she her him its his who why
+all any but yet too via way day job end top try ask run air age ago art bad
+bat bed bit box bug bus buy cam cow cry cut dam den dew dig dim dip dry due
+dug fan far fit fly gap gun hat hit hot ice ill ink joy key kid leg lie lip
+log low map mix net nor nut odd oil pan pen pet pot red row sea sit sky son
+sun tea tie tip toe toy van war web wet won yes amp etc inc ltd ref vol
 """.split())
 
 
 def key_words(text: str) -> set[str]:
-    """The words of a text that carry a fact: at least four letters, and
-    not a word of the grammar."""
+    """The words of a text that carry a fact: at least three letters, and
+    not a word of the grammar.
+
+    Three letters is the floor because a claim can name a three-letter
+    thing - `qcc` is the name of the compiler, and the proof of the SDP
+    path is that the compiler is called with the right flags.  The words
+    of the grammar are excluded: they are in every line of every file.
+    """
     out = set()
     for word in WORD.findall(text or ""):
         word = word.lower()
-        if len(word) < 4 or word in STOPWORDS:
+        if len(word) < 3 or word in STOPWORDS:
             continue
         out.add(word)
     return out
@@ -296,7 +311,8 @@ def normalise(text: str) -> str:
     return text.strip()
 
 
-def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
+def check_source(source: str, affirmation: str = "", sortie: str = "",
+                 commande: str = "") -> str:
     """The file (and the line) the proof points at must exist, and the line
     must really carry the claim.
 
@@ -308,9 +324,20 @@ def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
       2. it must carry the expected text itself (the output the proof
          records), the spaces and the markdown marks apart;
       3. when the expected text cannot be in the line - it is a shell
-         variable, or an HTTP status code - the line must at least carry
-         one of the significant words of the assertion or of the expected
-         output.
+         variable, or an HTTP status code - the line must carry AT LEAST
+         TWO of the significant words of the claim (the assertion and the
+         expected output).
+
+    TWO words, not one: a single word proves nothing when the word is in
+    every file of the repository - "codelab" is in more than a hundred
+    lines here, "version" in more than a hundred and fifty.  Two different
+    words of the claim, in the same line, are what a real pointer looks
+    like.
+
+    A source that names a FILE and no line is accepted only when the
+    command of the row really concerns that file: a row whose expected
+    output is an HTTP status code is about a file, not about a line of
+    it.
 
     A line that carries neither is a FAILED line: it is not a proof.
     """
@@ -324,29 +351,38 @@ def check_source(source: str, affirmation: str = "", sortie: str = "") -> str:
     p = REPO / path
     if not p.is_file():
         return "the file %s is not in this repository" % path
-    if line is not None:
-        lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
-        if line < 1:
-            return "%s: the line %d does not exist (the lines are counted " \
-                   "from 1)" % (path, line)
-        if line > len(lines):
-            return "%s has %d lines: the line %d does not exist" % (
-                path, len(lines), line)
-        cited = lines[line - 1].strip()
-        if not cited:
-            return ("%s line %d is empty: it carries no claim"
-                    % (path, line))
-        low = normalise(cited)
-        raw = cited.lower()
-        for alt in [a.strip() for a in sortie.split(ALT) if a.strip()]:
-            expected = normalise(alt)
-            if expected and expected in low:
-                return ""
-        wanted = key_words(affirmation) | key_words(sortie)
-        if wanted:
-            if not any(word in raw for word in wanted):
-                return ("%s line %d carries no word of the claim: it reads %r"
-                        % (path, line, cited[:70]))
+    if line is None:
+        # The source names a file, not a line: the command must concern it.
+        name = path.split("/")[-1]
+        if name and name not in commande and path not in commande:
+            return ("the source names no line, and the command does not "
+                    "concern the file %s" % path)
+        return ""
+    lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
+    if line < 1:
+        return "%s: the line %d does not exist (the lines are counted " \
+               "from 1)" % (path, line)
+    if line > len(lines):
+        return "%s has %d lines: the line %d does not exist" % (
+            path, len(lines), line)
+    cited = lines[line - 1].strip()
+    if not cited:
+        return ("%s line %d is empty: it carries no claim"
+                % (path, line))
+    low = normalise(cited)
+    for alt in [a.strip() for a in sortie.split(ALT) if a.strip()]:
+        expected = normalise(alt)
+        if expected and expected in low:
+            return ""
+    wanted = key_words(affirmation) | key_words(sortie)
+    if not wanted:
+        return ("%s line %d cannot carry the claim: the claim has no "
+                "significant word" % (path, line))
+    shared = wanted & key_words(cited)
+    if len(shared) < 2:
+        return ("%s line %d carries %d word(s) of the claim (%s): one word "
+                "is not a proof" % (path, line, len(shared),
+                                    ", ".join(sorted(shared)) or "none"))
     return ""
 
 
@@ -377,7 +413,7 @@ def check_main(rows: list[dict]) -> list[Row]:
                            "assertion verifiable"))
             continue
         if source not in ("-", "git", "network"):
-            problem = check_source(source, affirmation, sortie)
+            problem = check_source(source, affirmation, sortie, commande)
             if problem:
                 out.append(Row(ident, affirmation, commande, source, "FAILED",
                                problem))
@@ -666,15 +702,28 @@ FAKE_ROWS = [
     {"id": "FAKE6", "malformed": False,
      "cells": ["FAKE6", "the pointer of this line is the line 0",
                "echo hello", "hello", "README.md:0"]},
+    # The pointer is a line that carries ONE word of the claim - and that
+    # word is in more than a hundred lines of this repository.  The command
+    # works and the output is the expected one: the ONLY thing wrong with
+    # this line is the pointer.
+    {"id": "FAKE7", "malformed": False,
+     "cells": ["FAKE7", "the codelab of the submission answers in public",
+               "echo 200", "200", "docs/CODELAB.md:1"]},
+    # The pointer is the title of the project: it carries the name of the
+    # project and nothing else.
+    {"id": "FAKE8", "malformed": False,
+     "cells": ["FAKE8", "the test suite of the tool is green",
+               "echo 'RESULT: QX-PROBE suite GREEN'",
+               "RESULT: QX-PROBE suite GREEN", "README.md:1"]},
 ]
 
 
 def counter_proof(text: str) -> int:
-    """Six false lines are added to the table: all of them must be caught."""
+    """Eight false lines are added to the table: all of them must be caught."""
     rows = [r for r in rows_of(text) if r["id"].startswith("A")] + FAKE_ROWS
     results = check_main(rows)
     print("======================================================================")
-    print("COUNTER-PROOF - six deliberately false lines are added to the table")
+    print("COUNTER-PROOF - eight deliberately false lines are added to the table")
     print("======================================================================")
     caught = 0
     for r in results:
@@ -697,7 +746,7 @@ def counter_proof(text: str) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--contre-epreuve", action="store_true",
-                    help="add six false lines and check that they are caught")
+                    help="add eight false lines and check that they are caught")
     ap.add_argument("--captures", action="store_true",
                     help="rebuild the pictures of the proof from their commands")
     ap.add_argument("--preuve", default=str(PROOF),

@@ -17,6 +17,18 @@ exits 0 only when every assertion of this file is still true.  An assertion
 with **no command**, or with **no real output**, is a FAILED line: the proof
 is incomplete, and the control says so instead of passing.
 
+**The source of an assertion is checked too.**  The file it names must be in
+this repository, the line it cites must exist and must not be empty, and
+that line must really carry the claim: either the expected output itself
+(the spaces and the markdown marks apart), or at least **two** of the
+significant words of the claim.  One word is not a proof -- "codelab" is in
+more than a hundred lines of this repository, and "version" in more than a
+hundred and fifty, so sharing one of them says nothing.  A source that
+names a file and no line is accepted only when the command of the row
+really concerns that file, which is the case of the two rows whose expected
+output is an HTTP status code: those rows are about a file, not about a
+line of it.  A pointer that only exists is not a proof.
+
 ## What is proved here, and what is not
 
 * **PROVED, and replayable today:** the linter runs on QNX 8.0 code -- on the
@@ -52,9 +64,9 @@ is incomplete, and the control says so instead of passing.
 | A10 | the defect it finds is a missing access gate in third-party code | python3 -I scripts/benchmark-corpus.py | ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify() | qx_probe.py:843 |
 | A11 | every rule is backed by a page of the official documentation, and the 36 quotations are found again in those pages | python3 -I scripts/verifier-citations.py | VERDICT: ALL CITATIONS VERIFIED | scripts/verifier-citations.py:356 |
 | A12 | the rule QX004 is backed by the official access gate iofunc_read_verify() | sed -n '141p' RULES.md | iofunc_read_verify() | RULES.md:141 |
-| A13 | the codelab of the submission answers in public | curl -sS -L -o /dev/null -w '%{http_code}' https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md | 200 | docs/CODELAB.md:1 |
+| A13 | the codelab of the submission answers in public | curl -sS -L -o /dev/null -w '%{http_code}' https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md | 200 | docs/CODELAB.md |
 | A14 | the public repository has a main branch | git ls-remote https://github.com/tgg49099-dotcom/qnx-qx-probe.git refs/heads/main | refs/heads/main | git |
-| A15 | this proof is published in the public repository | curl -sS -L -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/docs/PREUVE-QNX8.md | 200 | docs/PREUVE-QNX8.md:1 |
+| A15 | this proof is published in the public repository | curl -sS -L -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/docs/PREUVE-QNX8.md | 200 | docs/PREUVE-QNX8.md |
 | A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:344 |
 | A17 | the test suite of the tool is green | bash scripts/run_tests.sh | RESULT: QX-PROBE suite GREEN | scripts/run_tests.sh:72 |
 
