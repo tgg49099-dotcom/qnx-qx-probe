@@ -18,7 +18,10 @@ Checks:
       authentication, and the local copy of docs/CODELAB.md is compared with
       the file at the commit this repository is checked out at.  The drift of
       the branch "main" is then only an information, never an error: a
-      "main" that has moved must never turn a correct copy red.
+      "main" that has moved must never turn a correct copy red.  An HTTP 403
+      on that page (bot protection, rate limiting) is a network condition, not
+      a proof of error: it is NOT CHECKED when the file at the frozen commit
+      proves the copy.  An HTTP 404 on that page stays an error.
   D. NO FALSE PUBLICATION - the YouTube placeholder is present exactly once,
       or a YouTube URL is present, really exists (the oEmbed endpoint of
       YouTube answers 404 for a video that does not exist, and 200 with the
@@ -179,6 +182,12 @@ def check_codelab_copy(local: bytes, http_getter=None,
     the local copy has no git commit (an archive without .git), the comparison
     with the frozen commit is impossible: it is reported as NOT CHECKED, with
     the exact wording, and never as a comparison with an empty commit.
+
+    An HTTP 403 on the HTML page of the codelab is a network block (bot
+    protection, rate limiting), not a proof that the codelab is gone: it is
+    reported as "[NOT CHECKED] HTTP 403 (network)" when the file at the frozen
+    commit answers HTTP 200 with the same md5 as the local copy - the copy is
+    then proved.  An HTTP 404 on that page stays an error.
     """
     if http_getter is None:
         http_getter = http_get
@@ -188,11 +197,27 @@ def check_codelab_copy(local: bytes, http_getter=None,
     not_checked = False
     lines = []
 
-    # 1. the page of the codelab answers without an account
+    # The three answers are collected before any verdict is written: the
+    # verdict on an HTTP 403 on the HTML page needs the file at the frozen
+    # commit.
     code, _ = _fetch(CODELAB_URL, http_getter)
+    code_main, data_main = _fetch(CODELAB_RAW, http_getter)
+    raw_frozen = _raw_at(frozen_commit) if frozen_commit else ""
+    code_f, data_f = _fetch(raw_frozen, http_getter) if raw_frozen else (None, b"")
+    # the copy is proved when the file at the frozen commit IS the local copy
+    proved = (code_f == 200 and md5_bytes(data_f) == md5_bytes(local))
+
+    # 1. the page of the codelab answers without an account
     if code is None:
         not_checked = True
         lines.append(f"  [NOT CHECKED] {CODELAB_URL} : the network did not answer")
+    elif code == 403 and proved:
+        # a network block, not a proof of error: the copy is proved by the
+        # file at the frozen commit
+        not_checked = True
+        lines.append(f"  [NOT CHECKED] HTTP 403 (network) on {CODELAB_URL} : the "
+                     f"file at the frozen commit {frozen_commit[:7]} answers HTTP "
+                     f"200 with the same md5 as the local copy")
     elif code != 200:
         ok = False
         lines.append(f"  [KO ] HTTP {code} without authentication")
@@ -200,7 +225,6 @@ def check_codelab_copy(local: bytes, http_getter=None,
         lines.append("  [OK ] HTTP 200 without authentication")
 
     # 2. the file served by the branch "main"
-    code_main, data_main = _fetch(CODELAB_RAW, http_getter)
     if code_main is None:
         not_checked = True
         lines.append(f"  [NOT CHECKED] {CODELAB_RAW} : the network did not answer")
@@ -214,8 +238,6 @@ def check_codelab_copy(local: bytes, http_getter=None,
 
     # 3. the file at the commit the local copy comes from
     if frozen_commit:
-        raw_frozen = _raw_at(frozen_commit)
-        code_f, data_f = _fetch(raw_frozen, http_getter)
         if code_f is None:
             not_checked = True
             lines.append(f"  [NOT CHECKED] {raw_frozen} : the network did not answer")
@@ -230,8 +252,8 @@ def check_codelab_copy(local: bytes, http_getter=None,
                              f"{'==' if main_matches else '!='} md5 local "
                              f"({md5_bytes(local)})")
         else:
-            same = md5_bytes(data_f) == md5_bytes(local)
-            if code_f != 200 or not same:
+            same = (code_f == 200 and md5_bytes(data_f) == md5_bytes(local))
+            if not same:
                 ok = False
             lines.append(f"  [{'OK ' if code_f == 200 else 'KO '}] HTTP {code_f} - raw "
                          f"file at the frozen commit {frozen_commit[:7]}")
@@ -461,7 +483,10 @@ def _self_test(verbose: bool = True) -> tuple[int, int, int]:
 
     They cover what a hostile review found: a copy of the repository without
     a .git directory (an archive, a zip) must never be compared with an EMPTY
-    commit, and the drift of the branch "main" must never be an error.
+    commit, and the drift of the branch "main" must never be an error.  They
+    also cover an HTTP 403 on the HTML page of the codelab: it must never be
+    an error when the file at the frozen commit proves the copy, and an HTTP
+    404 on that page must stay an error.
 
     Returns (rc, ok_count, total_count).
     """
@@ -539,6 +564,52 @@ def _self_test(verbose: bool = True) -> tuple[int, int, int]:
         verifie(nc, "un commit fige non publie est NOT CHECKED")
         verifie(not any("[KO " in l for l in lignes),
                 "un commit fige non publie n'affiche aucun KO")
+
+        # --- HTTP 403 sur la page HTML : un blocage du reseau, pas une erreur,
+        # --- quand le fichier brut au commit fige repond 200 avec le bon md5
+        def faux_get_403(url):
+            if "/blob/main/" in url:
+                return 403, b""
+            return faux_get(url)
+
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get_403,
+                                                frozen_commit="a" * 40)
+        verifie(ok, "un 403 sur la page HTML, copie prouvee au commit fige, "
+                    "ne donne pas de KO")
+        verifie(nc, "un 403 sur la page HTML est NOT CHECKED")
+        verifie(any("[NOT CHECKED] HTTP 403 (network)" in l for l in lignes),
+                "le 403 est dit [NOT CHECKED] HTTP 403 (network)")
+        verifie(not any("[KO " in l for l in lignes),
+                "aucun KO quand le 403 est accompagne de la preuve")
+
+        # --- HTTP 403 sur la page HTML SANS preuve : il reste une erreur
+        def faux_get_403_sans_preuve(url):
+            if "/blob/main/" in url:
+                return 403, b""
+            if "a" * 40 in url:
+                return 200, b"un autre fichier"
+            return faux_get(url)
+
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get_403_sans_preuve,
+                                                frozen_commit="a" * 40)
+        verifie(not ok, "un 403 sur la page HTML sans preuve reste un KO")
+        verifie(any("[KO ] HTTP 403" in l for l in lignes),
+                "le 403 sans preuve est dit [KO ] HTTP 403")
+
+        # --- HTTP 404 sur la page HTML : il reste une erreur
+        def faux_get_404_page(url):
+            if "/blob/main/" in url:
+                return 404, b""
+            return faux_get(url)
+
+        ok, nc, lignes = mod.check_codelab_copy(b"la copie locale",
+                                                http_getter=faux_get_404_page,
+                                                frozen_commit="a" * 40)
+        verifie(not ok, "un 404 sur la page HTML reste un KO")
+        verifie(any("[KO ] HTTP 404" in l for l in lignes),
+                "le 404 sur la page HTML est dit [KO ] HTTP 404")
     finally:
         shutil.rmtree(str(racine), ignore_errors=True)
 
