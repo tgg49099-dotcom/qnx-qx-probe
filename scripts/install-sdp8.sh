@@ -234,6 +234,31 @@ HDRFILE=""            # headers of the login answer (cookies), in /dev/shm
 say() { printf '%s\n' "$*"; }
 hdr() { printf '\n== %s\n' "$*"; }
 
+# url_decode decodes the %XX escapes of a query parameter, with bash
+# only: it is used on the "returnaddress" parameter of the effective URL
+# when the hidden field of the login page is empty.
+url_decode() {
+    local s="$1" out="" i=0 n c h
+    n=${#s}
+    while [ "$i" -lt "$n" ]; do
+        c="${s:i:1}"
+        if [ "$c" = "%" ]; then
+            h="${s:i+1:2}"
+            case "$h" in
+                [0-9A-Fa-f][0-9A-Fa-f])
+                    printf -v c '\\x%s' "$h"
+                    out+="$(printf '%b' "$c")"
+                    i=$((i + 3))
+                    continue
+                    ;;
+            esac
+        fi
+        out+="$c"
+        i=$((i + 1))
+    done
+    printf '%s' "$out"
+}
+
 usage() {
     sed -n '2,/^set -u$/p' "$0" | sed 's/^# \{0,1\}//'
 }
@@ -530,35 +555,59 @@ else
     chmod 600 "$PWFILE"
     printf '%s' "$MYQNX_PASSWORD" > "$PWFILE"
 
-    # 3b.1 The server redirects the link of the installer to the login
-    # page, and the login page carries the hidden field "returnaddress".
-    # We take THAT value (the one the server itself built), so the session
-    # comes back to the installer.
+    # 3b.1 The login page is read THROUGH the link of the installer.
+    #
+    # Measured on 23 November 2026 on the official site:
+    #   - reached DIRECTLY (https://www.qnx.com/account/login.html), the
+    #     server renders the hidden field "returnaddress" EMPTY;
+    #   - reached THROUGH the link of the installer
+    #     (https://www.qnx.com/download/download/79441/<file>), the SAME
+    #     page carries the value the server built:
+    #       /account/authenticate.html?id=79441&redirect=https://support7.qnx.com%2Fdownload%2Fdownload%2F79441%2F<file>
+    # The version of 18 November 2026 fetched the page directly, found the
+    # empty hidden field and stopped with the exit code 4: that is the
+    # failure met on 23 November 2026.
+    #
+    # The size of the page is PRINTED, never used as a condition: that size
+    # varies (28 676, 28 680 and 29 289 bytes were measured on the same day).
     say ""
-    say "-- command: the login page, to read the hidden field returnaddress"
-    urlfile=$(mktemp /dev/shm/qnx-url.XXXXXX)
-    http -sS -L --max-time 60 -o /dev/null -w '%{url_effective}' "$RUN_URL_QNX" > "$urlfile" 2>/dev/null
-    say "   exit code: $?"
-    returnaddress=$(cat "$urlfile")
-    rm -f "$urlfile"
-    say "   final URL : $returnaddress"
-
+    say "-- command: GET $RUN_URL_QNX"
+    say "   (the link of the installer: it serves the login page reached the"
+    say "   right way, and its effective URL carries the returnaddress)"
     pagefile=$(mktemp /dev/shm/qnx-page.XXXXXX)
-    http -sS -L --max-time 60 -o "$pagefile" "$LOGIN_URL" 2>/dev/null
-    say "-- command: GET $LOGIN_URL"
+    urlfile=$(mktemp /dev/shm/qnx-url.XXXXXX)
+    http -sS -L --max-time 60 -o "$pagefile" -w '%{url_effective}' "$RUN_URL_QNX" > "$urlfile" 2>/dev/null
     say "   exit code: $?"
-    ret=$(grep -o 'name="returnaddress" value="[^"]*"' "$pagefile" | head -1 | sed 's/.*value="//; s/"$//')
+    effective_url=$(cat "$urlfile")
+    rm -f "$urlfile"
+    say "   effective URL : $effective_url"
     say "   size of the page: $(wc -c < "$pagefile") bytes"
-    rm -f "$pagefile"
+    say "   (printed only: the size of that page varies, it is never a condition)"
+    # The hidden field "returnaddress" of THAT page.
+    ret=$(grep -o 'name="returnaddress" value="[^"]*"' "$pagefile" | head -1 | sed 's/.*value="//; s/"$//')
     if [ -z "$ret" ]; then
-        say ""
-        say "STOP: the login page does not carry the hidden field returnaddress."
-        say "The form was expected to answer as described in the official"
-        say "QNX pages.  Nothing was downloaded, nothing was installed."
-        exit 4
+        say "   hidden field returnaddress: EMPTY"
+    else
+        say "   hidden field returnaddress: $ret"
     fi
-    say "   hidden field returnaddress found (the value is the path the server built"
-    say "   for the installer: /account/authenticate.html?id=79441&redirect=<support7 url>)"
+    if [ -n "$ret" ]; then
+        ret_source="the hidden field returnaddress of the login page reached through the link of the installer"
+    else
+        # The hidden field is empty: the value is taken from the effective
+        # URL, which carries it in its "returnaddress" parameter.  The
+        # script does NOT stop here.
+        ret_param="${effective_url##*returnaddress=}"
+        if [ "$ret_param" != "$effective_url" ] && [ -n "$ret_param" ]; then
+            ret=$(url_decode "$ret_param")
+            ret_source="the returnaddress parameter of the effective URL of the link of the installer"
+        else
+            ret="$effective_url"
+            ret_source="the effective URL of the link of the installer (it carries no returnaddress parameter)"
+        fi
+    fi
+    say "   value posted as returnaddress: $ret"
+    say "   source of that value: $ret_source"
+    rm -f "$pagefile"
 
     # 3b.2 The POST of the form.  The password is read from a file by
     # curl, so it never appears on a command line.
@@ -798,8 +847,17 @@ if [ ! -f "$SDP_DEST/qnxsdp-env.sh" ]; then
 fi
 say "-- command: source $SDP_DEST/qnxsdp-env.sh"
 # shellcheck disable=SC1091
-. "$SDP_DEST/qnxsdp-env.sh" 2>&1 | sed 's/^/   /'
-env_rc=${PIPESTATUS[0]}
+# NOT in a pipeline: "source ... | sed" would run in a subshell and the
+# variables of the SDP (QNX_HOST, QNX_TARGET, PATH with qcc) would be lost.
+envlog=$(mktemp /dev/shm/qnx-envlog.XXXXXX 2>/dev/null || mktemp)
+# "set -u" is suspended while the official script is read: it may test
+# variables that are not set yet (an unset variable would end THIS script).
+set +u
+. "$SDP_DEST/qnxsdp-env.sh" > "$envlog" 2>&1
+env_rc=$?
+set -u
+sed 's/^/   /' "$envlog"
+rm -f "$envlog"
 say "   exit code: $env_rc"
 if [ "$env_rc" -ne 0 ]; then
     say "the SDP environment script failed."
