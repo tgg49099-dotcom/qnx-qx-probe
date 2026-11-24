@@ -133,9 +133,10 @@ RESULT: 6 finding(s), 0 ERROR, 0 WARN
 ```
 
 Both are clean. The second one deserves a second look: it is the *official
-example* of `iofunc_func_init()`, and it spells the member **`io_read`**
-instead of `read` — the documentation's own example. QX-PROBE accepts both
-spellings precisely so that it cannot misfire on the vendor's code.
+example* of `iofunc_func_init()`. The page spells the member **`io_read`**;
+the real qcc of the SDP 8.0 rejects that spelling ("has no member named
+'io_read'; did you mean 'read'?"), so the file writes `read`, the member that
+`<sys/resmgr.h>` declares. It is built by `scripts/qnx8-proof.sh`.
 
 ---
 

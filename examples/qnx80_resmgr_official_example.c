@@ -17,31 +17,31 @@
 /*
  * qnx80_resmgr_official_example.c
  *
- * The OFFICIAL EXAMPLE of the QNX SDP 8.0 documentation, reproduced here.
+ * The OFFICIAL EXAMPLE of the QNX SDP 8.0 documentation, made to compile.
  *
  * Source: iofunc_func_init() — "Fill a connect and I/O function table with the
- * POSIX-layer defaults":
+ * POSIX-layer defaults".  The page overrides the read handler with:
  *
- *     iofunc_func_init (_RESMGR_CONNECT_NFUNCS, &my_connect_functions,
- *                       _RESMGR_IO_NFUNCS, &my_io_functions);
- *     / At this point, the defaults have been filled in.
- *     You may now override some of the default functions with functions that
- *     you have written: /
  *     my_io_functions.io_read = my_io_read;
  *
- * This file exercises two things the checker ignored before cycle 156:
- *   1. the table name: here "my_io_functions", not "io_funcs";
- *   2. the member name: here "io_read", written as in the official example,
- *      while the resmgr_io_funcs_t() structure declares "read".
+ * The real qcc of the SDP 8.0 (gcc_ntox86_64, 24 November 2026) REJECTS that
+ * line: "'resmgr_io_funcs_t' {aka 'struct _resmgr_io_funcs'} has no member
+ * named 'io_read'; did you mean 'read'?".  <sys/resmgr.h> of the SDP 8.0
+ * declares the member "read".  This file therefore writes ".read": it is
+ * the documentation's example, with the one change the compiler requires.
+ *
+ * This file exercises one thing the checker ignored before cycle 156:
+ *   the table name: here "my_io_functions", not "io_funcs".
  *
  * What the checker reports on this file: NOTHING.  No actionable finding
- * (0 ERROR, 0 WARN) — this is valid QNX 8.0 code, taken from the
- * documentation.
+ * (0 ERROR, 0 WARN), and qcc -Vgcc_ntox86_64 -Werror builds it.
  *
  * Official QNX SDP 8.0 sources:
  *   iofunc_func_init()   https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_func_init.html
  *   resmgr_io_funcs_t()  https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/r/resmgr_io_funcs_t.html
  *   iofunc_read_verify() https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/iofunc_read_verify.html
+ *   <sys/resmgr.h>       the header of the SDP 8.0 (target/qnx/usr/include)
+ *
  */
 
 #include <stdio.h>
@@ -89,8 +89,8 @@ int main(void)
     iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &my_connect_functions,
                      _RESMGR_IO_NFUNCS, &my_io_functions);
 
-    /* ... then the override, written as in the official example. */
-    my_io_functions.io_read = my_io_read;
+    /* ... then the override (".read": the member declared by QNX 8.0). */
+    my_io_functions.read = my_io_read;
 
     iofunc_attr_init(&attr, S_IFNAM | 0666, 0, 0);
 

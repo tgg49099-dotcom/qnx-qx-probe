@@ -65,9 +65,9 @@ Concretely, the linter **never** reports:
 * an `iofunc_func_init()` called with the `_RESMGR_IO_NFUNCS` /
   `_RESMGR_CONNECT_NFUNCS` macros — that is the normal case;
 * **the official example of the documentation** — `examples/qnx80_resmgr_official_example.c`
-  reproduces the `iofunc_func_init()` example of QNX SDP 8.0 (including its
-  `my_io_functions.io_read = my_io_read;` spelling) and produces no
-  actionable finding;
+  reproduces the `iofunc_func_init()` example of QNX SDP 8.0 and produces no
+  actionable finding; its one change is `.read` for the page's `.io_read`,
+  which the real qcc 8.0 rejects ("has no member named 'io_read'");
 * a handler defined in another translation unit — a single file cannot prove
   that a symbol is missing.
 
