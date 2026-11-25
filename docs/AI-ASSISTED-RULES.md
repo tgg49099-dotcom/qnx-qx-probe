@@ -19,7 +19,7 @@ proof.
 | The corrections of the five defective rules found on the examples | the same AI agent, in the commit `9706199` (05/11/2026) | by the **counter-proof** of § 4: the current test suite was run against the *previous* code, and the tests that cover the corrections **failed** | `git show 9706199`, `git show 9706199^:qx_probe.py` |
 | The corrections of the two rules the **benchmark on real code** found (QX006, QX007) and of the three false positives of QX011 | the same AI agent, on 11/11/2026, after running the tool on 17 resource managers published by other people | by the same **counter-proof**: the current test suite run against the code of the previous commit (`eeb99e4`) **fails** on 4 assertions, and passes on the current code | `docs/BENCHMARK.md`, `git show eeb99e4:qx_probe.py` |
 | The text submitted to the contest, and the decision to submit | the **owner** (Tgg) | the owner pastes the blocks of `docs/SUBMISSION-EN.md`; every block carries its measured character count | `docs/SUBMISSION-EN.md` |
-| The QNX 8.0 compilation of the examples, and any run on the target | **nobody — not measured** | there is no QNX SDP 8.0 licence in the environment where the project was written; the build path is prepared and its "no SDK" path is verified, the successful compilation is not | `docs/SUBMISSION-EN.md` § 10, `scripts/build_qcc.sh` |
+| The QNX 8.0 compilation of the examples, and the run on a QNX 8.0 target | **the AI agent, with the free non-commercial SDP 8.0 licence of the owner** | the compilation was measured on 24 November 2026 (the real `qcc -Vgcc_ntox86_64`, and the ELF header of each binary read: 3/3 are QNX 8.0 x86_64 executables); the run on the QEMU image of the SDP 8.0 was measured on 25 November 2026 (each resource manager attached its path). Both are proved command by command, and re-read by the control | `docs/PREUVE-QNX8.md`, `scripts/qnx8-proof.sh`, `scripts/qnx8-target-run.sh` |
 
 The AI assistance is declared in [`../NOTICE`](../NOTICE) and in
 [`../README.md`](../README.md). **Nothing in this repository was published by
@@ -600,16 +600,23 @@ This file is a document about the writing of the rules. It does not widen the
 scope of the tool, and it does not close any of the limits the tool already
 declares in `RULES.md` (each rule has its own "Known limit" section there).
 
-* **The QNX 8.0 compilation was not performed.** No QNX SDP 8.0 licence was
-  available where the project was written. `scripts/build_qcc.sh` is a real
-  build path (`qcc -Vgcc_ntox86_64` or `-Vgcc_ntoaarch64le`, `-Werror`, targets
-  `x86_64` and `aarch64`); its "no SDK" path is verified and it stops with an explicit
-  message and exit code 2 when `qcc` is missing. It never simulates compiler
-  output. The successful compilation is **NOT MEASURED**, and it is written as
-  such in the submission.
-* **Nothing was run on the target.** No QNX board, no QEMU guest, no `qcc`,
-  no `mkqnximage`: QX-PROBE is a **host** tool that reads C source, and that
-  is what the video shows. The submission says so in the same words.
+* **The QNX 8.0 compilation and the run on the target were measured, but
+  after the submission text was written.** The free non-commercial SDP 8.0
+  licence arrived on 24 November 2026: `scripts/build_qcc.sh` is a real build
+  path (`qcc -Vgcc_ntox86_64` or `-Vgcc_ntoaarch64le`, `-Werror`, targets
+  `x86_64` and `aarch64`) and the three examples were really compiled with it
+  (the ELF header of each binary was read: 3/3 are QNX 8.0 x86_64
+  executables). On 25 November 2026 the three binaries were really run on the
+  QEMU image of the SDP 8.0 and each resource manager attached its path. Its
+  "no SDK" path is still verified and it stops with an explicit message and
+  exit code 2 when `qcc` is missing; it never simulates compiler output. The
+  whole proof is in `docs/PREUVE-QNX8.md`, and the submission says so in the
+  same words.
+* **The video still shows only the host tool.** The video was recorded on
+  15 November 2026, before the licence arrived: QX-PROBE is a **host** tool
+  that reads C source, and that is what the video shows. The compilation and
+  the run on the target are proved in the repository, not in the video, and
+  the submission says so in the same words.
 * **The AI did not decide what is true about QNX.** It read the official
   pages; the sentences are quoted, the pages are cited, and
   `scripts/verifier-citations.py` re-reads them. Where the documentation and a

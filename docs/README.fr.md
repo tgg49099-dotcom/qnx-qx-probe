@@ -199,7 +199,7 @@ Avant ce tableau, la commande affiche le journal complet de chaque controle
 relues et les 17 fichiers du benchmark : **454 lignes** en tout pour le
 premier des deux runs ci-dessous. Les deux blocs qui suivent sont la **fin
 de la sortie REELLE**, mesuree le 15 novembre 2026 sur le serveur de
-construction de cette revision. Ce serveur n'a pas `ffmpeg` : l'audit des
+construction de la revision de ce jour-la. Ce serveur n'a pas `ffmpeg` : l'audit des
 pixels de la video est nomme dans le tableau, il n'est **jamais** compte OK,
 et la commande dit ce qui manque :
 
@@ -294,7 +294,11 @@ un binaire Linux est démasqué). Quand l'image QEMU du SDP tourne
 donnée à `mkqnximage --ssh-ident`, elle copie chaque exemple sur la cible, le
 lance et vérifie que le gestionnaire de ressources a bien attaché son chemin.
 Sans cible, elle écrit **NOT MEASURED** pour l'exécution ; elle ne tape jamais
-de mot de passe et ne simule jamais une exécution.
+de mot de passe et ne simule jamais une exécution. L'exécution a été
+**MESURÉE le 25 novembre 2026** sur l'image QEMU du SDP 8.0 : les trois
+binaires y ont tourné et `/dev/qxprobe-demo`, `/var/run/qxprobe-status` et
+`/dev/qxprobe-official` ont été attachés dans l'espace de noms de QNX
+(preuve : **[docs/PREUVE-QNX8.md](PREUVE-QNX8.md)**).
 
 ## Licence
 

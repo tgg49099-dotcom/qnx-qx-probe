@@ -255,10 +255,10 @@ published in `docs/BENCHMARK.md` with a real run of it, then prints one
 table: one line per verification, its result and its exit code.
 
 Before that table, the command prints the full log of every check — the 81
-test names, the 12 replayed codelab blocks, the 36 re-read quotations and the
+test names, the 13 replayed codelab blocks, the 36 re-read quotations and the
 17 benchmark files: **454 lines** in all for the run below.  The two blocks
 that follow are the **end of the real output**, measured on 15 November 2026
-on the build server of this revision.  That server has no `ffmpeg`, so the
+on the build server of that revision.  That server has no `ffmpeg`, so the
 pixel audit of the video is named in the table, it is **never** reported as
 OK, and the command says what is missing:
 
@@ -359,7 +359,11 @@ the key given to `mkqnximage --ssh-ident`, it copies each example to the
 target, starts it, and checks that the resource manager attached its path
 (`/dev/qxprobe-demo`, `/var/run/qxprobe-status`, `/dev/qxprobe-official`).
 Without a target it says **NOT MEASURED** for the run; it never types a
-password and never simulates a run.
+password and never simulates a run.  The run was **measured on 25 November
+2026** on the QEMU image of the SDP 8.0: the three binaries ran there and
+`/dev/qxprobe-demo`, `/var/run/qxprobe-status` and `/dev/qxprobe-official`
+were attached in the QNX pathname space (proof:
+**[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md)**).
 
 ## Why this tool counts as QNX 8.0 evidence
 
@@ -402,10 +406,12 @@ where a reviewer can open it, and each of them re-playable:
   `_RESMGR_NPARTS()`), and the code they analyse is QNX 8.0 resource-manager
   code (`examples/`, and the seventeen files of the benchmark).
 
-What this repository does **not** claim: a **run** of the examples on a QNX
-8.0 target is not measured here — the compilation is, the run on a live
-target is not (the proof of the compilation is in
-**[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md)**).  `scripts/build_qcc.sh`
+What this repository claims, and measures: the **compilation** of the three
+examples with the real `qcc -Vgcc_ntox86_64` of the SDP 8.0 (**24 November
+2026**), and their **run on a live QNX 8.0 target** — the QEMU image of the
+SDP 8.0 — where each resource manager attached its path in the QNX pathname
+space (**25 November 2026**).  Both are proved, command by command, in
+**[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md)**.  `scripts/build_qcc.sh`
 stops with an explicit message and the exit code 2 when `qcc` is absent, and
 **no compiler output is simulated anywhere in this repository**.
 

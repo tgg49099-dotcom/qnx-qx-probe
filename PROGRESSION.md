@@ -42,7 +42,37 @@ in a copy of the published documents must be reported as stale.  The
 counter-proof runs at every normal run, so a control cannot silently lose
 its teeth.
 
-## 3. Progress of 18 November 2026, 21:40 (the SDP installation asks for the myQNX credentials on the keyboard)
+## 3. Progress of 25 November 2026, 04:00 (the compilation and the run on a live QNX 8.0 target are MEASURED)
+
+- **The question of the cycle**: the free non-commercial SDP 8.0 licence had
+  arrived on 24 November 2026, so the published proof had to be reconciled
+  with the reality -- the compilation was measured, the run on a target was
+  not.  This cycle measured the run.
+- **The compilation, measured on 24 November 2026**: `scripts/qnx8-proof.sh`
+  compiles the three C examples with the real `qcc -Vgcc_ntox86_64 -Werror`,
+  and `scripts/check_qnx_elf.py` reads the ELF header of each binary:
+  **3/3 are QNX 8.0 x86_64 executables** (interpreter
+  `/usr/lib/ldqnx-64.so.2`).  The proof table now says MEASURED, with the
+  date of the measurement.
+- **The run, measured on 25 November 2026**: the QEMU image of the SDP 8.0
+  (built by `mkqnximage`) was booted, the three binaries were copied to it
+  over ssh, started there, and **each resource manager attached its path**
+  in the QNX pathname space (`/dev/qxprobe-demo`, `/var/run/qxprobe-status`,
+  `/dev/qxprobe-official`).  `scripts/qnx8-target-run.sh` does it in one
+  command, and the proof table carries it as two assertions.
+- **Two things the run script did not know, and had to learn**: (1) QNX 8.0
+  answers `uname -m` with `x86pc` for the 64-bit x86 target, so the
+  architecture is now read with the official `pidin info`
+  (`CPU:X86_64 Release:8.0.0`); (2) `scp` looks for `ssh` in a fixed place
+  and not in the PATH, so it is now given the real path of `ssh` with `-S`.
+  The script also takes `QNX_TARGET_PORT` (the port of ssh on the target,
+  22 by default).
+- **Nothing is simulated**: the two paths that cannot run say so
+  ("NOT MEASURED" for the run when no target answers, exit code 2 for the
+  compilation when there is no SDK), and the control reports a line it could
+  not check as **NOT CHECKED**, never as OK and never as a failure.
+
+## 4. Progress of 18 November 2026, 21:40 (the SDP installation asks for the myQNX credentials on the keyboard)
 
 - **The question of the cycle**: the installation of the SDP 8.0 could not
   start, because the myQNX credentials must not travel in the environment of
@@ -73,7 +103,7 @@ its teeth.
   typed -> the final control shows 0 occurrence of the password in `$HOME`
   and in `/work`.
 
-## 4. Progress of 17 November 2026, 15:21 (the installation of the SDP 8.0, measured)
+## 5. Progress of 17 November 2026, 15:21 (the installation of the SDP 8.0, measured)
 
 - **The question of the cycle**: make the *real* installation of the QNX SDP
   8.0 executable in the container that builds this repository, and prove by
@@ -116,7 +146,7 @@ its teeth.
   absent) and `scripts/qnx8-proof.sh` still exits 2 ("SDP absent"): the
   published documents keep saying **NOT MEASURED**, and that is the truth.
 
-## 5. The earlier cycles (summary)
+## 6. The earlier cycles (summary)
 
 | Cycle | What it did |
 |---|---|

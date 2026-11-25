@@ -39,6 +39,8 @@
 #   QNX_SSH_KEY    private ssh key accepted by the target for root
 #   QNX_TARGET_USER  user on the target (default: root; attaching a path
 #                  in the pathname space needs root)
+#   QNX_TARGET_PORT  TCP port of ssh on the target (default: 22; a QEMU
+#                  started with a forwarded port uses another one)
 #
 # EXIT CODES
 #
@@ -91,10 +93,10 @@ if [ -z "$IP" ]; then
   if [ -z "$QEMU_DIR" ] || [ ! -d "$QEMU_DIR" ]; then
     not_measured "no QEMU image folder (set QNX_QEMU_DIR, or unpack com.qnx.qnx800.quickstart.qemu into ~/qnx800/images/qemu/qemu)."
   fi
-  echo "target     : the QEMU image in $QEMU_DIR (mkqnximage --getip, 240 s at most)"
-  IP=$(cd "$QEMU_DIR" && timeout 240 mkqnximage --getip 2>/dev/null \
+  echo "target     : the QEMU image in $QEMU_DIR (mkqnximage --getip, 120 s at most)"
+  IP=$(cd "$QEMU_DIR" && timeout 120 mkqnximage --getip 2>/dev/null \
        | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | tail -1)
-  [ -n "$IP" ] || not_measured "mkqnximage --getip gave no address in 240 s: the VM is not running (start it in $QEMU_DIR with: mkqnximage --run=-h)."
+  [ -n "$IP" ] || not_measured "mkqnximage --getip gave no address in 120 s: the VM is not running (start it in $QEMU_DIR with: mkqnximage --run=-h)."
 fi
 echo "address    : $IP"
 
@@ -104,27 +106,61 @@ if [ -z "$KEY" ] || [ ! -f "$KEY" ]; then
   not_measured "QNX_SSH_KEY is not set or is not a file: this script never types a password (build the image with mkqnximage --ssh-ident=KEY.pub)."
 fi
 USER_T="${QNX_TARGET_USER:-root}"
+PORT="${QNX_TARGET_PORT:-22}"
 SSH_OPTS="-i $KEY -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=15 -o LogLevel=ERROR"
 t_ssh() { # shellcheck disable=SC2086
-  ssh $SSH_OPTS "$USER_T@$IP" "$@"; }
+  ssh -p "$PORT" $SSH_OPTS "$USER_T@$IP" "$@"; }
+# scp is told which ssh program to use (-S): some installations of scp look
+# for it in a fixed place (/usr/bin/ssh) and not in the PATH.  Note that the
+# port option of scp is "-P", the one of ssh is "-p".
+SSH_BIN=$(command -v ssh 2>/dev/null || true)
+SCP_OPTS="-q -P $PORT"
+[ -n "$SSH_BIN" ] && SCP_OPTS="$SCP_OPTS -S $SSH_BIN"
 t_scp() { # shellcheck disable=SC2086
-  scp -q $SSH_OPTS "$@"; }
+  scp $SCP_OPTS $SSH_OPTS "$@"; }
 
 # ---- 3. is it QNX 8.0, on the right architecture? -------------------------------
 UNAME=$(t_ssh uname -s -r -m 2>&1)
 rc=$?
 echo "uname      : $UNAME" | tee "$OUT/05-run-uname.txt"
 if [ "$rc" -ne 0 ]; then
-  echo "FAILED: ssh to $USER_T@$IP refused (RC $rc)." | tee -a "$OUT/05-run-uname.txt"
-  exit 1
+  # The target did not answer: this is an absence, not a failure.  Nothing
+  # is simulated, and the exit code says so (3 = NOT MEASURED).
+  echo "NOT MEASURED: the target $USER_T@$IP did not answer (ssh RC $rc)." \
+    | tee -a "$OUT/05-run-uname.txt"
+  echo "Nothing was simulated." | tee -a "$OUT/05-run-uname.txt"
+  exit 3
 fi
+# The architecture of the target is read with "pidin info", the official QNX
+# tool: it prints "CPU:X86_64 Release:8.0.0 ...".  It is preferred to
+# "uname -m" because QNX 8.0 reports "x86pc" for the 64-bit x86 target (the
+# historical QNX machine name), which is not the architecture of the
+# binaries: only pidin names the CPU as the binaries are built for it.
+PIDIN=$(t_ssh pidin info 2>&1)
+rc_pidin=$?
+echo "pidin info : $PIDIN" | tee -a "$OUT/05-run-uname.txt"
 set -- $UNAME
 if [ "${1:-}" != "QNX" ] || [ "${2%%.*}" != "8" ]; then
   echo "FAILED: the target is not QNX 8.x (uname: $UNAME)." | tee -a "$OUT/05-run-uname.txt"
   exit 1
 fi
-if [ "${3:-}" != "$UNAME_M" ]; then
-  echo "FAILED: the target is ${3:-?}, the binaries are $ARCH ($UNAME_M)." | tee -a "$OUT/05-run-uname.txt"
+CPU=""
+if [ "$rc_pidin" -eq 0 ]; then
+  case "$PIDIN" in
+    *CPU:X86_64*)  CPU="x86_64" ;;
+    *CPU:AARCH64*) CPU="aarch64" ;;
+  esac
+fi
+if [ -z "$CPU" ]; then
+  echo "NOTE: 'pidin info' did not name the CPU; the check falls back on uname -m (${3:-?})." | tee -a "$OUT/05-run-uname.txt"
+  CPU="${3:-?}"
+fi
+# "aarch64le" and "aarch64" are the same CPU; the endianness is not the
+# question here.
+case "$CPU" in *le) CPU_NORM="${CPU%le}" ;; *) CPU_NORM="$CPU" ;; esac
+case "$UNAME_M" in *le) ARCH_NORM="${UNAME_M%le}" ;; *) ARCH_NORM="$UNAME_M" ;; esac
+if [ "$CPU_NORM" != "$ARCH_NORM" ]; then
+  echo "FAILED: the target is $CPU, the binaries are $ARCH ($UNAME_M)." | tee -a "$OUT/05-run-uname.txt"
   exit 1
 fi
 

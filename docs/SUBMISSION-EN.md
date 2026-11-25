@@ -307,17 +307,19 @@ version, the target (hardware or QEMU), and the toolchain used."*
     and exit code 2, and it never simulates compiler output or produces a fake
     binary.
 
-    NOT MEASURED: we do not hold an SDP 8.0 licence yet, so this build has not
-    been executed against a real qcc. The script is prepared and its "no SDK"
-    path is verified; the successful compilation is not.
-
-    This build path has not yet been run against a real qcc: it is stated as NOT MEASURED in the build instructions.
+    MEASURED on 24 November 2026: with the SDP 8.0 installed, the three C
+    examples compile with the real qcc -Vgcc_ntox86_64 -Werror, and the ELF
+    header of each binary is read: 3/3 are QNX 8.0 x86_64 executables. The
+    run on a live QNX 8.0 target (the QEMU image of the SDP 8.0) was measured
+    on 25 November 2026: each resource manager attached its path. The proof
+    of both, command by command, is in docs/PREUVE-QNX8.md.
 
     RUN IT ON THE TARGET: the example mounts /dev/qxprobe-demo; on a QNX 8.0
-    guest, read it with cat /dev/qxprobe-demo.
+    guest, read it with cat /dev/qxprobe-demo. It ran on the QEMU image of
+    the SDP 8.0 on 25 November 2026: the path was attached.
 <!-- FIN:BUILD -->
 
-_Measured: 1573 characters._
+_Measured: 1768 characters._
 
 ## 11. Evidence of QNX use
 
@@ -423,9 +425,11 @@ downloadable from the URL above. What the video shows is the **captured
 version** of the tool: the host tool reading real QNX 8.0 resource managers,
 the unit test suite, the SARIF 2.1.0 output and the benchmark on 17 real
 resource managers, replayed on screen. It does **not** show a compilation made
-with the QNX 8.0 SDP: that compilation is **NOT MEASURED** (the SDP is not
-installed in the container that built this repository), and neither the video
-nor this text pretends otherwise. The video is **in English**, as the rules
+with the QNX 8.0 SDP: the video was recorded on 15 November 2026, before the
+licence arrived. The compilation and the run on a live QNX 8.0 target are
+**measured now** (24 and 25 November 2026) and proved command by command in
+`docs/PREUVE-QNX8.md`; neither the video nor this text pretends that the
+video shows them. The video is **in English**, as the rules
 require, and every command it shows is a command of the repository, so the
 judge can replay them as they are.
 
@@ -464,10 +468,11 @@ it in this order:
 | 2 | Image gallery (step 3) | `media/devpost/gallery-1-real-corpus.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-1-real-corpus.png | QX-PROBE on 17 public QNX resource managers, each pinned to a commit: one real missing access gate (QX004). |
 | 3 | Image gallery (step 3) | `media/devpost/gallery-2-official-example.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-2-official-example.png | The official example of the QNX 8.0 documentation: no ERROR, no WARN. |
 
-**The real QNX 8.0 build is not in the gallery yet.** It is not measured
-(see section 11). As soon as `scripts/qnx8-proof.sh` has run with the real
-SDP 8.0, add a capture of that run as image 4 (list `GALLERY` of
-`scripts/make-devpost-gallery.py`) and add its row to this table: it is the
+**The real QNX 8.0 build and the run on the target are not in the gallery
+yet.** They are measured (24 and 25 November 2026 — see section 11 and
+`docs/PREUVE-QNX8.md`), but the gallery still shows only the two pictures
+above. A capture of that run can be added as image 4 (list `GALLERY` of
+`scripts/make-devpost-gallery.py`) and its row to this table: it is the
 image a judge most needs to see.
 
 ## 13. The eleven rules, one sentence each
@@ -519,7 +524,7 @@ This is the mapping, so that nothing is left to chance.
 
 | Criterion | Where it is answered |
 |---|---|
-| **Technological Implementation** | § 7: a real analyser, 1123 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 97 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build path (`qcc -Vgcc_ntox86_64 -Werror`) that is labelled NOT MEASURED rather than faked. |
+| **Technological Implementation** | § 7: a real analyser, 1123 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 97 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build and run measured on a live QNX 8.0 target (`qcc -Vgcc_ntox86_64 -Werror`), proved command by command rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
 | **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The rules were drafted with an AI agent; each one was kept only if an official QNX 8.0 page justified it, and the removals are human decisions. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 measured on 07/11/2026 against the code before commit `9706199`, 4 failures measured on 11/11/2026 after the benchmark, and 12 failures out of 13 measured on 14/11/2026 against commit `ef17d75` - these three are in `docs/AI-ASSISTED-RULES.md`; a fourth one, 4 failures out of 8 measured on 14/11/2026 against commit `268f157` on the robustness file, is replayed by `git show 268f157:qx_probe.py > qx_probe.py && python3 -I tests/test_robustness.py`) and passes on the current one; `scripts/verifier-citations.py` re-reads the 14 cited pages and checks that the 36 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
@@ -549,7 +554,8 @@ has them).
 | Benchmark on real code | 17 files from 13 public repositories (7 of the 17 files come from repositories published by QNX or BlackBerry), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
 | Video | 1 417 251 bytes, md5 `98ec689d13bed874bf2b144538a43d91`, 89.72 s, 1920x1080, H.264, 25 fps, 2 243 images, no audio, 18 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
 | Timing of the commands | test suite 2.13 s, run on one file 0.09 s (measured on 14 November 2026; the duration of the clone depends on the network and was not re-measured for this revision) | `time` on each command |
-| QNX 8.0 compilation | **NOT MEASURED** | no SDP 8.0 licence in the environment where the project was written; `scripts/build_qcc.sh` stops with an explicit message and exit code 2 |
+| QNX 8.0 compilation | **MEASURED on 24 November 2026** | the free non-commercial SDP 8.0 licence compiled the three examples with `qcc -Vgcc_ntox86_64 -Werror`, and the ELF header of each binary was read: 3/3 are QNX 8.0 x86_64 executables |
+| QNX 8.0 run on a live target | **MEASURED on 25 November 2026** | the three binaries ran on the QEMU image of the SDP 8.0 and each resource manager attached its path (`/dev/qxprobe-demo`, `/var/run/qxprobe-status`, `/dev/qxprobe-official`); the proof is `docs/PREUVE-QNX8.md` |
 
 ### The rules this submission answers, quoted
 

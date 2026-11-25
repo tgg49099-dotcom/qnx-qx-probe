@@ -209,6 +209,13 @@ VOLATILE = ("date       : ", "repository : ")
 # row is checked as usual.
 SDP_ABSENT = "the QNX SDP 8.0 is not installed on this machine"
 
+# The sentence the proof script prints when no QNX 8.0 target answers.  A
+# row that needs a live target (the run of the binaries on QNX 8.0) cannot
+# be checked on a machine without one: it is reported NOT CHECKED, never OK
+# and never FAILED.  The run was measured on 25 November 2026 on the QEMU
+# image of the SDP 8.0.
+TARGET_ABSENT = "the run on a QNX 8.0 target is NOT MEASURED"
+
 
 def normalize(text: str) -> str:
     return "\n".join(l for l in text.splitlines()
@@ -431,21 +438,30 @@ def check_main(rows: list[dict]) -> list[Row]:
             out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
                            "the network is absent: the command could not run"))
             continue
-        if SDP_ABSENT in texte and SDP_ABSENT not in sortie:
-            out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
-                           "the QNX SDP 8.0 is absent on this machine: the "
-                           "command cannot be checked here"))
-            continue
         alternatives = [a.strip() for a in sortie.split(ALT) if a.strip()]
         if any(a in texte for a in alternatives):
             detail = "RC %d" % rc
             if len(alternatives) > 1:
                 detail += " (one of the %d expected outputs)" % len(alternatives)
             out.append(Row(ident, affirmation, commande, source, "OK", detail))
-        else:
-            out.append(Row(ident, affirmation, commande, source, "FAILED",
-                           "the command no longer produces what the proof writes "
-                           "(RC %d)" % rc))
+            continue
+        # The expected output is not there.  Before calling the line false,
+        # the two known absences are looked for: a line that needs the SDP
+        # 8.0 on a machine without it, and a line that needs a live QNX 8.0
+        # target on a machine without one, are NOT CHECKED, never FAILED.
+        if SDP_ABSENT in texte and SDP_ABSENT not in sortie:
+            out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
+                           "the QNX SDP 8.0 is absent on this machine: the "
+                           "command cannot be checked here"))
+            continue
+        if TARGET_ABSENT in texte and TARGET_ABSENT not in sortie:
+            out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
+                           "no QNX 8.0 target answers on this machine: the "
+                           "command cannot be checked here"))
+            continue
+        out.append(Row(ident, affirmation, commande, source, "FAILED",
+                       "the command no longer produces what the proof writes "
+                       "(RC %d)" % rc))
     return out
 
 
@@ -553,6 +569,12 @@ def check_captures(rows: list[list[str]]) -> list[Row]:
             out.append(Row(ident, "the capture " + name, commande, what,
                            "NOT CHECKED",
                            "the QNX SDP 8.0 is absent on this machine: the "
+                           "picture cannot be checked here"))
+            continue
+        if TARGET_ABSENT in texte and TARGET_ABSENT not in embedded:
+            out.append(Row(ident, "the capture " + name, commande, what,
+                           "NOT CHECKED",
+                           "no QNX 8.0 target answers on this machine: the "
                            "picture cannot be checked here"))
             continue
         if normalize(texte) == normalize(embedded):

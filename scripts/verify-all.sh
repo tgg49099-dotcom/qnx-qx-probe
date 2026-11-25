@@ -235,7 +235,7 @@ check "run_tests.sh (97 unit tests)" \
       "-" \
       bash scripts/run_tests.sh
 
-check "verifier-codelab.py (12 blocks)" \
+check "verifier-codelab.py (13 blocks)" \
       "scripts/verifier-codelab.py" \
       "EVERY OUTPUT OF THE CODELAB IS THE REAL ONE" \
       "-" \

@@ -42,7 +42,39 @@ une copie des documents publies doit etre signale comme perime. La
 contre-epreuve tourne a chaque execution normale, donc un controle ne peut
 pas perdre ses dents en silence.
 
-## 3. Progression du 18 novembre 2026, 21:40 (l'installation du SDP demande les identifiants myQNX au clavier)
+## 3. Progression du 25 novembre 2026, 04:00 (la compilation et l'execution sur une cible QNX 8.0 vivante sont MESUREES)
+
+- **La question du cycle** : la licence SDP 8.0 non commerciale gratuite etait
+  arrivee le 24 novembre 2026, donc la preuve publiee devait etre remise en
+  accord avec la realite -- la compilation etait mesuree, l'execution sur une
+  cible ne l'etait pas. Ce cycle a mesure l'execution.
+- **La compilation, mesuree le 24 novembre 2026** : `scripts/qnx8-proof.sh`
+  compile les trois exemples C avec le vrai `qcc -Vgcc_ntox86_64 -Werror`, et
+  `scripts/check_qnx_elf.py` lit l'en-tete ELF de chaque binaire : **3/3 sont
+  des executables QNX 8.0 x86_64** (interpreteur
+  `/usr/lib/ldqnx-64.so.2`). Le tableau de preuve dit maintenant MEASURED,
+  avec la date de la mesure.
+- **L'execution, mesuree le 25 novembre 2026** : l'image QEMU du SDP 8.0
+  (construite par `mkqnximage`) a ete demarree, les trois binaires y ont ete
+  copies par ssh, lances, et **chaque gestionnaire de ressources a attache son
+  chemin** dans l'espace de noms de QNX (`/dev/qxprobe-demo`,
+  `/var/run/qxprobe-status`, `/dev/qxprobe-official`).
+  `scripts/qnx8-target-run.sh` le fait en une commande, et le tableau de
+  preuve porte cela comme deux assertions.
+- **Deux choses que le script d'execution ignorait, et qu'il a du apprendre** :
+  (1) QNX 8.0 repond `x86pc` a `uname -m` pour la cible x86 64 bits, donc
+  l'architecture est desormais lue avec l'outil officiel `pidin info`
+  (`CPU:X86_64 Release:8.0.0`) ; (2) `scp` cherche `ssh` a un endroit fixe et
+  pas dans le PATH, donc on lui donne maintenant le vrai chemin de `ssh` avec
+  `-S`. Le script accepte aussi `QNX_TARGET_PORT` (le port de ssh sur la
+  cible, 22 par defaut).
+- **Rien n'est simule** : les deux chemins qui ne peuvent pas tourner le
+  disent ("NOT MEASURED" pour l'execution quand aucune cible ne repond, code
+  de sortie 2 pour la compilation quand il n'y a pas de SDK), et le controle
+  rapporte une ligne qu'il n'a pas pu verifier comme **NOT CHECKED**, jamais
+  comme OK et jamais comme un echec.
+
+## 4. Progression du 18 novembre 2026, 21:40 (l'installation du SDP demande les identifiants myQNX au clavier)
 
 - **La question du cycle** : l'installation du SDP 8.0 ne pouvait pas
   demarrer, parce que les identifiants myQNX ne doivent ni voyager dans
@@ -75,7 +107,7 @@ pas perdre ses dents en silence.
   -> le controle final affiche 0 occurrence du mot de passe dans `$HOME` et
   dans `/work`.
 
-## 4. Progression du 17 novembre 2026, 15:21 (l'installation du SDP 8.0, mesuree)
+## 5. Progression du 17 novembre 2026, 15:21 (l'installation du SDP 8.0, mesuree)
 
 - **La question du cycle** : rendre l'installation *reelle* du SDP QNX 8.0
   executable dans le conteneur qui construit ce depot, et prouver par la
@@ -119,7 +151,7 @@ pas perdre ses dents en silence.
   absent) et `scripts/qnx8-proof.sh` sort toujours 2 (« SDP absent ») : les
   documents publies continuent de dire **NOT MEASURED**, et c'est la verite.
 
-## 5. Les cycles precedents (resume)
+## 6. Les cycles precedents (resume)
 
 | Cycle | Ce qu'il a fait |
 |---|---|

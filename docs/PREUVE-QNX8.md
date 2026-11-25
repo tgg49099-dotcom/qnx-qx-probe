@@ -48,11 +48,14 @@ line of it.  A pointer that only exists is not a proof.
   on them, and writes the real output under `proofs/`.  On a machine without
   the SDK, the same command says exactly what is missing and exits 2: **it
   simulates nothing.**
-* **NOT MEASURED, and said so everywhere:** the **run** of those binaries on
-  a live QNX 8.0 target.  The build is measured; the run on a target is not
-  (the target needs the QEMU image of the SDP and an ssh key — see
-  `scripts/qnx8-target-run.sh`, which says `NOT MEASURED` and simulates
-  nothing when the target is absent).
+* **MEASURED, and replayable today:** the **run** of those binaries on a live
+  QNX 8.0 target.  On **25 November 2026** the three binaries built by the
+  real `qcc` were copied to a **QNX 8.0 x86_64 target** (the QEMU image of the
+  SDP 8.0, built by `mkqnximage`), started there, and each resource manager
+  **attached its path** in the QNX pathname space (`/dev/qxprobe-demo`,
+  `/var/run/qxprobe-status`, `/dev/qxprobe-official`).
+  `scripts/qnx8-target-run.sh` does it in one command; when no target
+  answers it says `NOT MEASURED` and simulates nothing.
 
 ## The assertions
 
@@ -78,6 +81,8 @@ line of it.  A pointer that only exists is not a proof.
 | A18 | the three C examples compile with the real qcc of the SDP 8.0 | bash scripts/qnx8-proof.sh | BUILD OK for target x86_64 (qcc -Vgcc_ntox86_64) | scripts/build_qcc.sh:82 |
 | A19 | the three binaries are QNX 8.0 x86_64 executables — the ELF header is read, the exit code of the compiler is not enough | bash scripts/qnx8-proof.sh | ELF CHECK: 3/3 file(s) are QNX 8.0 x86_64 executables | scripts/check_qnx_elf.py:114 |
 | A20 | the proof script says in its own verdict that the examples build for QNX 8.0 | bash scripts/qnx8-proof.sh | VERDICT: THE EXAMPLES BUILD FOR QNX 8.0 (gcc_ntox86_64) AND THE LINTER RUNS ON THEM | scripts/qnx8-proof.sh:320 |
+| A21 | the three binaries were run on a live QNX 8.0 target (the QEMU image of the SDP 8.0) and each resource manager attached its path there | bash scripts/qnx8-proof.sh | RAN ON QNX 8.0  qxprobe-demo : /dev/qxprobe-demo attached | scripts/qnx8-target-run.sh:182 |
+| A22 | the proof script says in its own verdict that the examples ran on QNX 8.0 | bash scripts/qnx8-proof.sh | and they RAN ON QNX 8.0: each resource manager attached its path | scripts/qnx8-proof.sh:323 |
 
 ## The fourteen official pages
 
