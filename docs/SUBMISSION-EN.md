@@ -155,7 +155,7 @@ The tool was written with an AI agent; the facts were kept out of its reach: eve
 
 The suite is 97 tests over 22 classes — 10 anti-false-positive, 15 detection, 2 output format, 14 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 19 whole-program reading of a resource manager split over several files, 9 controls of the published figures and benchmark, 16 the day-of-licence path (ELF header of the binaries, run on a QNX 8.0 target, SDP environment) — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
 
-The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 12 blocks, 0 differing.
+The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 13 blocks, 0 differing.
 <!-- FIN:HOW -->
 
 _Measured: 2264 characters._
@@ -543,7 +543,7 @@ has them).
 | Relative-path example | 7 findings, 0 ERROR, 1 WARN (QX005), exit 1 | `python3 -I qx_probe.py examples/qnx80_resmgr_relative_path.c` |
 | Official example of the documentation | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c` |
 | Sabotaged fixture | 6 findings, 1 ERROR (QX004), 0 WARN, exit 1 | `python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c` |
-| Codelab | 12 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
+| Codelab | 13 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
 | Official QNX 8.0 pages cited | 14 distinct pages, all HTTP 200 when re-read on 12 and 14 November 2026, all then marked "Page updated: November 05, 2026"; 36 quotations checked | `curl` on each URL of `RULES.md`; `python3 -I scripts/verifier-citations.py` |
 | The linter | 1123 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
 | Benchmark on real code | 17 files from 13 public repositories (7 of the 17 files come from repositories published by QNX or BlackBerry), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |

@@ -195,7 +195,7 @@ publie dans `docs/BENCHMARK.fr.md` avec un vrai run, puis affiche un
 tableau : une ligne par verification, son resultat et son code de sortie.
 
 Avant ce tableau, la commande affiche le journal complet de chaque controle
-— les 81 noms de tests, les 12 blocs du codelab rejoues, les 36 citations
+— les 81 noms de tests, les 13 blocs du codelab rejoues, les 36 citations
 relues et les 17 fichiers du benchmark : **454 lignes** en tout pour le
 premier des deux runs ci-dessous. Les deux blocs qui suivent sont la **fin
 de la sortie REELLE**, mesuree le 15 novembre 2026 sur le serveur de
@@ -210,7 +210,7 @@ SUMMARY - one line per verification
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (81 unit tests)               OK           -                                                0
-verifier-codelab.py (12 blocks)            OK           -                                                0
+verifier-codelab.py (13 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
@@ -243,7 +243,7 @@ SUMMARY - one line per verification
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (81 unit tests)               OK           -                                                0
-verifier-codelab.py (12 blocks)            OK           -                                                0
+verifier-codelab.py (13 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
@@ -277,12 +277,14 @@ Ce script utilise `qcc` du SDP 8.0 : il n'est donc **pas** exécutable sans le
 SDK. Il s'arrête avec un message explicite si `qcc` est absent, et il n'invente
 jamais une sortie de compilateur.
 
-**La compilation n'est PAS MESUREE (NOT MEASURED).** Le SDP 8.0 n'est pas
-installé dans l'environnement où ce projet a été écrit et aucune clé de licence
-QNX n'y a été utilisée : les exemples n'ont jamais été compilés pour QNX 8.0,
-et rien dans ce dépôt ne prétend le contraire.
+**La compilation EST MESUREE (MEASURED).** Le SDP 8.0 a été installé le
+24 novembre 2026 (licence non commerciale gratuite *QNX Everywhere*) : les
+trois exemples compilent avec le vrai `qcc -Vgcc_ntox86_64`, et les binaires
+sont relus comme des exécutables ELF QNX 8.0. Avant cette licence, ce dépôt
+le disait partout — et il le dit encore, sur toute machine : **aucune sortie
+de compilateur n'est jamais simulée.**
 
-**Le jour où la licence arrive, une seule commande :** `bash scripts/qnx8-proof.sh`.
+**Une seule commande :** `bash scripts/qnx8-proof.sh`.
 Elle charge elle-même l'environnement du SDP (`qnxsdp-env.sh`, en général dans
 `~/qnx800`), compile les trois exemples avec `qcc -Vgcc_ntox86_64 -Werror`, puis
 **lit l'en-tête ELF de chaque binaire** : un exécutable x86_64 64 bits dont

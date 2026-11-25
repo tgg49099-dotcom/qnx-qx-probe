@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Compiles the QX-PROBE examples for QNX 8.0 with qcc (SDP 8.0).
 #
-# This script CANNOT run yet: it requires the SDP 8.0 (non-commercial QNX
-# Everywhere licence, myQNX account).  It is written and ready to run the day
-# the licence exists.
+# It requires the SDP 8.0 (non-commercial QNX Everywhere licence, myQNX
+# account).  The licence arrived on 24 November 2026: the three examples
+# compile with the real qcc -Vgcc_ntox86_64 (proof: docs/PREUVE-QNX8.md).
 #
 # Absolute rule: if qcc is missing, the script stops with an error and invents
 # NO compiler output.  It does not produce a fake binary.

@@ -16,6 +16,12 @@ in CODELAB.md are the real ones:
      tutorial.  A line that is exactly `...` means "one or more lines are
      elided here" (used for the long test-suite listing).
 
+A block may declare what it needs, with a line that starts with
+`#needs-` inside the block: `#needs-qcc` means the block can only be
+replayed on a machine that has the QNX SDP 8.0 compiler.  When the tool is
+absent, the block is reported as NOT CHECKED: it is never a success and
+never a failure.
+
 Exit code: 0 = every replayed block matches, 1 = at least one block differs.
 
 Usage:
@@ -39,14 +45,26 @@ HEREDOC_RE = re.compile(r"<<'?([A-Za-z_][A-Za-z_0-9]*)'?")
 
 # ---------------------------------------------------------------- parsing
 
-def parse_block(raw: str) -> tuple[list[str], list[str]]:
-    """Returns (commands, expected output lines) of one console block."""
+def parse_block(raw: str) -> tuple[list[str], list[str], list[str]]:
+    """Returns (commands, expected output lines, requirements) of one block.
+
+    A line that starts with `#needs-` is a REQUIREMENT: it names a tool the
+    block needs to be replayed (`#needs-qcc` for the QNX SDP 8.0 compiler).
+    It is neither a command nor an expected output.  When the tool is
+    absent, the block is reported as NOT CHECKED: it is never a success and
+    never a failure, exactly like a check that could not run.
+    """
     commands: list[str] = []
     expected: list[str] = []
+    needs: list[str] = []
     lines = raw.split("\n")
     i = 0
     while i < len(lines):
         line = lines[i]
+        if line.startswith("#needs-"):
+            needs.append(line[len("#needs-"):].strip())
+            i += 1
+            continue
         if line.startswith("$ "):
             cmd = line[2:]
             m = HEREDOC_RE.search(cmd)
@@ -67,7 +85,7 @@ def parse_block(raw: str) -> tuple[list[str], list[str]]:
         if line.strip():
             expected.append(line)
         i += 1
-    return commands, expected
+    return commands, expected, needs
 
 
 # ---------------------------------------------------------------- matching
@@ -178,10 +196,17 @@ def main() -> int:
                                                        "lab", "build"))
         session = Session(work)
         n_ok = n_ko = n_skip = 0
-        for i, (commands, expected) in enumerate(blocks, 1):
+        for i, (commands, expected, needs) in enumerate(blocks, 1):
             title = commands[0] if commands else "<no command>"
             if len(title) > 58:
                 title = title[:55] + "..."
+            missing = [t for t in needs if shutil.which(t) is None]
+            if missing:
+                n_skip += 1
+                print(f"[SKIP] block {i:2d} : {title}")
+                print(f"         needs {', '.join(missing)}: the tool is absent "
+                      f"on this machine (not checked, never a failure)")
+                continue
             actual, notes = session.run_block(commands)
             if not expected:
                 n_skip += 1

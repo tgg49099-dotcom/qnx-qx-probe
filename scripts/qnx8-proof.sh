@@ -11,14 +11,14 @@
 #
 # TWO PATHS, AND ONLY TWO
 #
-#   1. THE SDP 8.0 IS ABSENT — the case on 17 November 2026.
-#      The script detects the absence (no `qcc`, no SDP directory), writes
-#      nothing at all, and exits with the code 2.  It NEVER simulates a
-#      compilation, a compiler message, a binary or a run.  This failure is
-#      the counter-proof: a script that cannot fail proves nothing.
+#   1. THE SDP 8.0 IS ABSENT — the case of 17 November 2026, and of every
+#      machine without the SDK.  The script detects the absence (no `qcc`, no
+#      SDP directory), writes nothing at all, and exits with the code 2.  It
+#      NEVER simulates a compilation, a compiler message, a binary or a run.
+#      This failure is the counter-proof: a script that cannot fail proves nothing.
 #
-#   2. THE SDP 8.0 IS PRESENT — the day the free non-commercial licence
-#      arrives.  The script compiles the three C examples with
+#   2. THE SDP 8.0 IS PRESENT — the case since 24 November 2026 (the free
+#      non-commercial licence).  The script compiles the three C examples with
 #      `qcc -Vgcc_ntox86_64`, runs QX-PROBE on them, and writes the real
 #      output (stdout, stderr, exit codes, checksums) under `proofs/`.
 #      It then reads the ELF header of each binary (scripts/check_qnx_elf.py):

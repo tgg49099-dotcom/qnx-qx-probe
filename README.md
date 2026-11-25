@@ -45,7 +45,7 @@ The three things the contest rules ask a submission to state:
 |---|---|
 | **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 36 quotations, re-read on 14 November 2026) |
 | **Target** | the tool itself is a **host** tool (Linux, macOS, Windows); the C examples target **QNX 8.0 on QEMU x86_64** (`qcc -Vgcc_ntox86_64`) |
-| **Toolchain** | **Python 3, standard library only**, for the tool; **`qcc` from the SDP 8.0**, for the C examples — whose compilation is **NOT MEASURED**, because no SDP 8.0 licence exists in the environment where the project was written |
+| **Toolchain** | **Python 3, standard library only**, for the tool; **`qcc` from the SDP 8.0**, for the C examples — whose compilation is **MEASURED** since 24 November 2026 (the free non-commercial *QNX Everywhere* licence): the three examples compile with `qcc -Vgcc_ntox86_64`, and the binaries are QNX 8.0 ELF executables |
 
 ## The golden rule: zero false positives
 
@@ -222,7 +222,7 @@ It is not a promise, it is a checked transcript:
 ```console
 $ python3 -I scripts/verifier-codelab.py
 ...
-blocks replayed and matching : 12
+blocks replayed and matching : 13
 blocks replayed and differing : 0
 VERDICT : EVERY OUTPUT OF THE CODELAB IS THE REAL ONE (RC 0)
 ```
@@ -269,7 +269,7 @@ SUMMARY - one line per verification
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (81 unit tests)               OK           -                                                0
-verifier-codelab.py (12 blocks)            OK           -                                                0
+verifier-codelab.py (13 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      OK           -                                                0
 verifier-soumission-devpost.py (13 blocks) OK           -                                                0
@@ -302,7 +302,7 @@ SUMMARY - one line per verification
 VERIFICATION                               RESULT       DETAIL                                           EXIT
 ------------------------------------------ ------------ ------------------------------------------------ ----
 run_tests.sh (81 unit tests)               OK           -                                                0
-verifier-codelab.py (12 blocks)            OK           -                                                0
+verifier-codelab.py (13 blocks)            OK           -                                                0
 audit-sous-titres-pixels.py (video)        NOT CHECKED  tool missing: ffmpeg, ffprobe                    -
 verifier-citations.py (36 quotations)      NOT CHECKED  network absent: the pages could not be read      2
 verifier-soumission-devpost.py (13 blocks) NOT CHECKED  network absent: the links could not be read      2
@@ -336,11 +336,14 @@ This script uses `qcc` from the SDP 8.0, so it is **not runnable without the
 SDK**. It stops with an explicit message if `qcc` is absent, and it never
 invents a compiler output.
 
-**The compilation is NOT MEASURED.** The SDP 8.0 and its non-commercial
-licence do not exist in this environment: the examples have never been
-compiled for QNX 8.0, and nothing in this repository pretends otherwise.
+**The compilation is MEASURED.** The SDP 8.0 was installed on 24 November
+2026 (the free non-commercial *QNX Everywhere* licence): the three examples
+compile with the real `qcc -Vgcc_ntox86_64`, and the binaries are read back
+as QNX 8.0 ELF executables.  Before that licence existed, this repository
+said so everywhere — and it still says it, in the block below, on every
+machine: **no compiler output is ever simulated.**
 
-**The day the licence arrives, one command:**
+**One command:**
 
 ```console
 $ bash scripts/qnx8-proof.sh
@@ -399,12 +402,12 @@ where a reviewer can open it, and each of them re-playable:
   `_RESMGR_NPARTS()`), and the code they analyse is QNX 8.0 resource-manager
   code (`examples/`, and the seventeen files of the benchmark).
 
-What this repository does **not** claim: the QNX 8.0 compilation of the
-examples is **NOT MEASURED** (the QNX SDP 8.0 is not installed in the
-environment where the project was written, and no QNX licence key has been
-used there). `scripts/build_qcc.sh` stops with an explicit
-message and the exit code 2 when `qcc` is absent, and **no compiler output is
-simulated anywhere in this repository**.
+What this repository does **not** claim: a **run** of the examples on a QNX
+8.0 target is not measured here — the compilation is, the run on a live
+target is not (the proof of the compilation is in
+**[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md)**).  `scripts/build_qcc.sh`
+stops with an explicit message and the exit code 2 when `qcc` is absent, and
+**no compiler output is simulated anywhere in this repository**.
 
 ## The demonstration video
 

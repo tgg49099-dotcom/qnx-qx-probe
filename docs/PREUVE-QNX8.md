@@ -40,13 +40,19 @@ line of it.  A pointer that only exists is not a proof.
   page of the official BlackBerry QNX SDP 8.0 C Library Reference.  14 pages,
   36 quotations, re-read on **17 November 2026**: the URL, the HTTP code and
   the SHA-256 of each page are in the table below.
-* **NOT MEASURED, and said so everywhere:** the compilation of the C examples
-  for QNX 8.0.  The SDP 8.0 needs a myQNX account and a licence; none exists
-  in the environment where this project was written.  `scripts/qnx8-proof.sh`
-  detects the absence, prints exactly what is missing, and exits 2.  **It
-  simulates nothing.**  The day the licence arrives, the same command compiles
-  the examples with `qcc -Vgcc_ntox86_64`, runs the linter on them, and writes
-  the real output under `proofs/`.
+* **MEASURED, and replayable today:** the compilation of the C examples for
+  QNX 8.0.  The SDP 8.0 (free non-commercial *QNX Everywhere* licence) was
+  installed on **24 November 2026**: `scripts/qnx8-proof.sh` compiles the
+  three examples with the real `qcc -Vgcc_ntox86_64`, reads the ELF header
+  of each binary (**3/3 are QNX 8.0 x86_64 executables**), runs the linter
+  on them, and writes the real output under `proofs/`.  On a machine without
+  the SDK, the same command says exactly what is missing and exits 2: **it
+  simulates nothing.**
+* **NOT MEASURED, and said so everywhere:** the **run** of those binaries on
+  a live QNX 8.0 target.  The build is measured; the run on a target is not
+  (the target needs the QEMU image of the SDP and an ssh key — see
+  `scripts/qnx8-target-run.sh`, which says `NOT MEASURED` and simulates
+  nothing when the target is absent).
 
 ## The assertions
 
@@ -55,9 +61,9 @@ line of it.  A pointer that only exists is not a proof.
 | A01 | the QNX version the contest rules ask for is declared | sed -n '46p' README.md | **QNX SDP 8.0** | README.md:46 |
 | A02 | the target is declared | sed -n '47p' README.md | the C examples target **QNX 8.0 on QEMU x86_64** | README.md:47 |
 | A03 | the toolchain is declared | sed -n '48p' README.md | **`qcc` from the SDP 8.0** | README.md:48 |
-| A04 | the README says the QNX compilation is NOT MEASURED: this proof does not pretend | sed -n '48p' README.md | whose compilation is **NOT MEASURED** | README.md:48 |
+| A04 | the README says the QNX compilation is MEASURED, with the date of the measurement | sed -n '48p' README.md | whose compilation is **MEASURED** | README.md:48 |
 | A05 | the build script names the qcc variant of the x86_64 target | grep -n 'gcc_ntox86_64' scripts/build_qcc.sh | VARIANT="gcc_ntox86_64" | scripts/build_qcc.sh:25 |
-| A06 | the one-command proof script detects the absence of the SDP 8.0 and fails cleanly, without simulating anything | bash scripts/qnx8-proof.sh | ERROR: the QNX SDP 8.0 is not installed on this machine. | scripts/qnx8-proof.sh:199 |
+| A06 | the one-command proof script detects the absence of the SDP 8.0 and fails cleanly, without simulating anything (the command forces the absence: `HOME` and `QNX_SDP` point to a folder without the SDP, so the result is the same on every machine) | env HOME=/nonexistent QNX_SDP=/nonexistent QNX_HOST= PATH=/usr/bin:/bin bash scripts/qnx8-proof.sh | ERROR: the QNX SDP 8.0 is not installed on this machine. | scripts/qnx8-proof.sh:199 |
 | A07 | the SDP path of that script is exercised with a FAKE compiler: the flags it uses are the real ones | bash scripts/qnx8-proof.sh --self-test | qcc -Vgcc_ntox86_64 -Werror -o build/x86_64/qxprobe-demo examples/qnx80_resmgr_minimal.c | scripts/build_qcc.sh:66 |
 | A08 | the linter runs on the official example of the QNX 8.0 documentation and reports no error and no warning | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | RESULT: 6 finding(s), 0 ERROR, 0 WARN | examples/qnx80_resmgr_official_example.c:20 |
 | A09 | the linter runs on 17 real QNX resource managers written by other people, and finds one real defect | python3 -I scripts/benchmark-corpus.py | 17/17 files analysed, 1 ERROR in total | scripts/benchmark-corpus.py:280 |
@@ -69,6 +75,9 @@ line of it.  A pointer that only exists is not a proof.
 | A15 | this proof is published in the public repository | curl -sS -L -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/docs/PREUVE-QNX8.md | 200 | docs/PREUVE-QNX8.md |
 | A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:344 |
 | A17 | the test suite of the tool is green | bash scripts/run_tests.sh | RESULT: QX-PROBE suite GREEN | scripts/run_tests.sh:72 |
+| A18 | the three C examples compile with the real qcc of the SDP 8.0 | bash scripts/qnx8-proof.sh | BUILD OK for target x86_64 (qcc -Vgcc_ntox86_64) | scripts/build_qcc.sh:82 |
+| A19 | the three binaries are QNX 8.0 x86_64 executables — the ELF header is read, the exit code of the compiler is not enough | bash scripts/qnx8-proof.sh | ELF CHECK: 3/3 file(s) are QNX 8.0 x86_64 executables | scripts/check_qnx_elf.py:114 |
+| A20 | the proof script says in its own verdict that the examples build for QNX 8.0 | bash scripts/qnx8-proof.sh | VERDICT: THE EXAMPLES BUILD FOR QNX 8.0 (gcc_ntox86_64) AND THE LINTER RUNS ON THEM | scripts/qnx8-proof.sh:320 |
 
 ## The fourteen official pages
 
@@ -124,7 +133,7 @@ picture shows what the command really prints.
 |---|---|---|---|---|
 | C01 | media/qx-proof-1-corpus-reel.png | python3 -I scripts/benchmark-corpus.py | 697e70ad1033c3dca9b96b059c1be38fa3cc5b36448821d8e5b80c89de8fb888 | the linter on 17 real QNX resource managers, one real defect found |
 | C02 | media/qx-proof-2-exemple-officiel.png | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | 2ff69e0aaa73cede483a9e360938adc8d7f46df11b74e528c29de7a6ea325320 | the official example of the QNX 8.0 documentation: 0 ERROR, 0 WARN |
-| C03 | media/qx-proof-3-sdp-absent.png | bash scripts/qnx8-proof.sh | 1423540ceeb10a0b9e9eb1852d22bce824f4b54ad584521cb66c57ef942b0fc0 | the QNX 8.0 proof script: the SDP is absent, and it says so instead of faking it |
+| C03 | media/qx-proof-3-sdp-absent.png | env HOME=/nonexistent QNX_SDP=/nonexistent QNX_HOST= PATH=/usr/bin:/bin bash scripts/qnx8-proof.sh | 3a71dce7e11f76aa605e1a13246a1983466c503d6228e066066686e0127b26e9 | the QNX 8.0 proof script without the SDP: it says what is missing and stops (the absence is forced, so the result is the same on every machine) |
 
 ## The two sentences the submission form needs
 

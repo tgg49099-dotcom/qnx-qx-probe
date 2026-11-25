@@ -354,22 +354,37 @@ account is required). With the SDK installed, the host tools are on your
 
 ```console
 $ bash scripts/build_qcc.sh x86_64
+#needs-qcc
+...
+--- examples/qnx80_resmgr_minimal.c -> build/x86_64/qxprobe-demo ---
+...
+--- examples/qnx80_resmgr_readonly.c -> build/x86_64/qxprobe-status ---
+...
+--- examples/qnx80_resmgr_official_example.c -> build/x86_64/qxprobe-official ---
+...
+BUILD OK for target x86_64 (qcc -Vgcc_ntox86_64)
 ```
 
 The script uses `qcc -Vgcc_ntox86_64 -Werror` (or `-Vgcc_ntoaarch64le`), that is: the QNX 8.0
 libraries and **no warning tolerated**. Targets: `x86_64` (a QEMU guest)
 and `aarch64` (QNX 8.0 is 64-bit only).
 
-> **Honest note.** The build of these examples has **NOT been measured** in
-> the environment where this tutorial was written: there was no SDP 8.0
-> licence there, so `qcc` was absent and the script stopped with an explicit
-> message. No compiler output was ever simulated. If you run it with the
-> SDK, you are the first — and the output you get is the real one.
+> **Honest note.** The build of these examples **has been measured**: the
+> SDP 8.0 was installed on 24 November 2026 (the free non-commercial QNX
+> Everywhere licence), the three examples compile with the real
+> `qcc -Vgcc_ntox86_64` of the SDP 8.0, and the output above is the one it
+> prints. The line `#needs-qcc` says that this block can only be replayed
+> on a machine that has the SDK: `scripts/verifier-codelab.py` reports it as
+> **not checked** elsewhere — never as a success, never as a failure.
+> The proof of that build, with the checksums of the binaries, is in
+> [`docs/PREUVE-QNX8.md`](PREUVE-QNX8.md).
 
-Without the SDK, the script says so and stops:
+Without the SDK, the script says so and stops — and it never invents a
+compiler message. This block is replayed **everywhere**: the `PATH` it uses
+has no `qcc` in it, whatever the machine:
 
 ```console
-$ bash scripts/build_qcc.sh
+$ env PATH=/usr/bin:/bin bash scripts/build_qcc.sh
 ERROR: qcc was not found.
 
 This script compiles for QNX 8.0 with the SDP 8.0 (host tools).  Without the

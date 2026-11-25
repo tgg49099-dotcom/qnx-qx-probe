@@ -4,8 +4,8 @@
 WHAT THIS SCRIPT IS
 
 `docs/PREUVE-QNX8.md` is the proof that this repository really works with
-QNX 8.0 code, and that it will really build for QNX 8.0 the day the SDP 8.0
-licence arrives.  A proof is worth nothing if nobody checks it, so this
+QNX 8.0 code, and that it really builds for QNX 8.0 with the real compiler
+of the SDP 8.0.  A proof is worth nothing if nobody checks it, so this
 script checks every line of it.
 
 WHAT IT CHECKS
@@ -201,6 +201,13 @@ def sha256_of(path: pathlib.Path) -> str:
 # the run and the path of the clone.  They are removed from the comparison
 # of a capture; every other byte must match.
 VOLATILE = ("date       : ", "repository : ")
+
+# The sentence the proof script prints when the SDP 8.0 is absent.  A row
+# that needs the SDP cannot be checked on a machine without it: it is
+# reported NOT CHECKED, never OK and never FAILED.  The same sentence is the
+# EXPECTED output of the row that proves the absence is detected, and that
+# row is checked as usual.
+SDP_ABSENT = "the QNX SDP 8.0 is not installed on this machine"
 
 
 def normalize(text: str) -> str:
@@ -424,6 +431,11 @@ def check_main(rows: list[dict]) -> list[Row]:
             out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
                            "the network is absent: the command could not run"))
             continue
+        if SDP_ABSENT in texte and SDP_ABSENT not in sortie:
+            out.append(Row(ident, affirmation, commande, source, "NOT CHECKED",
+                           "the QNX SDP 8.0 is absent on this machine: the "
+                           "command cannot be checked here"))
+            continue
         alternatives = [a.strip() for a in sortie.split(ALT) if a.strip()]
         if any(a in texte for a in alternatives):
             detail = "RC %d" % rc
@@ -536,6 +548,12 @@ def check_captures(rows: list[list[str]]) -> list[Row]:
         if net and not texte.strip():
             out.append(Row(ident, "the capture " + name, commande, what,
                            "NOT CHECKED", "the network is absent"))
+            continue
+        if SDP_ABSENT in texte and SDP_ABSENT not in embedded:
+            out.append(Row(ident, "the capture " + name, commande, what,
+                           "NOT CHECKED",
+                           "the QNX SDP 8.0 is absent on this machine: the "
+                           "picture cannot be checked here"))
             continue
         if normalize(texte) == normalize(embedded):
             out.append(Row(ident, "the capture " + name, commande, what,
