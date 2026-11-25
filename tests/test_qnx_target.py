@@ -109,9 +109,21 @@ cmd="$*"
 echo "ssh $*" >> "$T_LOG"
 case "$cmd" in
   *uname*) echo "$FAKE_UNAME"; exit 0 ;;
+  *pidin*) [ -n "$FAKE_PIDIN" ] && echo "$FAKE_PIDIN"; exit 0 ;;
+  *slay*) exit 0 ;;
   *"ls -l "*)
+    # Two different checks use "ls -l":
+    #   - the one made BEFORE the run ("ls -l <path>"): the path must be
+    #     free, so nothing is printed when it is free;
+    #   - the one made DURING the run ("if ls -l <path>; then"): the path
+    #     must be attached.
     p=$(printf '%s' "$cmd" | sed -n 's/.*if ls -l \([^;]*\);.*/\1/p')
-    if [ "$FAKE_ATTACH" = 1 ]; then echo "PATH-ATTACHED $p"; else echo "PATH-ABSENT $p"; fi
+    if [ -n "$p" ]; then
+      if [ "$FAKE_ATTACH" = 1 ]; then echo "PATH-ATTACHED $p"; else echo "PATH-ABSENT $p"; fi
+    else
+      q=$(printf '%s' "$cmd" | sed -n 's/^ls -l //p')
+      if [ "$FAKE_STALE" = 1 ]; then echo "PATH-ATTACHED $q"; fi
+    fi
     exit 0 ;;
 esac
 exit 0
@@ -151,17 +163,20 @@ class TargetRun(unittest.TestCase):
         self.qemu.mkdir()
 
     def run_target(self, uname="QNX 8.0.0 x86_64", attach="1", key=True,
-                   mkqnximage=True, arch="x86_64", ip="10.0.2.15"):
+                   mkqnximage=True, arch="x86_64", ip="10.0.2.15",
+                   stale="0", pidin="", extra=()):
         if not mkqnximage:
             (self.bin / "mkqnximage").unlink()
         env = {"PATH": "%s:/usr/bin:/bin" % self.bin, "HOME": str(self.tmp),
                "T_LOG": str(self.tmp / "log"), "FAKE_UNAME": uname,
-               "FAKE_ATTACH": attach, "FAKE_IP": ip,
+               "FAKE_ATTACH": attach, "FAKE_IP": ip, "FAKE_STALE": stale,
+               "FAKE_PIDIN": pidin,
                "QNX_QEMU_DIR": str(self.qemu)}
         if key:
             env["QNX_SSH_KEY"] = str(self.key)
         r = subprocess.run(["bash", str(self.repo / "scripts" / "qnx8-target-run.sh"),
-                            "--arch", arch, "--out", str(self.tmp / "out")],
+                            "--arch", arch, "--out", str(self.tmp / "out"),
+                            *extra],
                            capture_output=True, text=True, env=env, timeout=60)
         log = (self.tmp / "log").read_text() if (self.tmp / "log").exists() else ""
         return r.returncode, r.stdout + r.stderr, log
@@ -213,6 +228,35 @@ class TargetRun(unittest.TestCase):
         rc, out, _ = self.run_target(attach="0")
         self.assertEqual(rc, 1)
         self.assertEqual(out.count("FAILED"), 3)
+
+    def test_a_stale_path_is_refused_instead_of_being_a_false_positive(self):
+        """A resource manager of a previous run still holds the path: the
+        check would be a false positive, so the run is refused."""
+        rc, out, _ = self.run_target(stale="1")
+        self.assertEqual(rc, 1)
+        self.assertEqual(out.count("false positive"), 3, out)
+        self.assertNotIn("RAN ON QNX 8.0", out)
+
+    def test_the_process_of_a_previous_run_is_killed_first(self):
+        rc, out, log = self.run_target()
+        self.assertEqual(rc, 0, out)
+        for b in ("qxprobe-demo", "qxprobe-status", "qxprobe-official"):
+            self.assertIn("slay %s" % b, log)
+
+    def test_the_stable_output_is_the_same_on_every_run(self):
+        """The picture of the proof is compared with the output of its
+        command: the command must print the same lines every time."""
+        pidin = "CPU:X86_64 Release:8.0.0  FreeMem:868MB/1023MB BootTime:Nov 25 11:47:47 UTC 2026"
+        rc1, out1, _ = self.run_target(pidin=pidin, extra=["--stable"])
+        rc2, out2, _ = self.run_target(pidin=pidin, extra=["--stable"])
+        self.assertEqual(rc1, 0, out1)
+        self.assertEqual(rc2, 0, out2)
+        self.assertEqual(out1, out2)
+        self.assertIn("QNX 8.0 TARGET: CPU:X86_64 Release:8.0.0", out1)
+        self.assertEqual(out1.count("RAN ON QNX 8.0"), 3, out1)
+        # the lines that change from one run to the next are not printed
+        for volatile in ("address    :", "uname      :", "pidin info :"):
+            self.assertNotIn(volatile, out1)
 
 
 FAKE_QCC = """#!/usr/bin/env python3

@@ -15,7 +15,7 @@ proof.
 
 | What | Who wrote it | How the facts were re-read | Where it can be checked |
 |---|---|---|---|
-| The eleven rules, the checker `qx_probe.py`, the 97 tests, this document | an **AI agent** (Claude), working in the repository of the owner, on the instructions of the owner | every quotation, commit name, file name, test name and figure below was re-read **against the files of this repository** — never from memory — and against the **live official pages** | `git log`, `RULES.md`, `tests/test_qx_probe.py`, `scripts/verifier-citations.py` |
+| The eleven rules, the checker `qx_probe.py`, the 100 tests, this document | an **AI agent** (Claude), working in the repository of the owner, on the instructions of the owner | every quotation, commit name, file name, test name and figure below was re-read **against the files of this repository** — never from memory — and against the **live official pages** | `git log`, `RULES.md`, `tests/test_qx_probe.py`, `scripts/verifier-citations.py` |
 | The corrections of the five defective rules found on the examples | the same AI agent, in the commit `9706199` (05/11/2026) | by the **counter-proof** of § 4: the current test suite was run against the *previous* code, and the tests that cover the corrections **failed** | `git show 9706199`, `git show 9706199^:qx_probe.py` |
 | The corrections of the two rules the **benchmark on real code** found (QX006, QX007) and of the three false positives of QX011 | the same AI agent, on 11/11/2026, after running the tool on 17 resource managers published by other people | by the same **counter-proof**: the current test suite run against the code of the previous commit (`eeb99e4`) **fails** on 4 assertions, and passes on the current code | `docs/BENCHMARK.md`, `git show eeb99e4:qx_probe.py` |
 | The text submitted to the contest, and the decision to submit | the **owner** (Tgg) | the owner pastes the blocks of `docs/SUBMISSION-EN.md`; every block carries its measured character count | `docs/SUBMISSION-EN.md` |
@@ -51,7 +51,7 @@ exist either.**
 
 ```console
 $ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git && cd qnx-qx-probe
-$ bash scripts/run_tests.sh                 # 97 tests, RESULT: QX-PROBE suite GREEN (RC 0)
+$ bash scripts/run_tests.sh                 # 100 tests, RESULT: QX-PROBE suite GREEN (RC 0)
 $ python3 -I scripts/verifier-citations.py  # the 14 official pages, 36 quotations (RC 0)
 $ git show bfad852:RULES.md                 # the first draft of the eleven rules
 $ git show 9706199 --stat                   # the commit that corrected the five defective rules

@@ -161,7 +161,7 @@ tests/test_qx_probe.py                       27 tests : 10 anti-faux-positif, 15
 tests/test_output_formats.py                 14 tests : numeros de ligne, sortie JSON et SARIF, pas de QX003 sur NULL
 tests/test_build_qcc.py                      4 tests : la variante qcc et la cible de scripts/build_qcc.sh (faux qcc)
 tests/test_robustness.py                     8 tests : 20 variantes de l'exemple officiel dans des styles C courants (#if 0, litteral '}', garde a deux niveaux d'aides, = &handler, pointeur de table, fonction de reglage, garde en macro, delegation a iofunc_*_default())
-tests/test_qnx_target.py                     16 tests : le controle ELF (un binaire Linux est refuse), l'execution sur cible (faux ssh), l'environnement du SDP charge
+tests/test_qnx_target.py                     19 tests : le controle ELF (un binaire Linux est refuse), l'execution sur cible (faux ssh), l'environnement du SDP charge
 tests/test_multifile.py                      19 tests : un gestionnaire de ressources eparti sur plusieurs fichiers lu comme un seul programme, la ligne de commande (--help, option inconnue, fichier absent) sans traceback
 tests/test_published_figures.py             9 tests : les controles qui comparent les chiffres publies et le benchmark publie aux vrais, chacun avec sa contre-epreuve
 video/SCENARIO.md                            le scenario de la demonstration video

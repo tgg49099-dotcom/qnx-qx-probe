@@ -276,6 +276,33 @@ EXEMPTIONS = (
      "the duration of the test suite and of one run of the tool, measured on "
      "21 November 2026 on the build machine, not the duration of the video",
      r"build machine|21 November 2026"),
+    # The eighth version (25/11/2026): the count of the suite between 17 and
+    # 25 November 2026 is a dated historical measurement (the three tests
+    # added on 25 November 2026 make it 100), not a stale figure.
+    ("docs/SUBMISSION-EN.md", "97 tests",
+     "the number of tests of the suite between 17 and 25 November 2026, a "
+     "dated historical measurement, not the number of the suite today",
+     r"17 November 2026"),
+    # The ninth version (25/11/2026): the check of the DevPost gallery
+    # joined the standard chain (10 checks today).  The verdict of the
+    # dated runs of 14 November 2026 is printed as it was measured: the
+    # denominator of those runs is not the number of checks today.
+    ("README.md", "8/9 OK",
+     "the verdict of the dated verify-all run of 14 November 2026, printed "
+     "as it was measured",
+     r"NO CHECK FAILED"),
+    ("README.md", "4/9 OK",
+     "the verdict of the dated verify-all run of 14 November 2026 on the "
+     "server without network, printed as it was measured",
+     r"NO CHECK FAILED"),
+    ("docs/README.fr.md", "8/9 OK",
+     "the verdict of the dated verify-all run of 14 November 2026, printed "
+     "as it was measured",
+     r"NO CHECK FAILED"),
+    ("docs/README.fr.md", "4/9 OK",
+     "the verdict of the dated verify-all run of 14 November 2026 on the "
+     "server without network, printed as it was measured",
+     r"NO CHECK FAILED"),
 )
 
 # The number written in the counter-proof: one false figure of each kind.

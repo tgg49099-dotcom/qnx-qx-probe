@@ -76,12 +76,12 @@ line of it.  A pointer that only exists is not a proof.
 | A13 | the codelab of the submission answers in public | curl -sS -L -o /dev/null -w '%{http_code}' https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/docs/CODELAB.md | 200 | docs/CODELAB.md |
 | A14 | the public repository has a main branch | git ls-remote https://github.com/tgg49099-dotcom/qnx-qx-probe.git refs/heads/main | refs/heads/main | git |
 | A15 | this proof is published in the public repository | curl -sS -L -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/docs/PREUVE-QNX8.md | 200 | docs/PREUVE-QNX8.md |
-| A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 9/9 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:344 |
+| A16 | every published proof of this repository is replayed by one command, and none of them fails | bash scripts/verify-all.sh | VERDICT: EVERY CHECK PASSED - 10/10 OK (RC 0) @@ VERDICT: NO CHECK FAILED | scripts/verify-all.sh:354 |
 | A17 | the test suite of the tool is green | bash scripts/run_tests.sh | RESULT: QX-PROBE suite GREEN | scripts/run_tests.sh:72 |
 | A18 | the three C examples compile with the real qcc of the SDP 8.0 | bash scripts/qnx8-proof.sh | BUILD OK for target x86_64 (qcc -Vgcc_ntox86_64) | scripts/build_qcc.sh:82 |
 | A19 | the three binaries are QNX 8.0 x86_64 executables — the ELF header is read, the exit code of the compiler is not enough | bash scripts/qnx8-proof.sh | ELF CHECK: 3/3 file(s) are QNX 8.0 x86_64 executables | scripts/check_qnx_elf.py:114 |
 | A20 | the proof script says in its own verdict that the examples build for QNX 8.0 | bash scripts/qnx8-proof.sh | VERDICT: THE EXAMPLES BUILD FOR QNX 8.0 (gcc_ntox86_64) AND THE LINTER RUNS ON THEM | scripts/qnx8-proof.sh:320 |
-| A21 | the three binaries were run on a live QNX 8.0 target (the QEMU image of the SDP 8.0) and each resource manager attached its path there | bash scripts/qnx8-proof.sh | RAN ON QNX 8.0  qxprobe-demo : /dev/qxprobe-demo attached | scripts/qnx8-target-run.sh:182 |
+| A21 | the three binaries were run on a live QNX 8.0 target (the QEMU image of the SDP 8.0) and each resource manager attached its path there | bash scripts/qnx8-proof.sh | RAN ON QNX 8.0  qxprobe-demo : /dev/qxprobe-demo attached | scripts/qnx8-target-run.sh:239 |
 | A22 | the proof script says in its own verdict that the examples ran on QNX 8.0 | bash scripts/qnx8-proof.sh | and they RAN ON QNX 8.0: each resource manager attached its path | scripts/qnx8-proof.sh:323 |
 
 ## The fourteen official pages
@@ -130,15 +130,26 @@ Reference, and the line of `RULES.md` that carries the citation says so.
 ## The captures
 
 Three real captures of the tool, taken from the real output of the commands
-below.  Nothing is drawn: the picture shows the output of the command, and the
-same text is embedded in the PNG itself, so the control can check that the
-picture shows what the command really prints.
+below, and the one of the run on a live QNX 8.0 target.  Nothing is drawn: the
+picture shows the output of the command, and the same text is embedded in the
+PNG itself, so the control can check that the picture shows what the command
+really prints.
+
+The fourth capture is the run on the target.  Its command prints only the
+lines that are the same on every run of a QNX 8.0 x86_64 target (`--stable`):
+the name of the CPU and the release, and the three "RAN ON QNX 8.0" lines.  A
+picture can only be compared with the output of its command when that output
+does not change from one run to the next, and the address of the target, the
+free memory and the boot time change.  On a machine without a QNX 8.0 target,
+the command says that the run is NOT MEASURED and the control reports that
+line as NOT CHECKED -- never as OK, never as FAILED.
 
 | ID | the image | the command that produced it | the sha256 of the image | what it shows |
 |---|---|---|---|---|
 | C01 | media/qx-proof-1-corpus-reel.png | python3 -I scripts/benchmark-corpus.py | 697e70ad1033c3dca9b96b059c1be38fa3cc5b36448821d8e5b80c89de8fb888 | the linter on 17 real QNX resource managers, one real defect found |
 | C02 | media/qx-proof-2-exemple-officiel.png | python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c | 2ff69e0aaa73cede483a9e360938adc8d7f46df11b74e528c29de7a6ea325320 | the official example of the QNX 8.0 documentation: 0 ERROR, 0 WARN |
 | C03 | media/qx-proof-3-sdp-absent.png | env HOME=/nonexistent QNX_SDP=/nonexistent QNX_HOST= PATH=/usr/bin:/bin bash scripts/qnx8-proof.sh | 3a71dce7e11f76aa605e1a13246a1983466c503d6228e066066686e0127b26e9 | the QNX 8.0 proof script without the SDP: it says what is missing and stops (the absence is forced, so the result is the same on every machine) |
+| C04 | media/qx-proof-4-qnx8-cible.png | bash scripts/qnx8-target-run.sh --arch x86_64 --stable | b6eaf765b4febbb6c6696d7b16655eba26bad7ff13b9ac726d589c023585754e | the three binaries built by the real qcc ran on a live QNX 8.0 target: each resource manager attached its path |
 
 ## The two sentences the submission form needs
 

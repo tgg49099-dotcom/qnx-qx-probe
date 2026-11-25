@@ -18,7 +18,7 @@ exterieure).
 | `qx_probe.py` | La sonde : lit une source C et signale les erreurs du protocole de gestionnaire de ressources QNX 8.0 | done | `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` |
 | Les onze regles (`RULES.md`) | Chaque regle avec la page officielle QNX 8.0 dont elle vient | done | `python3 -I scripts/verifier-citations.py` (36 citations, 14 pages relues) |
 | Les cinq exemples (`examples/`) | De vrais gestionnaires de ressources, dont celui de BlackBerry | done | `python3 -I scripts/benchmark-corpus.py` (17 vrais fichiers, 7 publies par QNX ou BlackBerry) |
-| La suite de tests (`tests/`) | 97 tests en 22 classes : le contrat a double sens, plus le chemin du jour de la licence | done | `bash scripts/run_tests.sh` |
+| La suite de tests (`tests/`) | 100 tests en 22 classes : le contrat a double sens, plus le chemin du jour de la licence | done | `bash scripts/run_tests.sh` |
 | Le codelab (`docs/CODELAB.md`) | 30 minutes, Python 3 seul | done | `python3 -I scripts/verifier-codelab.py` |
 | La preuve QNX 8.0 (`scripts/qnx8-proof.sh`) | Compile les exemples avec `qcc`, lit l'en-tete ELF, les execute sur une cible | waiting | sort 2 tant que le SDP est absent : c'est la contre-epreuve, pas un echec |
 | L'installation du SDP (`scripts/install-sdp8.sh`) | Installe le SDP 8.0 avec les commandes officielles du QNX Software Center, puis appelle la preuve | done | `bash scripts/install-sdp8.sh --check` (le controle avant installation) ; il demande le nom d'utilisateur et le mot de passe myQNX **au clavier** (jamais dans l'environnement, jamais dans un fichier), et sans terminal il sort 3 en listant ce qui manque |
@@ -31,8 +31,8 @@ exterieure).
 
 | Chiffre | Ou il est publie | La commande qui le mesure |
 |---|---|---|
-| 97 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
-| 95 fichiers dans l'arbre publie | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
+| 100 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
+| 97 fichiers dans l'arbre publie | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
 | 17 vrais gestionnaires de ressources analyses | `docs/BENCHMARK.md` | `python3 -I scripts/benchmark-corpus.py` |
 | 36 citations de 14 pages officielles | `RULES.md` | `python3 -I scripts/verifier-citations.py` |
 | 89,72 s de video | `docs/YOUTUBE-VIDEO.md` | `ffprobe` |

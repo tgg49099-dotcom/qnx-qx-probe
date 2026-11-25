@@ -111,10 +111,10 @@ It is a linter, not a certifier: it reports what its rules can prove and stays s
 
 Install: clone, then run python3 -I qx_probe.py your_resmgr.c. Nothing to build.
 
-Evaluate it in a minute: bash scripts/run_tests.sh runs 97 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
+Evaluate it in a minute: bash scripts/run_tests.sh runs 100 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
 <!-- FIN:WHATITDOES -->
 
-_Measured: 1190 characters (DevPost limit: 1 200)._
+_Measured: 1191 characters (DevPost limit: 1 200)._
 
 ## 6. "Why we built it"
 
@@ -153,12 +153,12 @@ The hard part was not the detection, it was the silence. A linter for a real-tim
 
 The tool was written with an AI agent; the facts were kept out of its reach: every rule is backed by a quoted official page, and scripts/verifier-citations.py re-reads the 14 cited pages and checks that the quoted sentence is still there — 36 quotations; a page it cannot read is reported NOT CHECKED, never verified.
 
-The suite is 97 tests over 22 classes — 10 anti-false-positive, 15 detection, 2 output format, 14 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 19 whole-program reading of a resource manager split over several files, 9 controls of the published figures and benchmark, 16 the day-of-licence path (ELF header of the binaries, run on a QNX 8.0 target, SDP environment) — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
+The suite is 100 tests over 22 classes — 10 anti-false-positive, 15 detection, 2 output format, 14 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness of the rules, 19 whole-program reading of a resource manager split over several files, 9 controls of the published figures and benchmark, 19 the day-of-licence path (ELF header of the binaries, run on a QNX 8.0 target, SDP environment) — and it is a two-sided contract: valid code must produce no actionable finding, broken code the expected one.
 
 The tutorial is checked the same way: scripts/verifier-codelab.py replays every command of the codelab in a throw-away copy of the repository and compares the real output with the printed one — 13 blocks, 0 differing.
 <!-- FIN:HOW -->
 
-_Measured: 2264 characters._
+_Measured: 2265 characters._
 
 ## 8. "What's next"
 
@@ -193,7 +193,7 @@ REQUIREMENTS
 1) GET THE PROJECT
    git clone https://github.com/tgg49099-dotcom/qnx-qx-probe.git
    cd qnx-qx-probe
-   The published tree is 95 files, about 3.1 MB (measured on 18 November 2026).
+   The published tree is 97 files, about 3.1 MB (measured on 25 November 2026).
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
@@ -211,17 +211,17 @@ REQUIREMENTS
      OK
      Ran 9 tests in 0.529s
      OK
-     Ran 16 tests in 1.177s
+     Ran 19 tests in 19.817s
      OK
      RESULT: QX-PROBE suite GREEN (RC 0)
-   The 97 tests are the two-sided contract: 10 of them prove that valid
+   The 100 tests are the two-sided contract: 10 of them prove that valid
    QNX 8.0 code produces no actionable finding, 15 prove that a broken file
    produces the expected finding, 2 check the format of the output, 14 check
    the line numbers and the JSON and SARIF output, 4 the QNX 8.0 build
    script, 8 the robustness of the rules, 19 the reading of a resource
    manager split over several files as one program, 9 the controls that
    compare the published figures and the published benchmark with the real
-   ones, each with its counter-proof, and 16 the day-of-licence path
+   ones, each with its counter-proof, and 19 the day-of-licence path
    (the ELF header of the binaries, the run on a QNX 8.0 target, the SDP
    environment). The 27 of the first block are the
    file tests/test_qx_probe.py alone: it is that file the video runs.
@@ -267,7 +267,7 @@ on the build machine on 21 November 2026 for the test suite and the tool -
 plus the time of the clone, which depends on the network.
 <!-- FIN:TESTING -->
 
-_Measured: 3651 characters._
+_Measured: 3653 characters._
 
 > The three commands of steps 1 to 3 are the ones a judge has to type;
 > step 4 is optional and needs the network. Everything else in the
@@ -435,8 +435,13 @@ judge can replay them as they are.
 
 The video was recorded on 15 November 2026, when the suite had 81 tests; the
 suite has had 97 tests since 17 November 2026 (the 16 added that day check the
-QNX 8.0 target path). The video therefore shows the older count on screen; the
-number to read today is 97, and `bash scripts/run_tests.sh` prints it.
+QNX 8.0 target path), and 100 since 25 November 2026 (the 3 added that day
+check the run on a live QNX 8.0 target: that a path still held by a resource
+manager of a previous run is refused instead of being a false positive, that
+the process of a previous run is killed first, and that the output of the
+stable mode is the same on every run). The video therefore shows the older
+count on screen; the number to read today is 100, and
+`bash scripts/run_tests.sh` prints it.
 
 **The codelab field.** The rules ask, for the "Best Codelab/Tutorial" bonus,
 for *"the URL of a codelab or tutorial authored during the Submission Period
@@ -457,7 +462,10 @@ captures, pasted unscaled and uncropped on a 3:2 canvas with a one-sentence head
 that repeats a fact printed in the capture. They are rebuilt by
 `python3 -I scripts/make-devpost-gallery.py` and checked by
 `python3 -I scripts/verifier-galerie-devpost.py` (format, 5 MB, exact 3:2,
-nothing listed here is missing, nothing in `media/devpost/` is forgotten).
+nothing listed here is missing, nothing in `media/devpost/` is forgotten,
+and each picture carries the output of its source capture — the same bytes,
+sha256 published in `docs/PREUVE-QNX8.md` — while each caption below repeats
+words that are really printed in the picture).
 
 Download each file from the repository page (or from the raw URL) and upload
 it in this order:
@@ -467,13 +475,15 @@ it in this order:
 | 1 | Thumbnail (step 2) | `media/devpost/thumbnail-3x2.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/thumbnail-3x2.png | — |
 | 2 | Image gallery (step 3) | `media/devpost/gallery-1-real-corpus.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-1-real-corpus.png | QX-PROBE on 17 public QNX resource managers, each pinned to a commit: one real missing access gate (QX004). |
 | 3 | Image gallery (step 3) | `media/devpost/gallery-2-official-example.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-2-official-example.png | The official example of the QNX 8.0 documentation: no ERROR, no WARN. |
+| 4 | Image gallery (step 3) | `media/devpost/gallery-3-qnx8-cible.png` | https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/main/media/devpost/gallery-3-qnx8-cible.png | RAN ON QNX 8.0: the three binaries attached /dev/qxprobe-demo, /var/run/qxprobe-status and /dev/qxprobe-official on a QNX 8.0.0 x86pc target. |
 
-**The real QNX 8.0 build and the run on the target are not in the gallery
-yet.** They are measured (24 and 25 November 2026 — see section 11 and
-`docs/PREUVE-QNX8.md`), but the gallery still shows only the two pictures
-above. A capture of that run can be added as image 4 (list `GALLERY` of
-`scripts/make-devpost-gallery.py`) and its row to this table: it is the
-image a judge most needs to see.
+The fourth picture is the one a judge most needs: the three binaries built
+by the real `qcc`, run on a live QNX 8.0 target, each resource manager
+attaching its path. It was measured on 25 November 2026 (section 11 and
+`docs/PREUVE-QNX8.md`, capture C04); the picture carries the very output of
+the command in the PNG itself, and `scripts/verifier-galerie-devpost.py`
+checks that this output is the one of the capture published in the table of
+the proof, sha256 included.
 
 ## 13. The eleven rules, one sentence each
 
@@ -500,10 +510,10 @@ URL of the page.
 ## 14. Five sentences for the repository README
 
 <!-- DEBUT:RESUME5 -->
-QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Seven of its rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 97-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
+QX-PROBE is a static checker for the QNX 8.0 resource-manager protocol: it reads your C source and reports the protocol mistakes the compiler cannot see. It has eleven rules, and every one of them cites the official BlackBerry QNX SDP 8.0 documentation page it comes from. It runs on Linux, macOS or Windows with zero dependencies — no QNX SDK, no board, no licence — so it fits in a continuous-integration chain. Seven of its rules had a defect that contradicted the documentation; they were rewritten, and each correction is proved by a test that fails on the previous code. The 100-test suite is a two-sided contract: valid code must produce no actionable finding, broken code must produce the expected one.
 <!-- FIN:RESUME5 -->
 
-_Measured: 709 characters._
+_Measured: 710 characters._
 
 ## 15. The remaining questions of the form
 
@@ -524,24 +534,25 @@ This is the mapping, so that nothing is left to chance.
 
 | Criterion | Where it is answered |
 |---|---|
-| **Technological Implementation** | § 7: a real analyser, 1123 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 97 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build and run measured on a live QNX 8.0 target (`qcc -Vgcc_ntox86_64 -Werror`), proved command by command rather than faked. |
+| **Technological Implementation** | § 7: a real analyser, 1123 lines, no dependency, eleven rules each backed by an official QNX 8.0 page, a two-sided test suite of 100 tests, a benchmark on 17 real QNX resource managers, and a QNX 8.0 build and run measured on a live QNX 8.0 target (`qcc -Vgcc_ntox86_64 -Werror`), proved command by command rather than faked. |
 | **Design** | § 5, § 9 and § 12: one command to install, one command to replay every proof (`bash scripts/verify-all.sh`: the tests, the tutorial, the video, the cited pages, the submission text and the benchmark on 17 real resource managers, in one table), one exit code to plug into CI, a repository where the rules, the tutorial and the submission text are written for the judge. |
 | **Potential Impact** | § 6: the access gate that lets a client read what it must not, in the automotive, medical and industrial systems where QNX runs; the check moves from the field to the build, at no cost and without hardware. |
 | **Innovation & AI Creativity** | The unusual half of the method: the tool is built so that a rule which cannot be justified by an official QNX 8.0 page is **removed** rather than kept, and the rules known to be imperfect are published as such, limits included. The rules were drafted with an AI agent; each one was kept only if an official QNX 8.0 page justified it, and the removals are human decisions. The AI assistance is declared in the README and in the NOTICE, and it is now a public, replayable proof: `docs/AI-ASSISTED-RULES.md` gives, for each of the 11 rules, the official page and the sentence it relies on, the first draft of the rule, and the test that fails on the previous code (11 failures out of 27 measured on 07/11/2026 against the code before commit `9706199`, 4 failures measured on 11/11/2026 after the benchmark, and 12 failures out of 13 measured on 14/11/2026 against commit `ef17d75` - these three are in `docs/AI-ASSISTED-RULES.md`; a fourth one, 4 failures out of 8 measured on 14/11/2026 against commit `268f157` on the robustness file, is replayed by `git show 268f157:qx_probe.py > qx_probe.py && python3 -I tests/test_robustness.py`) and passes on the current one; `scripts/verifier-citations.py` re-reads the 14 cited pages and checks that the 36 quoted sentences are still there, reporting a page it cannot read as NOT CHECKED; `scripts/benchmark-corpus.py` replays the measurement on 17 real resource managers, 7 of them published by QNX or BlackBerry themselves. The only factual sources are the official documentation and the public code of 13 repositories. |
 
 ## 17. Where every figure comes from
 
-Measured on the public repository, first on **6 November 2026** and
-re-verified on **14 November 2026** (`bash scripts/verify-all.sh`: 9 checks,
-RC 0 — 8 OK on the build server, and the pixel audit of the video NOT CHECKED
-there because it needs ffmpeg and pillow; that check is never reported OK on
-a machine without them, the command still exits 0 because no published proof
-was contradicted, and the audit itself passed the same day on a machine that
-has them).
+Measured on the public repository, first on **6 November 2026**,
+re-verified on **14 November 2026** and again on **25 November 2026**
+(`bash scripts/verify-all.sh`: 10 checks, RC 0 — every check OK on the
+machine of the measurement of 25 November 2026; on the build server of
+14 November 2026 the pixel audit of the video was NOT CHECKED because it
+needs ffmpeg and pillow: that check is never reported OK on a machine without
+them, the command still exits 0 because no published proof was contradicted,
+and the audit itself passed the same day on a machine that has them).
 
 | Figure | Value | How it was measured |
 |---|---|---|
-| Test suite | 97 tests in 7 files, 22 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 14 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 19 whole-program, 9 published figures and benchmark, 16 day-of-licence path) | `bash scripts/run_tests.sh` |
+| Test suite | 100 tests in 7 files, 22 classes, RC 0 (10 anti-false-positive, 15 detection, 2 output format, 14 line numbers and machine-readable output, 4 QNX 8.0 build script, 8 robustness, 19 whole-program, 9 published figures and benchmark, 19 day-of-licence path) | `bash scripts/run_tests.sh` |
 | BlackBerry's resource manager | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` |
 | Minimal example | 5 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_minimal.c` |
 | Read-only example | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_readonly.c` |

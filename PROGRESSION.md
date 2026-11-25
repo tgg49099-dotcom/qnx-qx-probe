@@ -18,7 +18,7 @@ arrives).
 | `qx_probe.py` | The linter: reads a C source and reports the mistakes of the QNX 8.0 resource-manager protocol | done | `python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c` |
 | The eleven rules (`RULES.md`) | Each rule with the official QNX 8.0 page it comes from | done | `python3 -I scripts/verifier-citations.py` (36 quotations, 14 pages re-read) |
 | The five examples (`examples/`) | Real resource managers, including BlackBerry's own | done | `python3 -I scripts/benchmark-corpus.py` (17 real files, 7 published by QNX or BlackBerry) |
-| The test suite (`tests/`) | 97 tests over 22 classes: the two-sided contract, plus the day-of-licence path | done | `bash scripts/run_tests.sh` |
+| The test suite (`tests/`) | 100 tests over 22 classes: the two-sided contract, plus the day-of-licence path | done | `bash scripts/run_tests.sh` |
 | The codelab (`docs/CODELAB.md`) | 30 minutes, Python 3 only | done | `python3 -I scripts/verifier-codelab.py` |
 | The proof of QNX 8.0 (`scripts/qnx8-proof.sh`) | Builds the examples with `qcc`, reads the ELF header, runs them on a target | waiting | exits 2 while the SDP is absent — that is the counter-proof, not a failure |
 | The installation of the SDP (`scripts/install-sdp8.sh`) | Installs the SDP 8.0 with the official QNX Software Center commands, then calls the proof | done | `bash scripts/install-sdp8.sh --check` (the pre-flight), it asks for the myQNX user name and password **on the keyboard** (never from the environment, never in a file), and it exits 3 with the list of the missing pieces when there is no terminal |
@@ -31,8 +31,8 @@ arrives).
 
 | Figure | Where it is published | The command that measures it |
 |---|---|---|
-| 97 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
-| 95 files in the published tree | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
+| 100 tests, 22 classes | `README.md`, `docs/SUBMISSION-EN.md` | `bash scripts/run_tests.sh` |
+| 97 files in the published tree | `docs/SUBMISSION-EN.md` | `git ls-files \| wc -l` |
 | 17 real resource managers analysed | `docs/BENCHMARK.md` | `python3 -I scripts/benchmark-corpus.py` |
 | 36 quotations of 14 official pages | `RULES.md` | `python3 -I scripts/verifier-citations.py` |
 | 89.72 s of video | `docs/YOUTUBE-VIDEO.md` | `ffprobe` |

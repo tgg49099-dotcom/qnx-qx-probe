@@ -690,10 +690,23 @@ def render_capture(command: str, raw: str, title: str, out_path: pathlib.Path) -
     return True
 
 
-def build_captures(text: str) -> int:
+def build_captures(text: str, only: str = "*") -> int:
     """Rebuilds the pictures of the proof from the real output of their
-    commands."""
+    commands.
+
+    "only" is "*" for every capture of the table, or a list of capture IDs
+    ("C04" or "C03,C04").  A picture that is rebuilt gets a NEW sha256 (the
+    date of the capture is printed on it): the table of the proof must then
+    be updated with the value printed here, or the control will refuse the
+    picture as "not the published one".
+    """
     rows = section(text, "C")
+    if only != "*":
+        wanted = {w.strip().upper() for w in only.split(",") if w.strip()}
+        rows = [r for r in rows if r[0].upper() in wanted]
+        if not rows:
+            print("no capture with the ID %s in the table" % only)
+            return 1
     rc = 0
     for cells in rows:
         ident, name, commande, _sha, what = cells
@@ -706,6 +719,9 @@ def build_captures(text: str) -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         if render_capture(commande, out, what, path):
             print("written %s (sha256 %s)" % (name, sha256_of(path)))
+    if only != "*":
+        print("NOTE: a rebuilt picture has a new sha256: the table of the "
+              "proof must carry the value printed above.")
     return rc
 
 
@@ -787,8 +803,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--contre-epreuve", action="store_true",
                     help="add eight false lines and check that they are caught")
-    ap.add_argument("--captures", action="store_true",
-                    help="rebuild the pictures of the proof from their commands")
+    ap.add_argument("--captures", nargs="?", const="*", default=None,
+                    metavar="ID",
+                    help="rebuild the pictures of the proof from their "
+                         "commands: all of them, or only the captures whose "
+                         "ID is given (--captures C04)")
     ap.add_argument("--preuve", default=str(PROOF),
                     help="the proof file to check")
     args = ap.parse_args()
@@ -799,8 +818,8 @@ def main() -> int:
         return 2
     text = path.read_text(encoding="utf-8")
 
-    if args.captures:
-        return build_captures(text)
+    if args.captures is not None:
+        return build_captures(text, args.captures)
     if args.contre_epreuve:
         return counter_proof(text)
 

@@ -8,7 +8,7 @@
 #
 # The checks, in this order:
 #
-#   1  scripts/run_tests.sh                   the 97 unit tests
+#   1  scripts/run_tests.sh                   the 100 unit tests
 #   2  scripts/verifier-codelab.py            every console block of docs/CODELAB.md
 #   3  scripts/audit-sous-titres-pixels.py    the subtitles ARE the pixels of the video
 #   4  scripts/verifier-citations.py          the 14 cited QNX 8.0 pages, 36 quotations
@@ -17,6 +17,7 @@
 #   7  scripts/verifier-chiffres-publies.py   the published figures against the real ones
 #   8  scripts/verifier-chiffres-publies.py   the same control, with its counter-proof
 #   9  scripts/verifier-benchmark-publie.py   the published benchmark against a real run
+#  10  scripts/verifier-galerie-devpost.py    the DevPost gallery: the real capture behind each picture
 #
 # THREE STATES, NEVER MIXED
 #
@@ -223,10 +224,10 @@ echo "======================================================================"
 echo "QX-PROBE - replay every published proof of this repository"
 echo "======================================================================"
 echo "repository : $ROOT"
-echo "checks     : 9"
+echo "checks     : 10"
 echo
 
-check "run_tests.sh (97 unit tests)" \
+check "run_tests.sh (100 unit tests)" \
       "scripts/run_tests.sh" \
       "RESULT: QX-PROBE suite GREEN" \
       "-" \
@@ -306,6 +307,15 @@ check "verifier-benchmark-publie.py (published benchmark)" \
       "python3 git" \
       "-" \
       python3 -I -B scripts/verifier-benchmark-publie.py
+
+check "verifier-galerie-devpost.py (4 images of the gallery)" \
+      "scripts/verifier-galerie-devpost.py" \
+      "VERDICT: THE DEVPOST GALLERY IS READY" \
+      "-" \
+      "the gallery could not be checked" \
+      "python3" \
+      "-" \
+      python3 -I -B scripts/verifier-galerie-devpost.py
 
 echo
 echo "======================================================================================================"
