@@ -13,8 +13,9 @@ Three rules this file obeys:
 2. **No promise of conformity.** QX-PROBE is a *linter*: it reports what its
    rules can prove and stays silent about the rest. The word "compliant" never
    appears about the tool.
-3. **Nothing is hidden.** What the QNX 8.0 compilation has not been measured,
-   the video does not show and the tool does not do, is written as it is.
+3. **Nothing is hidden.** What has not been measured (the aarch64 build),
+   what the video does not show and what the tool does not do, is written as
+   it is.
 
 ---
 
@@ -165,14 +166,14 @@ _Measured: 2265 characters._
 <!-- DEBUT:WHATSNEXT -->
 Three things, in this order.
 
-1. Measure the QNX 8.0 build. The repository already contains a real build path for the example resource managers (scripts/build_qcc.sh, qcc -Vgcc_ntox86_64 / -Vgcc_ntoaarch64le -Werror, targets x86_64 and aarch64), but it has never been run against a real qcc: the SDP 8.0 licence was not available where this project was written, so the compilation is honestly labelled NOT MEASURED in the repository and in this submission. With the SDK we will compile the examples for QNX 8.0, run them in a QEMU guest, and add that build to the continuous-integration chain.
+1. Keep the QNX 8.0 build and run in the loop. Both are measured now: on 24 November 2026 the real qcc of the SDP 8.0 (free non-commercial QNX Everywhere licence) compiled the three example resource managers with qcc -Vgcc_ntox86_64 -Werror, and the ELF header of each binary was read back: 3/3 are QNX 8.0 x86_64 executables. On 25 November 2026 the three binaries ran on a QNX 8.0 target (the QEMU image of the SDP 8.0, built by mkqnximage) and each resource manager attached its path. Next: put that build and that run in the continuous-integration chain, and measure the aarch64 build (qcc -Vgcc_ntoaarch64le), which is written but NOT MEASURED.
 
 2. Take the check to the target. The linter reads the source today; the next step is to run the same eleven rules on the QNX side, where a resource manager can report its own protocol at start-up.
 
 3. Widen the coverage. The resource-manager protocol is the first QNX 8.0 interface covered here; message passing and the network interfaces follow, under the same rule: a rule that cannot be justified by an official QNX 8.0 page is removed rather than kept.
 <!-- FIN:WHATSNEXT -->
 
-_Measured: 1051 characters._
+_Measured: 1137 characters._
 
 ## 9. Testing instructions
 
@@ -347,9 +348,16 @@ The QNX connection is the product itself, not a mention of QNX in a README.
     17/17 files analysed, 1 error, every finding read by hand. That
     measurement found nine false positives of the tool, in five files, and
     one true positive - the missing access gate of QNX's own rpi-thermal.
-  - The repository contains a real QNX 8.0 build path: scripts/build_qcc.sh
-    compiles the example resource managers with qcc -Vgcc_ntox86_64 or
-    -Vgcc_ntoaarch64le -Werror, for x86_64 or aarch64.
+  - The QNX 8.0 build and run are MEASURED, not declared. On 24 November 2026
+    scripts/qnx8-proof.sh compiled the three example resource managers with
+    the real qcc -Vgcc_ntox86_64 -Werror of the SDP 8.0 and read the ELF
+    header of each binary: 3/3 are QNX 8.0 x86_64 executables. On 25 November
+    2026 scripts/qnx8-target-run.sh started them on a QNX 8.0 target (the
+    QEMU image of the SDP 8.0): /dev/qxprobe-demo, /var/run/qxprobe-status and
+    /dev/qxprobe-official were attached in the QNX pathname space. Proof,
+    line by line: docs/PREUVE-QNX8.md (python3 -I
+    scripts/verifier-preuve-qnx8.py). The aarch64 build is written but NOT
+    MEASURED.
   - The output of the tool is what a QNX developer needs: the findings name the
     file, the line, the QNX API involved and the official documentation page.
 
@@ -372,7 +380,7 @@ The QNX connection is the product itself, not a mention of QNX in a README.
 
 <!-- FIN:QXUSE -->
 
-_Measured: 2906 characters._
+_Measured: 3375 characters._
 
 ## 12. Links
 
