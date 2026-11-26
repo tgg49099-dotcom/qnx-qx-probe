@@ -94,7 +94,7 @@ import urllib.request
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 PROOF = REPO / "docs" / "PREUVE-QNX8.md"
-TIMEOUT = 180
+TIMEOUT = 300
 
 UA = ("QX-PROBE-qnx8-proof/1.0 "
       "(+https://github.com/tgg49099-dotcom/qnx-qx-probe)")
