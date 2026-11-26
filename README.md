@@ -1,5 +1,42 @@
 # QX-PROBE — a static checker for the QNX 8.0 resource-manager protocol
 
+**The bug it catches.** In a QNX 8.0 resource manager, a `read` handler
+that never calls `iofunc_read_verify()` serves data to a client that opened
+the device **for writing only**. The compiler says nothing and the tests
+pass. QX-PROBE found exactly that in **QNX's own public code**
+([rpi-thermal](https://gitlab.com/qnx/projects/rpi-thermal), commit
+`4ba4fdc`, the file read from its public repository, nothing run):
+
+```console
+ERROR QX004 rpi-thermal/rpi_thermal.c:465: resmgr_read() never calls iofunc_read_verify(): the access gate is missing
+```
+
+That file is one of **17 real resource managers written by other people**
+(seven of them by QNX or BlackBerry) in the benchmark: **one true positive,
+no false positive** on the current version
+([docs/BENCHMARK.md](docs/BENCHMARK.md), section 5 says what it does and
+does not mean).
+
+**Watch it:** [the demonstration video on YouTube](https://youtu.be/KV9WrWV5h7k)
+(1 min 30). **Try it in three commands**, with Python 3 only — no QNX SDK,
+no board, nothing to install:
+
+```console
+$ git clone https://github.com/tgg49099-dotcom/qnx-qx-probe && cd qnx-qx-probe
+$ python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c   # 1 ERROR, exit code 1
+$ python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c      # 0 ERROR, 0 WARN, exit code 0
+```
+
+**Measured, not declared:** each of the eleven rules is backed by an
+official QNX SDP 8.0 page ([RULES.md](RULES.md)); the C examples are
+**compiled with the real `qcc` 8.0** (24 November 2026) and **run on a live
+QNX 8.0 target** under QEMU, where each resource manager attached its path
+(25 November 2026) — command by command in
+[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md); and `bash scripts/verify-all.sh`
+replays every published proof in one command.
+
+---
+
 QX-PROBE reads C code and reports the **resource-manager bugs you cannot
 afford** in a QNX 8.0 driver: a read handler that never calls
 `iofunc_read_verify()`, a message loop that blocks without dispatching, a
@@ -456,9 +493,12 @@ same findings as SARIF 2.1.0 alerts for GitHub code scanning, and the
 benchmark on 17 real public QNX resource managers finds one real missing
 access gate (`rpi_thermal/rpi_thermal.c:465`). The
 shot that compiles the examples with `qcc` and runs them on a QNX 8.0 guest
-under QEMU is **absent**: it needs the QNX SDP 8.0 licence, which we do not
-have. It was **removed** from the video rather than replaced with a screen
-capture, and **no compiler output was simulated**. The shot list and the
+under QEMU is **absent** from this video: the video was made before the QNX
+SDP 8.0 licence existed, and that shot was **removed** rather than replaced
+with a screen capture — **no compiler output was simulated**. The
+compilation and the run were measured afterwards, with the licence (24 and
+25 November 2026): their proof is **[docs/PREUVE-QNX8.md](docs/PREUVE-QNX8.md)**
+and the fourth gallery picture, `media/qx-proof-4-qnx8-cible.png`. The shot list and the
 honest reservations about it are in **[video/SCENARIO.md](video/SCENARIO.md)**.
 
 ## Licence

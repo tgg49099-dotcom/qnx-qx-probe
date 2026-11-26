@@ -61,10 +61,10 @@ line of it.  A pointer that only exists is not a proof.
 
 | ID | assertion | command | the real output | where it is verifiable |
 |---|---|---|---|---|
-| A01 | the QNX version the contest rules ask for is declared | sed -n '46p' README.md | **QNX SDP 8.0** | README.md:46 |
-| A02 | the target is declared | sed -n '47p' README.md | the C examples target **QNX 8.0 on QEMU x86_64** | README.md:47 |
-| A03 | the toolchain is declared | sed -n '48p' README.md | **`qcc` from the SDP 8.0** | README.md:48 |
-| A04 | the README says the QNX compilation is MEASURED, with the date of the measurement | sed -n '48p' README.md | whose compilation is **MEASURED** | README.md:48 |
+| A01 | the QNX version the contest rules ask for is declared | sed -n '83p' README.md | **QNX SDP 8.0** | README.md:83 |
+| A02 | the target is declared | sed -n '84p' README.md | the C examples target **QNX 8.0 on QEMU x86_64** | README.md:84 |
+| A03 | the toolchain is declared | sed -n '85p' README.md | **`qcc` from the SDP 8.0** | README.md:85 |
+| A04 | the README says the QNX compilation is MEASURED, with the date of the measurement | sed -n '85p' README.md | whose compilation is **MEASURED** | README.md:85 |
 | A05 | the build script names the qcc variant of the x86_64 target | grep -n 'gcc_ntox86_64' scripts/build_qcc.sh | VARIANT="gcc_ntox86_64" | scripts/build_qcc.sh:25 |
 | A06 | the one-command proof script detects the absence of the SDP 8.0 and fails cleanly, without simulating anything (the command forces the absence: `HOME` and `QNX_SDP` point to a folder without the SDP, so the result is the same on every machine) | env HOME=/nonexistent QNX_SDP=/nonexistent QNX_HOST= PATH=/usr/bin:/bin bash scripts/qnx8-proof.sh | ERROR: the QNX SDP 8.0 is not installed on this machine. | scripts/qnx8-proof.sh:199 |
 | A07 | the SDP path of that script is exercised with a FAKE compiler: the flags it uses are the real ones | bash scripts/qnx8-proof.sh --self-test | qcc -Vgcc_ntox86_64 -Werror -o build/x86_64/qxprobe-demo examples/qnx80_resmgr_minimal.c | scripts/build_qcc.sh:66 |
