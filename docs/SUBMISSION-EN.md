@@ -334,7 +334,7 @@ The QNX connection is the product itself, not a mention of QNX in a README.
     _RESMGR_NPARTS().
   - Every one of the 11 rules cites the official BlackBerry QNX SDP 8.0
     documentation page it comes from, with the URL and the exact sentence it
-    relies on. The 14 pages cited were re-read on 12 and 14 November 2026: all 14
+    relies on. The 14 pages cited were re-read on 12 and 14 November 2026 and re-verified on 17 November 2026: all 14
     answered HTTP 200, and each one carries the update date QNX put on it
     ("Page updated: November 05, 2026"). The check is public and repeatable:
     scripts/verifier-citations.py re-reads the 14 pages, prints the date it
@@ -380,7 +380,7 @@ The QNX connection is the product itself, not a mention of QNX in a README.
 
 <!-- FIN:QXUSE -->
 
-_Measured: 3375 characters._
+_Measured: 3411 characters._
 
 ## 12. Links
 
@@ -568,7 +568,7 @@ and the audit itself passed the same day on a machine that has them).
 | Official example of the documentation | 6 findings, 0 ERROR, 0 WARN, exit 0 | `python3 -I qx_probe.py examples/qnx80_resmgr_official_example.c` |
 | Sabotaged fixture | 6 findings, 1 ERROR (QX004), 0 WARN, exit 1 | `python3 -I qx_probe.py tests/fixtures/qnx80_resmgr_qx004_no_gate.c` |
 | Codelab | 13 console blocks replayed, 0 differing, RC 0 | `python3 -I scripts/verifier-codelab.py` |
-| Official QNX 8.0 pages cited | 14 distinct pages, all HTTP 200 when re-read on 12 and 14 November 2026, all then marked "Page updated: November 05, 2026"; 36 quotations checked | `curl` on each URL of `RULES.md`; `python3 -I scripts/verifier-citations.py` |
+| Official QNX 8.0 pages cited | 14 distinct pages, all HTTP 200 when re-read on 12 and 14 November 2026 and re-verified on 17 November 2026, all then marked "Page updated: November 05, 2026"; 36 quotations checked | `curl` on each URL of `RULES.md`; `python3 -I scripts/verifier-citations.py` |
 | The linter | 1123 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
 | Benchmark on real code | 17 files from 13 public repositories (7 of the 17 files come from repositories published by QNX or BlackBerry), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
 | Video | 1 417 251 bytes, md5 `98ec689d13bed874bf2b144538a43d91`, 89.72 s, 1920x1080, H.264, 25 fps, 2 243 images, no audio, 18 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |

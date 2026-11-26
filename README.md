@@ -80,7 +80,7 @@ The three things the contest rules ask a submission to state:
 
 | | |
 |---|---|
-| **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 36 quotations, re-read on 14 November 2026) |
+| **QNX version** | **QNX SDP 8.0** — every rule is backed by a page of the BlackBerry QNX SDP 8.0 C Library Reference (14 pages, 36 quotations, re-read on 12 and 14 November 2026 and re-verified on 17 November 2026) |
 | **Target** | the tool itself is a **host** tool (Linux, macOS, Windows); the C examples target **QNX 8.0 on QEMU x86_64** (`qcc -Vgcc_ntox86_64`) |
 | **Toolchain** | **Python 3, standard library only**, for the tool; **`qcc` from the SDP 8.0**, for the C examples — whose compilation is **MEASURED** since 24 November 2026 (the free non-commercial *QNX Everywhere* licence): the three examples compile with `qcc -Vgcc_ntox86_64`, and the binaries are QNX 8.0 ELF executables |
 
@@ -109,7 +109,7 @@ Concretely, the linter **never** reports:
   that a symbol is missing.
 
 Every rule is backed by an official **BlackBerry QNX SDP 8.0** documentation
-page (the 14 cited pages were re-read on 12 and 14 November 2026; each one carries
+page (the 14 cited pages were re-read on 12 and 14 November 2026 and re-verified on 17 November 2026; each one carries
 the update date QNX put on it, and `scripts/verifier-citations.py` prints
 that date). The detail, rule by rule, with the quotation and the URL, is in
 **[RULES.md](RULES.md)**.

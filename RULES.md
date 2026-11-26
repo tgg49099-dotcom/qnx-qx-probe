@@ -6,7 +6,7 @@
 
 Every rule of the linter is backed by a page of the official **BlackBerry
 QNX SDP 8.0** documentation (QNX OS 8.0 C Library Reference). The 14 pages
-cited below were re-read on **12 and 14 November 2026**: all 14 answered HTTP 200,
+cited below were re-read on **12 and 14 November 2026** and re-verified on **17 November 2026**: all 14 answered HTTP 200,
 and each one carries the update date QNX put on it (`Page updated:
 November 05, 2026`). The date each page carries is printed by
 `scripts/verifier-citations.py`, so a judge can read it for himself.
@@ -162,7 +162,7 @@ gives way — never the canonical QNX code.
   through a helper function of the same file (a delegated check is a check).
   A handler that calls the POSIX default `iofunc_read_default()` /
   `iofunc_write_default()` is gated too: the official pages of these
-  functions (re-read on 14 November 2026) say "The `iofunc_read_default()` function
+  functions (re-read on 12 and 14 November 2026, re-verified on 17 November 2026) say "The `iofunc_read_default()` function
   calls `iofunc_read_verify()` to verify if this read operation should be
   permitted" and "The `iofunc_write_default()` function calls
   `iofunc_write_verify()` to verify if this write operation should be

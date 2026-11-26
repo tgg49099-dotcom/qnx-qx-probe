@@ -38,7 +38,7 @@ line of it.  A pointer that only exists is not a proof.
   depend on what those repositories look like today.
 * **PROVED, and replayable today:** every rule of the linter is backed by a
   page of the official BlackBerry QNX SDP 8.0 C Library Reference.  14 pages,
-  36 quotations, re-read on **17 November 2026**: the URL, the HTTP code and
+  36 quotations, re-read on **12 and 14 November 2026** and re-verified on **17 November 2026**: the URL, the HTTP code and
   the SHA-256 of each page are in the table below.
 * **MEASURED, and replayable today:** the compilation of the C examples for
   QNX 8.0.  The SDP 8.0 (free non-commercial *QNX Everywhere* licence) was
