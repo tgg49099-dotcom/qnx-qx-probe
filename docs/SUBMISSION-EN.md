@@ -198,21 +198,22 @@ REQUIREMENTS
 
 2) RUN THE TEST SUITE
    bash scripts/run_tests.sh
-   Measured: 2.13 s on 14 November 2026. Expected output (the seconds vary
-   from one run to the next):
-     Ran 27 tests in 0.212s
+   Measured: 27.25 s on 27 November 2026 on the build machine (26.5 to 29.5 s
+   over eight runs). Expected output (one of those runs; the seconds vary from
+   one run to the next):
+     Ran 27 tests in 0.253s
      OK
-     Ran 14 tests in 0.341s
+     Ran 14 tests in 0.640s
      OK
-     Ran 4 tests in 0.089s
+     Ran 4 tests in 0.095s
      OK
-     Ran 8 tests in 0.245s
+     Ran 8 tests in 0.238s
      OK
-     Ran 19 tests in 0.717s
+     Ran 19 tests in 0.755s
      OK
-     Ran 9 tests in 0.529s
+     Ran 9 tests in 4.341s
      OK
-     Ran 19 tests in 19.817s
+     Ran 19 tests in 19.829s
      OK
      RESULT: QX-PROBE suite GREEN (RC 0)
    The 100 tests are the two-sided contract: 10 of them prove that valid
@@ -263,12 +264,12 @@ EXIT CODES
   2 = malformed call
   INFO findings never change the exit code.
 
-The three commands of steps 1 to 3 take a few seconds - 8.15 to 8.56 s measured
-on the build machine on 21 November 2026 for the test suite and the tool -
-plus the time of the clone, which depends on the network.
+The three commands of steps 1 to 3 take about half a minute - 27.25 s for the
+test suite and 0.09 s for one run of the tool - measured on the build machine
+on 27 November 2026, plus the time of the clone, which depends on the network.
 <!-- FIN:TESTING -->
 
-_Measured: 3653 characters._
+_Measured: 3752 characters._
 
 > The three commands of steps 1 to 3 are the ones a judge has to type;
 > step 4 is optional and needs the network. Everything else in the
@@ -572,7 +573,7 @@ and the audit itself passed the same day on a machine that has them).
 | The linter | 1123 lines, standard library only (`re`, `sys`, `dataclasses`) | `wc -l qx_probe.py`, `grep -n "^import\|^from" qx_probe.py` |
 | Benchmark on real code | 17 files from 13 public repositories (7 of the 17 files come from repositories published by QNX or BlackBerry), 17/17 analysed, 1 ERROR, every finding verified by hand | `python3 -I scripts/benchmark-corpus.py` |
 | Video | 1 417 251 bytes, md5 `98ec689d13bed874bf2b144538a43d91`, 89.72 s, 1920x1080, H.264, 25 fps, 2 243 images, no audio, 18 burned-in subtitles | `md5sum`, `ffprobe` on the file of the repository |
-| Timing of the commands | test suite 2.13 s, run on one file 0.09 s (measured on 14 November 2026; the duration of the clone depends on the network and was not re-measured for this revision) | `time` on each command |
+| Timing of the commands | test suite 27.25 s, run on one file 0.09 s (measured on 27 November 2026 on the build machine; the duration of the clone depends on the network and was not re-measured for this revision) | `time` on each command |
 | QNX 8.0 compilation | **MEASURED on 24 November 2026** | the free non-commercial SDP 8.0 licence compiled the three examples with `qcc -Vgcc_ntox86_64 -Werror`, and the ELF header of each binary was read: 3/3 are QNX 8.0 x86_64 executables |
 | QNX 8.0 run on a live target | **MEASURED on 25 November 2026** | the three binaries ran on the QEMU image of the SDP 8.0 and each resource manager attached its path (`/dev/qxprobe-demo`, `/var/run/qxprobe-status`, `/dev/qxprobe-official`); the proof is `docs/PREUVE-QNX8.md` |
 

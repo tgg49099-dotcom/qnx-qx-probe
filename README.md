@@ -211,7 +211,7 @@ scripts/run_tests.sh                         runs the test suite
 scripts/verifier-chiffres-publies.py         checks that the published figures are the figures of this repository
 scripts/verifier-citations.py                re-reads the 14 cited QNX 8.0 pages and checks the 36 quotations
 scripts/verifier-codelab.py                  replays every command of docs/CODELAB.md and checks its output
-scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links
+scripts/verifier-soumission-devpost.py       checks the submission text: lengths, English, links, durations
 scripts/verify-all.sh                        replays every published proof in one command
 tests/fixtures/qnx80_resmgr_qx004_no_gate.c  the sabotaged file used by the tests and the video
 tests/test_qx_probe.py                       27 tests: 10 anti-false-positive, 15 detection, 2 output format

@@ -29,6 +29,10 @@ Checks:
       claims that the video is already online.
   E. NO LEGACY DRAFT - a file named `SOUMISSION-DEVPOST.md` next to the
       repository, if there is one, must announce `docs/SUBMISSION-EN.md`.
+  F. DURATION - the duration announced for the test suite is never shorter
+      than the sum of the "Ran N tests in X s" lines the block prints as its
+      expected output: a judge to whom you announce 2 s believes the tool is
+      hanging.
 
 Exit code:
 
@@ -72,6 +76,13 @@ CODELAB_URL = ("https://github.com/tgg49099-dotcom/qnx-qx-probe/blob/main/"
                "docs/CODELAB.md")
 CODELAB_RAW = ("https://raw.githubusercontent.com/tgg49099-dotcom/qnx-qx-probe/"
                "main/docs/CODELAB.md")
+# The duration announced for the test suite, and the times the block prints as
+# its expected output.  A judge to whom you announce 2 s believes the tool is
+# hanging: the announced duration must never be shorter than the sum of the
+# times the block prints itself.
+DUREE_RE = re.compile(r"Measured:\s*([\d.,]+)\s*s\b")
+RAN_RE = re.compile(r"^\s*Ran\s+\d+\s+tests\s+in\s+([\d.]+)s\s*$", re.M)
+SUITE_RE = re.compile(r"([\d.,]+)\s*s\s+for the\s+test\s+suite")
 
 
 def _raw_at(commit: str) -> str:
@@ -276,6 +287,76 @@ def check_codelab_copy(local: bytes, http_getter=None,
     return ok, not_checked, lines
 
 
+def _secondes(txt: str) -> float:
+    """A duration written with a dot or with a comma."""
+    return float(txt.replace(",", "."))
+
+
+def check_duree_test_suite(bloc: str) -> tuple[bool, list[str]]:
+    """The announced duration of the test suite is never shorter than the sum
+    of the times the block prints as its expected output.
+
+    The block prints one "Ran N tests in X s" line per test file; their sum
+    is the floor of what the command costs.  An announced duration shorter
+    than that sum is a published figure that is false, and a judge to whom
+    you announce it believes the tool is hanging.
+
+    Returns (ok, lines).
+    """
+    lignes = []
+    if not bloc:
+        return False, ["  [KO ] TESTING       : the block is absent"]
+    somme = 0.0
+    n = 0
+    for m in RAN_RE.finditer(bloc):
+        somme += _secondes(m.group(1))
+        n += 1
+    if n == 0:
+        return False, ["  [KO ] TESTING       : the block prints no "
+                       "'Ran N tests in X s' line: the expected output of the "
+                       "test suite must be shown"]
+    lignes.append("  [OK ] TESTING       : the block prints %d 'Ran N tests in "
+                  "X s' lines, their sum is %.2f s" % (n, somme))
+    lignes_bloc = bloc.split("\n")
+    idx = None
+    for i, ligne in enumerate(lignes_bloc):
+        if "bash scripts/run_tests.sh" in ligne:
+            idx = i
+            break
+    if idx is None:
+        return False, lignes + ["  [KO ] TESTING       : the block does not show "
+                                "the command 'bash scripts/run_tests.sh'"]
+    annonce = None
+    for ligne in lignes_bloc[idx + 1:idx + 6]:
+        m = DUREE_RE.search(ligne)
+        if m:
+            annonce = _secondes(m.group(1))
+            break
+    if annonce is None:
+        return False, lignes + ["  [KO ] TESTING       : the duration of the test "
+                                "suite is not announced after the command "
+                                "'bash scripts/run_tests.sh'"]
+    if annonce < somme - 1e-9:
+        return False, lignes + ["  [KO ] TESTING       : the announced duration "
+                                "(%.2f s) is shorter than the sum of the times the "
+                                "block prints (%.2f s): a judge to whom you "
+                                "announce %.2f s believes the tool is hanging"
+                                % (annonce, somme, annonce)]
+    lignes.append("  [OK ] TESTING       : the announced duration (%.2f s) is not "
+                  "shorter than the sum of the printed times (%.2f s)"
+                  % (annonce, somme))
+    plat = re.sub(r"\s+", " ", bloc)
+    for m in SUITE_RE.finditer(plat):
+        v = _secondes(m.group(1))
+        if v < somme - 1e-9:
+            return False, lignes + ["  [KO ] TESTING       : the closing sentence "
+                                    "announces %.2f s for the test suite, which is "
+                                    "shorter than the sum of the printed times "
+                                    "(%.2f s)" % (v, somme)]
+        lignes.append("  [OK ] TESTING       : the closing sentence announces "
+                      "%.2f s for the test suite" % v)
+    return True, lignes
+
 def http_get_code(url: str) -> tuple[int, bytes]:
     """One GET, and the status code is returned even for 404.
 
@@ -454,6 +535,15 @@ def main() -> int:
                   "docs/SUBMISSION-EN.md: risk of pasting the old one")
             ok = False
 
+    # ------------------------------------------------------------- F
+    print()
+    print("F. THE ANNOUNCED DURATION OF THE TEST SUITE")
+    f_ok, f_lines = check_duree_test_suite(dict(blocs).get("TESTING", ""))
+    for ligne in f_lines:
+        print(ligne)
+    if not f_ok:
+        ok = False
+
     print()
     print("=" * 78)
     if not ok and not_checked:
@@ -610,6 +700,85 @@ def _self_test(verbose: bool = True) -> tuple[int, int, int]:
         verifie(not ok, "un 404 sur la page HTML reste un KO")
         verifie(any("[KO ] HTTP 404" in l for l in lignes),
                 "le 404 sur la page HTML est dit [KO ] HTTP 404")
+        # --- le controle F : la duree annoncee pour la suite n'est jamais
+        # --- plus courte que la somme des temps affiches par le bloc
+        bloc_ok = ("2) RUN THE TEST SUITE\n"
+                   "   bash scripts/run_tests.sh\n"
+                   "   Measured: 27.25 s on 27 November 2026.\n"
+                   "     Ran 27 tests in 0.253s\n"
+                   "     Ran 19 tests in 19.829s\n")
+        f_ok, f_lignes = mod.check_duree_test_suite(bloc_ok)
+        verifie(f_ok, "le controle F accepte une duree annoncee plus longue "
+                      "que la somme des temps affiches")
+        verifie(any("[OK ]" in l for l in f_lignes),
+                "le controle F affiche une ligne OK")
+        verifie(not any("[KO " in l for l in f_lignes),
+                "le controle F n'affiche aucun KO quand la duree est bonne")
+
+        bloc_court = bloc_ok.replace("Measured: 27.25 s", "Measured: 2.13 s")
+        f_ok, f_lignes = mod.check_duree_test_suite(bloc_court)
+        verifie(not f_ok, "le controle F refuse une duree annoncee plus courte "
+                          "que la somme des temps affiches")
+        verifie(any("[KO ]" in l for l in f_lignes),
+                "le controle F affiche le KO de la duree trop courte")
+        verifie(any("shorter than the sum" in l for l in f_lignes),
+                "le controle F dit pourquoi la duree est refusee")
+
+        f_ok, f_lignes = mod.check_duree_test_suite(
+            "2) RUN THE TEST SUITE\n   bash scripts/run_tests.sh\n")
+        verifie(not f_ok, "le controle F refuse un bloc sans aucun temps affiche")
+        verifie(any("[KO ]" in l for l in f_lignes),
+                "le controle F affiche le KO du bloc sans temps")
+
+        f_ok, f_lignes = mod.check_duree_test_suite(
+            "   Measured: 27.25 s\n     Ran 27 tests in 0.253s\n")
+        verifie(not f_ok, "le controle F refuse un bloc sans la commande de "
+                          "la suite")
+        verifie(any("[KO ]" in l for l in f_lignes),
+                "le controle F affiche le KO du bloc sans la commande")
+
+        f_ok, f_lignes = mod.check_duree_test_suite(
+            "2) RUN THE TEST SUITE\n   bash scripts/run_tests.sh\n"
+            "     Ran 27 tests in 0.253s\n")
+        verifie(not f_ok, "le controle F refuse un bloc ou la duree n'est pas "
+                          "annoncee")
+        verifie(any("[KO ]" in l for l in f_lignes),
+                "le controle F affiche le KO de la duree non annoncee")
+
+        f_ok, f_lignes = mod.check_duree_test_suite("")
+        verifie(not f_ok, "le controle F refuse un bloc absent")
+
+        bloc_virgule = bloc_ok.replace("Measured: 27.25 s", "Measured: 27,25 s")
+        f_ok, _ = mod.check_duree_test_suite(bloc_virgule)
+        verifie(f_ok, "le controle F comprend une duree ecrite avec une virgule")
+
+        bloc_fin = ("2) RUN THE TEST SUITE\n"
+                    "   bash scripts/run_tests.sh\n"
+                    "   Measured: 27.25 s on 27 November 2026.\n"
+                    "     Ran 27 tests in 0.253s\n"
+                    "     Ran 19 tests in 19.829s\n"
+                    "The three commands take 27.25 s for the test suite.\n")
+        f_ok, _ = mod.check_duree_test_suite(bloc_fin)
+        verifie(f_ok, "le controle F accepte la phrase de fin quand elle est "
+                      "plus longue que la somme")
+
+        bloc_fin_court = bloc_fin.replace("take 27.25 s", "take 2.13 s")
+        f_ok, f_lignes = mod.check_duree_test_suite(bloc_fin_court)
+        verifie(not f_ok, "le controle F refuse une phrase de fin plus courte "
+                          "que la somme")
+        verifie(any("[KO ]" in l for l in f_lignes),
+                "le controle F affiche le KO de la phrase de fin trop courte")
+
+        reel = pathlib.Path(__file__).resolve().parent.parent / "docs" / \
+            "SUBMISSION-EN.md"
+        if reel.is_file():
+            blocs_reel = dict(mod.BLOCK_RE.findall(
+                reel.read_text(encoding="utf-8")))
+            f_ok, _ = mod.check_duree_test_suite(blocs_reel.get("TESTING", ""))
+            verifie(f_ok, "le bloc TESTING du depot passe le controle F")
+        else:
+            verifie(True, "le bloc TESTING du depot n'est pas lisible ici")
+
     finally:
         shutil.rmtree(str(racine), ignore_errors=True)
 
