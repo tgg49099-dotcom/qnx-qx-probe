@@ -102,20 +102,22 @@ _Measured: 333 characters._
 ## 5. "What it does" — the description field
 
 <!-- DEBUT:WHATITDOES -->
-A QNX 8.0 resource manager is where the expensive bugs live. Drop the iofunc_read_verify() call and a client can read what it should not. Block in the dispatch loop without dispatching and the client hangs. Return more parts in a reply than the IOV holds and the answer is corrupted. The compiler sees none of it.
+QX-PROBE found a real bug in QNX's own code: on 17 resource managers published by other people, 7 by QNX or BlackBerry, it reports one error - a missing access gate in rpi_thermal.c, a file QNX publishes. A client can read what it should not, and the compiler sees nothing.
 
-QX-PROBE is a single-file, dependency-free linter for QNX 8.0 resource-manager C code. It runs on Linux, macOS or Windows, needs no QNX SDK or hardware, so it fits in CI. It has 11 rules, and each rule cites the official BlackBerry QNX SDP 8.0 documentation page it comes from.
+That is the class of bug it hunts, in a QNX 8.0 resource manager: drop the iofunc_read_verify() call and a client reads what it must not; block the dispatch loop and the client hangs.
 
-Seven rules had a defect that contradicted the documentation; they are corrected, and each correction is covered by a test that fails on the previous code and passes on the current one.
+QX-PROBE is a single-file, dependency-free linter for QNX 8.0 resource-manager C code: it runs on Linux, macOS or Windows, needs no SDK or hardware, and fits in CI. Its 11 rules each cite the official QNX SDP 8.0 page they come from.
 
-It is a linter, not a certifier: it reports what its rules can prove and stays silent about the rest.
+Seven rules had a defect that contradicted the documentation; each has a test that fails on the previous code.
+
+It is a linter, not a certifier: it reports what its rules can prove and is silent about the rest.
 
 Install: clone, then run python3 -I qx_probe.py your_resmgr.c. Nothing to build.
 
-Evaluate it in a minute: bash scripts/run_tests.sh runs 100 tests and exits 0. python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own published resource manager: 5 findings, 0 errors, 0 warnings.
+Evaluate it in a minute: bash scripts/run_tests.sh runs 100 tests and exits 0; python3 -I qx_probe.py examples/blackberry_eventfd_mgr.c runs it on BlackBerry's own manager (5 findings, 0 errors, 0 warnings).
 <!-- FIN:WHATITDOES -->
 
-_Measured: 1191 characters (DevPost limit: 1 200)._
+_Measured: 1196 characters (DevPost limit: 1 200)._
 
 ## 6. "Why we built it"
 
